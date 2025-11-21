@@ -4,6 +4,5 @@ A collection of custom skills for Claude Code to extend its capabilities with sp
 
 ## Skills
 
-- **skill-creator**: Guide for creating effective skills
 - **productivity-guru**: Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration
 - **receipt-filing**: Process and organize scanned business and personal documents
