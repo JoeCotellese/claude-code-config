@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(skill-creator)",
+      "Bash(~/.claude/skills/skill-creator/scripts/package_skill.py:*)",
+      "Bash(git init:*)",
+      "Bash(ln:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
