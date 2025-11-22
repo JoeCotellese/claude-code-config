@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(fd:*)",
-      "Skill(skill-creator)"
+      "Skill(skill-creator)",
+      "Bash(python ~/.claude/skills/skill-creator/scripts/init_skill.py:*)"
     ],
     "deny": [],
     "ask": []
