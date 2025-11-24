@@ -691,26 +691,54 @@ The GTD task management is handled entirely by Todoist, while Obsidian provides 
 
 ### Obsidian URI Link Generation
 
-When creating project tasks in Todoist that reference Obsidian project notes, generate Obsidian URI links using this pattern:
+When creating project tasks in Todoist that reference Obsidian project notes, generate Obsidian URI links following the official Obsidian URI scheme.
 
+**Basic URI Format:**
 ```
 obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]
 ```
 
+**Alternative Shorthand Format:**
+```
+obsidian://vault/obsidian-vault/4_Projects/[ProjectName]
+```
+
 **URL Encoding Rules:**
 - Vault name: `obsidian-vault` (user's vault name)
-- Forward slashes (`/`) → `%2F`
-- Spaces → `%20`
+- Forward slashes (`/`) → `%2F` (in query parameter format only)
+- Spaces → `%20` or `+`
+- Special characters (`,`, `?`, `&`, `#`) → URL encoded
 - File extension (`.md`) is optional and should be omitted
 
-**Examples:**
-- `4_Projects/SEPTA Pitch.md` → `obsidian://open?vault=obsidian-vault&file=4_Projects%2FSEPTA%20Pitch`
-- `4_Projects/ClipDish v2.0.md` → `obsidian://open?vault=obsidian-vault&file=4_Projects%2FClipDish%20v2.0`
+**Navigating to Specific Sections:**
+- Link to heading: `obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]%23Heading`
+- Link to block: `obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]%23%5EBlock`
+- Note: `#` → `%23` for headings, `#^` → `%23%5E` for blocks
 
-**When to Include Links:**
+**Examples:**
+- Open project note: `obsidian://open?vault=obsidian-vault&file=4_Projects%2FSEPTA%20Pitch`
+- Open to specific section: `obsidian://open?vault=obsidian-vault&file=4_Projects%2FClipDish%20v2.0%23Next%20Actions`
+- Shorthand format: `obsidian://vault/obsidian-vault/4_Projects/ClipDish v2.0`
+
+**When to Include Links in Todoist:**
 - Always include Obsidian links in Todoist project task descriptions when an Obsidian project note exists
 - Include links in Next Action task descriptions when they relate to a specific project
-- Format: "See obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName] for details"
+- For task-specific context, link directly to relevant headings (e.g., "Next Actions", "Background", "Decisions")
+- Format in description: "See [obsidian://...] for details" or "Context: [obsidian://...]"
+
+**Todoist Task Description Format:**
+```
+[Task outcome description]
+
+Context: obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]
+```
+
+Or with specific section:
+```
+[Task outcome description]
+
+Details: obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]%23Background
+```
 
 ---
 
