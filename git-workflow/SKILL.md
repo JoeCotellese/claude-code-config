@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Enforce branch-first git workflow. Use this skill when starting any new feature or fix, committing code, or creating pull requests. Prevents direct commits to main branch and ensures proper issue tracking through branch names, commit messages, and PR descriptions.
+description: Enforce branch-first git workflow. INVOKE IMMEDIATELY when user says "work on issue", "fix issue", "implement", "let's work on #", or mentions any issue number. Also use when committing code, creating pull requests, or when user says "ship it" for complete shipping workflow. Prevents direct commits to main branch.
 ---
 
 # Git Workflow
@@ -17,6 +17,7 @@ Invoke this skill automatically when:
 - User is about to commit code
 - User wants to create a pull request
 - User asks about git workflow or branching
+- User says "ship it", "let's ship this", or "ready to merge" (triggers Pattern 5: complete shipping workflow)
 
 ## Core Workflow
 
@@ -291,6 +292,103 @@ Assistant:
    - Use --no-verify flag to bypass hook
    - Push immediately after commit
 ```
+
+### Pattern 5: Ship It (Complete Feature Workflow)
+```
+User: "ship it" or "let's ship this feature" or "ready to merge"
+```
+
+This pattern chains all shipping steps into one automated workflow:
+
+**Step 1: Verify Branch State**
+```bash
+BRANCH=$(git branch --show-current)
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+    echo "ERROR: Cannot ship from main/master. Create a feature branch first."
+    exit 1
+fi
+git status
+```
+
+**Step 2: Language-Aware Code Review (BLOCKING)**
+
+Detect the project language and run the appropriate code reviewer:
+
+```bash
+# Check for Python files
+if git diff --name-only --diff-filter=ACMR HEAD "*.py" | head -1 | grep -q .; then
+    # Python project - invoke python-code-reviewer skill
+    python ~/.claude/skills/python-code-reviewer/scripts/run_checks.py .
+    # Then perform manual review per the skill's checklist
+fi
+
+# Check for Swift files
+if git diff --name-only --diff-filter=ACMR HEAD "*.swift" | head -1 | grep -q .; then
+    # Swift project - invoke swift-swiftui-reviewer Task agent
+    # Review Swift/SwiftUI code for best practices
+fi
+```
+
+**CRITICAL**: If code review finds critical issues, STOP the workflow immediately.
+Report the issues to the user and wait for fixes before continuing.
+
+**Step 3: Stage and Commit**
+```bash
+git add -A
+git status
+git diff --cached --stat
+```
+
+Create commit with proper format (see Pattern 2).
+
+**Step 4: Push to Remote**
+```bash
+git push -u origin $(git branch --show-current)
+```
+
+If rejected due to upstream changes:
+```bash
+git fetch origin
+git rebase origin/main
+# Resolve conflicts if needed
+git push -u origin $(git branch --show-current)
+```
+
+**Step 5: Create PR**
+
+Use gh pr create (see Pattern 3 for format).
+
+**Step 6: Merge PR**
+```bash
+# Wait for CI if configured
+gh pr checks
+
+# Merge with squash and auto-delete remote branch
+gh pr merge --squash --delete-branch
+```
+
+**Step 7: Return to Main**
+```bash
+git checkout main
+git pull origin main
+
+# Delete local feature branch
+git branch -d <branch-name>
+```
+
+**Step 8: Confirm Success**
+
+Report to user:
+- Merged commit hash
+- PR number and URL
+- Confirmation branches cleaned up
+- Current state: on main, up to date
+
+**Error Handling:**
+- Code review critical issues → STOP, report issues, wait for fix
+- Push rejected → Attempt rebase, if conflicts STOP
+- PR creation fails → Report error (gh auth issue, existing PR, etc.)
+- Merge fails → Report error (CI failing, conflicts, branch protection)
 
 ## Quick Reference
 
