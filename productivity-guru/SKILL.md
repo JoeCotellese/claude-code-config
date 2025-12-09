@@ -58,32 +58,58 @@ This skill uses Todoist as the primary task management system:
 - `mcp__todoist__find-projects` - List projects
 - `mcp__todoist__get-overview` - Get account overview
 
-## Obsidian Vault Structure (Reference Only)
+## Obsidian Vault Structure
 
-Obsidian is used for reference material and project documentation only. Tasks live in Todoist.
+Obsidian serves as the **planning layer** while Todoist is the **execution layer**.
+
+**Vault location:** `/Users/joec/obsidian-vault/`
 
 ```
 obsidian-vault/
-├── 4_Projects/                 # Project documentation and notes
-│   └── [ProjectName].md        # Detailed project plans, with links to Todoist
-├── 2_Literature Notes/         # Reference material
-├── 3_Permanent Notes/          # Distilled knowledge
+├── 4_Projects/                 # Project documentation AND next action backlogs
+│   └── [ProjectName].md        # Contains: outcome, context, full next action queue
+├── 2_Literature Notes/         # Reference material from external sources
+├── 3_Permanent Notes/          # Distilled evergreen knowledge
 └── Templates/                  # Note templates
 ```
 
-**Note:** The `1_inbox/` and `5_GTD/` folders are no longer used for task management. Tasks are managed in Todoist.
+**Key distinction:**
+- **Project notes** (`4_Projects/`) contain the full next action backlog for each project
+- **Todoist Next Actions** only holds 1-2 items currently being worked on
+- When a Todoist task is completed, the next item is "pulled" from the Obsidian backlog
+
+**Note:** The `1_inbox/` and `5_GTD/` folders are no longer used for task management.
 
 ## GTD Structure in Todoist
 
 The system uses these GTD projects in Todoist:
 
 - **Inbox** - Collection/capture area for new items
-- **Next Actions** - Single, physical, actionable tasks organized by labels (context, energy, time)
+- **Next Actions** - **Limited to 1-2 active tasks** you're working on *today* (execution focus)
 - **Projects** - Multi-step outcomes (task entries with links to detailed Obsidian project notes)
 - **Waiting For** - Tasks blocked on others
 - **Someday/Maybe** - Future possibilities not ready to commit to
 
 **Reference material** lives in Obsidian's `2_Literature Notes/` or `3_Permanent Notes/` folders.
+
+## Todoist vs Obsidian: Division of Labor
+
+This system deliberately limits Todoist to *execution* while Obsidian handles *planning*:
+
+| Location | Purpose | Content |
+|----------|---------|---------|
+| **Todoist Next Actions** | Execution focus | Only 1-2 tasks you're actively working on today |
+| **Obsidian Project Notes** | Planning & backlog | Full next action lists per project (the queue) |
+| **Todoist Projects** | Project index | Links to Obsidian project notes |
+| **Todoist Waiting For** | Blocking awareness | Items blocked on others |
+
+**Why this separation:**
+- Todoist stays clean and focused (reduces decision fatigue)
+- Obsidian becomes the "source of truth" for project planning
+- You see only what you can act on *right now*
+- Project backlogs don't pollute your daily execution view
+
+**Workflow implication:** When you complete a Next Action in Todoist, we prompt you to "pull" the next action from the relevant Obsidian project note.
 
 ## Metadata in Todoist
 
@@ -206,12 +232,15 @@ The system uses these GTD projects in Todoist:
           - Ready? → Move to Next Actions project + add metadata (see Metadata Collection below)
         - **Multiple steps (project)?** →
           - Ask: "What's the desired outcome?"
-          - Create Obsidian project note in `4_Projects/[ProjectName].md` with standard template
+          - Create Obsidian project note in `/Users/joec/obsidian-vault/4_Projects/[ProjectName].md` with standard template
           - Generate Obsidian URI link: `obsidian://open?vault=obsidian-vault&file=4_Projects%2F[ProjectName]`
           - Create task in Projects project with outcome as description and Obsidian link
           - Inform user: "I've created a project: [title] with documentation in Obsidian"
-          - Ask: "What's the very next physical action?"
-          - Create that action in Next Actions with metadata and link to project
+          - Ask: "What actions do you need to take for this project?"
+          - Capture ALL next actions in the Obsidian project note's `## Next Actions` section
+          - Ask: "Which one should we tackle first?"
+          - Create ONLY that first action in Todoist Next Actions with metadata and link to project
+          - Note: Remaining actions stay in Obsidian as the backlog
 
 3. Continue until inbox is empty
 
@@ -354,7 +383,7 @@ mcp__todoist__update-tasks with:
 
 ---
 
-### Workflow 5: Mark Task Complete
+### Workflow 5: Mark Task Complete (with Pull Next Action)
 
 **Trigger phrases:**
 - "Done with [task]"
@@ -380,7 +409,32 @@ mcp__todoist__update-tasks with:
 
 3. Celebrate: "Excellent! [Task] is complete."
 
-4. Ask: "What's next? Want another suggestion or taking a break?"
+4. **Pull Next Action from Obsidian** (if task was project-related):
+   - Check if completed task had a project link in description
+   - If yes, read the Obsidian project note at `/Users/joec/obsidian-vault/4_Projects/[ProjectName].md`
+   - Look at the `## Next Actions` section for remaining items
+   - Present the next action(s) from the backlog:
+     ```
+     That was part of [Project Name]. Here's what's next in your backlog:
+
+     1. [ ] Research competitor pricing (next in queue)
+     2. [ ] Draft pricing page copy
+     3. [ ] Review with team
+
+     Want to pull #1 into Todoist as your next active task?
+     ```
+   - If user says yes:
+     - Create task in Todoist Next Actions with metadata
+     - Mark it as complete (checkbox) in the Obsidian project note
+   - If user says no or "later": "Got it. It'll be waiting in Obsidian when you're ready."
+
+5. If task was NOT project-related, or no backlog exists:
+   - Ask: "What's next? Want another suggestion or taking a break?"
+
+**Implementation notes:**
+- Keep Todoist Next Actions to 1-2 items maximum
+- The Obsidian project note is the source of truth for the full backlog
+- When pulling a task, apply the same metadata inference as inbox processing
 
 ---
 
@@ -675,6 +729,7 @@ All task operations work through Todoist MCP:
 - Celebrate completions
 - Be encouraging but not patronizing
 - When filtering returns no matches, explain why and suggest relaxing criteria
+- When referencing vault documents in responses, use Obsidian URL scheme links so they can be clicked to open directly (e.g., `obsidian://open?vault=obsidian-vault&file=3_Permanent%20Notes%2FMeetily.md`)
 
 ---
 
@@ -778,10 +833,13 @@ Load these references when:
 **Obsidian Project Note (4_Projects/ClipDish.md):**
 ```markdown
 ---
-type: project
+tags:
+  - type/project
+  - iOS
+  - ClipDish
+created: "2025-11-12, 09:00"
+updated: "2025-11-12, 09:00"
 status: active
-created: 2025-11-12
-tags: [project, iOS]
 todoist: https://app.todoist.com/app/task/[task-id]
 ---
 
@@ -794,8 +852,25 @@ Ship version 2.0 with recipe sharing and meal planning
 [Detailed background, research, decisions...]
 
 ## Next Actions
-(Tracked in Todoist - see link above)
+This is the backlog. Only 1-2 items should be "active" in Todoist at any time.
+
+- [x] Set up project structure ~~(completed 2025-11-10)~~
+- [ ] Research competitor pricing @computer #energy-medium 30m
+- [ ] Draft pricing page copy @computer #energy-high 1h
+- [ ] Review pricing with team @work #energy-medium 30m
+- [ ] Implement payment integration @computer #energy-high 2h
+
+**Currently in Todoist:** Research competitor pricing
+
+## Waiting For
+- [ ] Sarah to review wireframes (requested 2025-11-08)
 
 ## Notes
 [Detailed planning notes, links to other resources...]
 ```
+
+**Key points about Next Actions in Obsidian:**
+- Use checkbox format `- [ ]` for pending, `- [x]` for complete
+- Include metadata inline: `@context #energy duration`
+- Mark which item(s) are currently active in Todoist
+- This is the source of truth; Todoist is just the execution view

@@ -571,6 +571,96 @@ radon cc myfile.py -a  # -a shows average
 radon cc myfile.py --min C
 ```
 
+## Long String Formatting
+
+### Line Length and Strings
+
+Ruff/Black formatters do **not** automatically break long strings because it can change semantics (breaking regexes, SQL, etc.). Use **implicit string concatenation** to manually break long strings.
+
+### Implicit String Concatenation
+
+Python automatically concatenates adjacent string literals. This is the idiomatic way to handle long strings:
+
+```python
+# Bad: Long single-line string exceeding line length
+message = "This is a very long error message that explains what went wrong and provides detailed context about the failure"
+
+# Good: Implicit string concatenation with parentheses
+message = (
+    "This is a very long error message that explains what went wrong "
+    "and provides detailed context about the failure"
+)
+```
+
+### F-strings with Implicit Concatenation
+
+For f-strings, each segment needs its own `f` prefix:
+
+```python
+# Bad: Long f-string on single line
+prompt = f"Enhance this {room_type} description with atmospheric details. Add vivid sensory details including sights, sounds, and smells."
+
+# Good: Break with implicit concatenation
+prompt = (
+    f"Enhance this {room_type} description with atmospheric details. "
+    f"Add vivid sensory details including sights, sounds, and smells."
+)
+```
+
+### Multi-line Content with Explicit Newlines
+
+When the string content needs actual newlines, include `\n` explicitly:
+
+```python
+# Good: Multi-line prompt with explicit newlines
+prompt = (
+    f"Narrate this combat action:\n\n"
+    f"Attacker: {attacker}\n"
+    f"Defender: {defender}\n\n"
+    f"Describe the action in one dramatic sentence."
+)
+```
+
+### When to Use Triple-Quoted Strings
+
+Use triple-quoted strings only when:
+- The string content itself needs to preserve formatting/indentation
+- You're writing docstrings
+- The content is truly multi-line by nature (like SQL, HTML templates)
+
+```python
+# Good: SQL query that benefits from readable formatting
+query = """
+    SELECT u.name, u.email
+    FROM users u
+    JOIN orders o ON u.id = o.user_id
+    WHERE o.status = 'pending'
+"""
+
+# Bad: Using triple quotes just to avoid line length
+# (loses control over whitespace)
+message = """This is a long message that
+should be on one line but was wrapped
+using triple quotes."""
+```
+
+### textwrap.dedent for Indented Blocks
+
+When you need multi-line strings in indented code:
+
+```python
+from textwrap import dedent
+
+def get_help_text():
+    return dedent("""
+        Usage: my_command [options]
+
+        Options:
+            -h, --help    Show this help message
+            -v, --verbose Enable verbose output
+    """).strip()
+```
+
 ## Review Checklist
 
 When reviewing code, check:
@@ -602,3 +692,4 @@ When reviewing code, check:
 - [ ] Methods < 5 parameters (ideally < 3)
 - [ ] Nesting depth < 3 levels
 - [ ] Cyclomatic complexity < 10
+- [ ] Long strings use implicit concatenation (not single long lines)

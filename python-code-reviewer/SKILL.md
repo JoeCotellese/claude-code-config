@@ -90,6 +90,7 @@ After automated checks, perform manual review of the changed code focusing on:
   - **DRY violations**: Duplicated code blocks, repeated logic
   - **Separation of concerns**: Business logic mixed with I/O, multiple responsibilities
   - **Idiomatic Python**: EAFP vs LBYL, context managers, properties
+  - **Long string formatting**: Use implicit concatenation for strings exceeding line length
   - **Length violations**:
     - Functions > 50 lines (ideally < 25)
     - Classes > 300 lines (ideally < 200)
@@ -360,6 +361,7 @@ Use this mental checklist during review:
 - [ ] Functions < 50 lines
 - [ ] Classes < 300 lines
 - [ ] Files < 500 lines
+- [ ] Long strings use implicit concatenation
 
 **Security:**
 - [ ] No SQL injection (parameterized queries only)

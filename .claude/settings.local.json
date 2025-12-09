@@ -4,7 +4,9 @@
       "Bash(git add:*)",
       "Bash(fd:*)",
       "Skill(skill-creator)",
-      "Bash(python ~/.claude/skills/skill-creator/scripts/init_skill.py:*)"
+      "Bash(python ~/.claude/skills/skill-creator/scripts/init_skill.py:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd python-code-reviewer skill: Review code quality, security, and performance\n\nComprehensive Python code review skill for pre-commit and PR checks:\n- Code quality: PEP 8, idioms, DRY, separation of concerns\n- Security: Injection vulnerabilities, unsafe deserialization, hardcoded secrets\n- Performance: Data structures, algorithms, caching opportunities\n- Best practices for web apps (Flask/FastAPI) and CLI tools (Click/argparse)\n- Automated checks using ruff and black\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(mdfind:*)"
     ],
     "deny": [],
     "ask": []
