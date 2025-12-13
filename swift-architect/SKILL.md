@@ -20,15 +20,42 @@ Invoke this skill when:
 
 ## Core Capabilities
 
+### 0. Architecture Document Discovery
+
+**Before starting any consultation**, search for existing architecture documentation in the project:
+
+1. **Search locations** (in order of priority):
+   - `./ARCHITECTURE.md` or `./Architecture.md`
+   - `./docs/ARCHITECTURE.md` or `./docs/architecture.md`
+   - `./docs/Architecture.md`
+   - `./Documentation/Architecture.md`
+   - `./README.md` (may contain architecture section)
+
+2. **Use Glob to find architecture docs:**
+   ```
+   Glob pattern: "**/[Aa]rchitecture*.md"
+   Glob pattern: "**/ARCHITECTURE.md"
+   ```
+
+3. **If found**, read and incorporate:
+   - Existing patterns and conventions
+   - Component naming standards
+   - Data flow decisions already made
+   - Technology choices and constraints
+   - Reference the document in recommendations
+
+4. **If not found**, note this and offer to help create one after the consultation.
+
 ### 1. Architectural Analysis
 
 When presented with a feature or problem:
 
-1. **Clarify requirements** - Ask targeted questions to understand scope
-2. **Identify components** - Break down into Views, ViewModels, Models, Services
-3. **Map data flow** - How data moves through the system
-4. **Recommend patterns** - MVVM, Repository, Coordinator, etc.
-5. **Provide scaffolding** - Starter code structure
+1. **Discover existing architecture** - Search for ARCHITECTURE.md (see above)
+2. **Clarify requirements** - Use AskUserQuestion prompt forms (see below)
+3. **Identify components** - Break down into Views, ViewModels, Models, Services
+4. **Map data flow** - How data moves through the system
+5. **Recommend patterns** - MVVM, Repository, Coordinator, etc.
+6. **Provide scaffolding** - Starter code structure
 
 ### 2. Pattern Recommendations
 
@@ -122,22 +149,63 @@ final class RecipeListViewModel: ObservableObject {
 
 ## Consultation Workflow
 
-### Step 1: Understand the Problem
+### Step 1: Discover Existing Architecture
 
-Ask clarifying questions:
-- What is the feature trying to accomplish?
-- What data does it need? Where does it come from?
-- How does user interaction flow?
-- What existing code/patterns are in the codebase?
+Before asking questions, search for architecture documentation:
+```
+Glob: "**/[Aa]rchitecture*.md"
+Glob: "**/ARCHITECTURE.md"
+```
 
-### Step 2: Analyze and Recommend
+Read any found documents to understand existing patterns, conventions, and constraints.
+
+### Step 2: Gather Requirements via Prompt Forms
+
+**Use the AskUserQuestion tool** to collect clarifying information. Present questions as structured forms rather than free-text lists.
+
+**Initial Context Form:**
+```
+AskUserQuestion with 2-3 questions:
+
+1. Feature Type (header: "Feature Type")
+   - New screen/view
+   - New data flow/service
+   - Refactor existing code
+   - Navigation change
+   - State management update
+
+2. Data Source (header: "Data Source")
+   - Local only (UserDefaults, SwiftData, files)
+   - Remote API
+   - Both local and remote
+   - No data persistence needed
+
+3. Scope (header: "Scope")
+   - Single view component
+   - Feature module (multiple views)
+   - App-wide change
+   - Cross-cutting concern (logging, analytics, etc.)
+```
+
+**Follow-up questions** should also use AskUserQuestion when choices are discrete:
+- Navigation style → form with options (NavigationStack, sheet, fullScreenCover, custom)
+- State ownership → form with options (@State, @StateObject, @EnvironmentObject, etc.)
+- Error handling strategy → form with options (local, centralized, Result type, throws)
+
+**When to use free-form questions instead:**
+- Asking about specific business requirements
+- Understanding edge cases
+- Clarifying ambiguous user intent
+- Gathering context that doesn't fit predefined options
+
+### Step 3: Analyze and Recommend
 
 1. **Break down components** - Identify all Views, Models, Services needed
 2. **Map relationships** - Draw component diagram showing dependencies
 3. **Choose patterns** - Recommend architecture with rationale
 4. **Identify risks** - Note complexity, edge cases, potential issues
 
-### Step 3: Provide Implementation Guidance
+### Step 4: Provide Implementation Guidance
 
 - **File structure** - Where each component lives
 - **Protocol definitions** - Contracts between components
@@ -177,10 +245,35 @@ Ask clarifying questions:
 
 Let me help you design the recipe editing feature.
 
-**Clarifying Questions**:
-1. Should edits save immediately or require explicit save?
-2. Can users cancel and discard changes?
-3. Is there validation (required fields, character limits)?
+**Step 1: Check for architecture docs**
+```
+Glob: "**/[Aa]rchitecture*.md"
+→ Found: ./docs/ARCHITECTURE.md
+→ Read and note existing patterns (MVVM, Repository pattern in use)
+```
+
+**Step 2: Gather requirements via prompt form**
+```
+AskUserQuestion:
+
+1. Save Behavior (header: "Save")
+   - Auto-save on change
+   - Explicit save button
+   - Save on navigation away
+
+2. Validation (header: "Validation")
+   - Required fields only
+   - Character limits
+   - Custom business rules
+   - No validation needed
+
+3. Cancel Behavior (header: "Cancel")
+   - Discard with confirmation
+   - Discard immediately
+   - No cancel option (auto-save)
+```
+
+*User selects: Explicit save, Required fields + character limits, Discard with confirmation*
 
 **Proposed Architecture**:
 
