@@ -105,6 +105,83 @@ EOF
 
 See `references/commit_message_format.md` for extensive examples and guidelines.
 
+### Commit Quality Standards
+
+**CRITICAL**: Apply these standards consistently on every commit.
+
+#### 1. Always Use Type Prefixes
+Every commit MUST start with a type prefix. No exceptions.
+
+✅ **Correct**:
+- `Fix #70: Resolve memory leak in image cache`
+- `Add #123: User profile settings page`
+- `Refactor #45: Extract validation logic to separate module`
+
+❌ **Incorrect**:
+- `Resolve memory leak in image cache` (missing type)
+- `misc commits` (meaningless)
+- `bump version` (missing type and context)
+
+#### 2. Always Reference Issues
+Every commit MUST reference an issue number. If there's no issue, create one first or use `Chore:` for maintenance tasks.
+
+✅ **Correct**:
+- `Fix #226: Spotlight recipe indexing`
+- `Chore: Update dependencies to latest versions`
+
+❌ **Incorrect**:
+- `Fix Spotlight recipe indexing` (no issue reference)
+- `Update dependencies` (no type, no context)
+
+#### 3. One Logical Change Per Commit (Atomic Commits)
+Each commit should contain exactly one logical change. If you find yourself using "and" in a commit message, split it into two commits.
+
+✅ **Correct** (two separate commits):
+```
+Chore: Bump version to 2025.11.3
+Fix #99: Correct Algolia index name for production
+```
+
+❌ **Incorrect** (bundled changes):
+```
+Bump version to 2025.11.3 and fix Algolia index name
+```
+
+#### 4. Clean Up Branches After Merge
+After a PR/MR is merged, ALWAYS delete both local and remote feature branches:
+
+```bash
+# Delete local branch
+git branch -d feature/123-description
+
+# Delete remote branch (if not auto-deleted by merge)
+git push origin --delete feature/123-description
+```
+
+Stale branches create clutter and confusion. Clean up immediately after merge.
+
+#### 5. Commit Message Body Explains "Why"
+The subject line says WHAT changed. The body explains WHY.
+
+✅ **Correct**:
+```
+Fix #231: Track recipe_count as user property in analytics
+
+The recipe count helps segment users by engagement level
+for targeted feature rollouts and A/B testing.
+
+Uses removeDuplicates() to avoid unnecessary analytics calls
+when count hasn't actually changed.
+```
+
+❌ **Incorrect**:
+```
+Fix #231: Track recipe_count as user property in analytics
+
+Added a Combine pipeline that updates the recipe_count.
+```
+(Body just restates the "what", not the "why")
+
 ### 3. Creating Pull Requests
 
 When work is complete and ready for review:
@@ -185,20 +262,46 @@ Once PR is merged to main:
    git push origin --delete feature/70-applies-condition-field
    ```
 
-## Protection: Pre-Commit Hook
+## Protection: Git Hooks
 
-To prevent accidental commits to main/master, install the pre-commit hook:
+Install git hooks to enforce workflow standards:
 
 ```bash
 bash scripts/setup_git_hooks.sh
 ```
 
-The hook will:
-- Block any commits to main or master branches
-- Display helpful error message with proper workflow
-- Allow bypass with `--no-verify` flag (emergencies only)
+This installs two hooks:
 
-**Install once per repository**. The hook is stored in `.git/hooks/pre-commit`.
+### Pre-Commit Hook
+- Blocks any commits to main or master branches
+- Displays helpful error message with proper workflow
+
+### Commit-Msg Hook
+Validates every commit message for:
+- **Type prefix** - Must start with Fix, Add, Update, Refactor, Remove, Docs, Test, or Chore
+- **Issue reference** - Must include `#123` (except Chore commits)
+- **Length limit** - Subject line max 72 characters
+
+**Example rejections:**
+```
+❌ "bump version"           → Missing type prefix
+❌ "Fix the bug"            → Missing issue reference
+❌ "Fix #123 Really long... → Over 72 characters
+```
+
+**Valid formats:**
+```
+✅ Fix #123: Brief description
+✅ Add #456: New feature description
+✅ Chore: Maintenance task (no issue required)
+```
+
+**Install once per repository**. Hooks are stored in `.git/hooks/`.
+
+To bypass hooks in emergencies (not recommended):
+```bash
+git commit --no-verify
+```
 
 ## Workflow Decision Tree
 
@@ -454,7 +557,8 @@ EOF
 ### scripts/
 - `create_feature_branch.sh` - Creates properly named feature/fix/hotfix branches
 - `pre_commit_hook.sh` - Blocks commits to main/master (installed by setup script)
-- `setup_git_hooks.sh` - Installs the pre-commit hook (run once per repo)
+- `commit_msg_hook.sh` - Validates commit message format (type, issue ref, length)
+- `setup_git_hooks.sh` - Installs all git hooks (run once per repo)
 - `detect_git_platform.sh` - Detects GitHub vs GitLab to use correct CLI tool (gh/glab)
 
 ### references/
