@@ -1,0 +1,53 @@
+# ABOUTME: Template for creating new UI tests using the LLM-as-tester pattern
+# ABOUTME: Copy this file and customize for your specific test scenario
+
+name: Test Name Here
+description: Brief description of what this test validates
+
+config:
+  simulator_udid: B85BBC01-F921-4E1E-8D37-5763018C7AFF
+  bundle_id: com.example.app
+
+precondition:
+  screen: screen_name
+  marker: accessibilityIdentifier
+  hint: "Instructions for reaching the precondition state if not already there"
+
+steps:
+  - name: Step 1 - Describe the action
+    action: observe | tap | swipe | gesture | type
+    # For tap/swipe actions:
+    element_id: accessibilityIdentifier
+    # For gesture actions:
+    preset: scroll-up | scroll-down | swipe-from-left-edge | etc
+    # For type actions:
+    text: "text to type"
+    # For swipe actions:
+    direction: left | right | up | down
+    hint: |
+      Detailed hints for the LLM tester:
+      - How to find the element if ID isn't exact match
+      - Alternative approaches if primary method fails
+      - Expected coordinates or element patterns
+    expect: What should happen after this step
+
+  - name: Step 2 - Another action
+    action: tap
+    element_id: buttonId
+    hint: "Keep hints concise but informative"
+    expect: Expected outcome
+
+  - name: Step 3 - Verify final state
+    action: observe
+    expect: Description of expected final state
+    hint: "What accessibility IDs or elements confirm success"
+
+success_criteria:
+  - "Criterion 1 - specific, verifiable outcome"
+  - "Criterion 2 - another measurable result"
+  - "Criterion 3 - final state verification"
+
+# Optional: Notes for test maintenance
+# notes:
+#   - "Known flaky behavior or timing issues"
+#   - "Dependencies on specific test data"
