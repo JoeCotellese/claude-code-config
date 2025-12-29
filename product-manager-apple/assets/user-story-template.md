@@ -50,10 +50,33 @@ Prerequisites for implementation:
 - [Other stories that must be completed first]
 - [Third-party service integration]
 
-### Platform-Specific Considerations
+### Accessibility Requirements
+Define the accessibility tier and specific requirements (see `references/accessibility-framework.md`):
+
+**Tier**: [1-Required / 2-Expected / 3-Excellence]
+
+| Requirement | Implementation |
+|-------------|----------------|
+| VoiceOver labels | [List interactive elements and their labels] |
+| VoiceOver hints | [Hints for complex controls] |
+| Dynamic Type | [How text scales at accessibility sizes] |
+| Tap targets | [Confirm 44pt minimum for all interactive elements] |
+| Focus management | [Where focus moves after actions/navigation] |
+| Reduce Motion | [Alternative to animations, if any] |
+
+**Accessibility Acceptance Criteria**:
+
+- **Given** VoiceOver is enabled
+  **When** user navigates to [element]
+  **Then** VoiceOver announces "[label]" as a [button/link/etc.]
+
+- **Given** Dynamic Type is set to accessibility size
+  **When** viewing this feature
+  **Then** all text is legible and layout adapts without truncation
+
+### Other Platform Considerations
 Apple platform requirements:
 
-- **Accessibility**: [VoiceOver labels, Dynamic Type support, etc.]
 - **Localization**: [Strings requiring translation, RTL considerations]
 - **Privacy**: [Permissions needed, privacy label updates]
 - **Performance**: [Offline support, loading states, caching]
@@ -104,9 +127,31 @@ Apple platform requirements:
 - Recipe API endpoint: `GET /recipes/{id}/share-metadata`
 - Network reachability check before initiating share
 
-### Platform-Specific Considerations
+### Accessibility Requirements
 
-- **Accessibility**: Share button has VoiceOver label "Share recipe", hint "Opens share menu"
+**Tier**: 1-Required
+
+| Requirement | Implementation |
+|-------------|----------------|
+| VoiceOver labels | Share button: "Share recipe" |
+| VoiceOver hints | Share button: "Opens share menu" |
+| Dynamic Type | Error messages scale with system text size |
+| Tap targets | Share button minimum 44x44pt |
+| Focus management | Focus returns to recipe after share sheet dismisses |
+| Reduce Motion | N/A (no custom animations) |
+
+**Accessibility Acceptance Criteria**:
+
+- **Given** VoiceOver is enabled
+  **When** user navigates to the share button
+  **Then** VoiceOver announces "Share recipe, button" with hint "Opens share menu"
+
+- **Given** VoiceOver is enabled and share fails
+  **When** the error alert appears
+  **Then** VoiceOver announces the error message and focus moves to the alert
+
+### Other Platform Considerations
+
 - **Localization**: Error messages translated, share text adapts to user language
 - **Privacy**: No tracking of what service user shares to (privacy by default)
 - **Performance**: Pre-generate share image for instant sharing, cache for 5 minutes

@@ -20,27 +20,36 @@ When presented with a feature request or idea, first identify ambiguities and as
 - **State Management**: How does this persist? What syncs across devices? Offline behavior?
 - **Settings**: User-configurable options? Defaults? Where do settings live?
 - **Analytics**: What do we need to measure? How will we know if this succeeds?
+- **Accessibility**: What accessibility tier is required? Any specific assistive technology considerations?
 - **Edge Cases**: What could go wrong? Error states? Permission denials? Network failures?
 - **Platform Capabilities**: Should this use widgets? Shortcuts? Live Activities? iCloud sync?
 
 **Do not proceed with full documentation until requirements are clear and complete.**
 
+**Exception**: For obvious micro features (e.g., "add pull-to-refresh"), skip the question marathon. If the UX is standard iOS behavior and the scope is clear, go straight to a quick spec.
+
 ### 2. Structure Requirements Documents
 
-Once requirements are clear, create structured documentation:
+Once requirements are clear, create structured documentation at the appropriate level:
 
-#### For Complex Features: Use PRD Template
-- Executive summary with business justification
-- Detailed user stories with acceptance criteria
-- Analytics implementation plan
-- Rollout strategy and risk assessment
-- **Location**: `assets/prd-template.md`
+#### For Micro Features: Use Quick Spec
+- Single-interaction, obvious UX, low risk
+- 5-10 lines covering what, why, acceptance criteria, analytics
+- Lives in the issue/ticket itself — no separate doc needed
+- **Location**: `assets/quick-spec-template.md`
 
-#### For Simple Features: Use Feature Brief
-- Quick one-page summary format
-- Core user flow and success metric
+#### For Medium Features: Use Feature Brief
+- Multi-step flow, some decisions needed
+- One-page summary with user flow and success metrics
 - Technical notes and analytics events
 - **Location**: `assets/feature-brief-template.md`
+
+#### For Complex Features: Use PRD Template
+- Multi-screen, high stakes, needs rollout planning
+- Executive summary with business justification
+- Detailed user stories with acceptance criteria
+- Analytics implementation plan and risk assessment
+- **Location**: `assets/prd-template.md`
 
 ### 3. Write User Stories
 
@@ -81,7 +90,23 @@ Evaluate Apple-specific factors:
 
 **Reference**: `references/apple-platform-considerations.md` for comprehensive platform guidance
 
-### 6. Break Down into Small Increments
+### 6. Define Accessibility Requirements
+
+For every feature, specify accessibility requirements using a tiered approach:
+
+- **Tier 1 (Required)**: VoiceOver labels, 44pt tap targets, Dynamic Type, color independence
+- **Tier 2 (Expected)**: Reduce Motion support, Bold Text, Increase Contrast, custom VoiceOver actions
+- **Tier 3 (Excellence)**: Keyboard shortcuts, audio descriptions, accessibility-specific features
+
+**Include in acceptance criteria**:
+- VoiceOver announcements for all interactive elements
+- Dynamic Type behavior at accessibility sizes
+- Focus management after state changes
+- Error announcement and recovery
+
+**Reference**: `references/accessibility-framework.md` for complete accessibility technology list, acceptance criteria patterns, and testing checklist
+
+### 7. Break Down into Small Increments
 
 Structure work into small, testable chunks:
 - Each user story should be implementable in 1-3 days
@@ -101,14 +126,16 @@ Structure work into small, testable chunks:
 - Don't overwhelm—ask most important questions first
 
 ### Step 3: Choose Documentation Level
-- **Complex feature** (multi-screen, multiple user flows, high impact): Full PRD
-- **Simple feature** (single-screen, straightforward flow): Feature brief
+- **Micro feature** (single interaction, obvious UX, low risk): Quick spec in the issue
+- **Medium feature** (multi-step flow, some decisions needed): Feature brief
+- **Complex feature** (multi-screen, high stakes, rollout planning): Full PRD
 - **Comparison/analysis** (business decision): Direct analysis with pros/cons
 
 ### Step 4: Create Structured Output
 - Use appropriate template from `assets/`
 - Reference platform considerations from `references/apple-platform-considerations.md`
 - Define analytics using framework from `references/analytics-framework.md`
+- Define accessibility tier and requirements from `references/accessibility-framework.md`
 - Ensure all requirements are testable and measurable
 
 ### Step 5: Provide Actionable Next Steps
@@ -124,7 +151,8 @@ Structure work into small, testable chunks:
 - **Think in small increments** that can be validated quickly
 - **Consider Apple ecosystem** from the start (not as an afterthought)
 - **Balance business goals** with user experience
-- **Include accessibility** and internationalization by default
+- **Require accessibility**: Every feature must define its accessibility tier and include VoiceOver/Dynamic Type acceptance criteria
+- **Include internationalization** by default
 
 ## When to Use This Skill
 
@@ -137,6 +165,9 @@ Trigger this skill when users:
 
 ## Resources Available
 
-- **Templates** (`assets/`): PRD, feature brief, user story examples
-- **Frameworks** (`references/`): Analytics approach, platform considerations
+- **Templates** (`assets/`): Quick spec, feature brief, PRD, user story examples
+- **Frameworks** (`references/`):
+  - `analytics-framework.md`: Event naming, metrics by feature type, Apple privacy considerations
+  - `apple-platform-considerations.md`: Platform capabilities, App Store guidelines, compliance
+  - `accessibility-framework.md`: Accessibility tiers, acceptance criteria patterns, testing checklist
 - Load references as needed—they don't need to be in context unless actively working on that aspect
