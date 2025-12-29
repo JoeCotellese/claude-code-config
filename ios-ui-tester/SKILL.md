@@ -56,6 +56,7 @@ success_criteria:
 **Action types:**
 - `observe` - Check UI state without interaction
 - `tap` - Tap an element by ID or coordinates
+- `touch` - Touch down/up sequence (required for SwiftUI Toggle)
 - `swipe` - Swipe gesture with direction (left/right/up/down)
 - `gesture` - Preset gesture (scroll-up, scroll-down, swipe-from-left-edge, etc.)
 - `type` - Enter text into focused field
@@ -240,6 +241,21 @@ axe key 40 --udid $UDID                                  # Submit (Enter)
 axe gesture scroll-down --duration 0.8 --udid $UDID
 ```
 
+### SwiftUI Toggle (IMPORTANT)
+SwiftUI Toggle controls do NOT respond to `axe tap`. Use `touch` with down/up sequence instead:
+
+```bash
+# This DOES NOT work for SwiftUI Toggle:
+axe tap -x 370 -y 234 --udid $UDID  # ❌ Toggle won't respond
+
+# This WORKS for SwiftUI Toggle:
+axe touch -x 370 -y 234 --down --up --delay 0.1 --udid $UDID  # ✅ Toggle responds
+```
+
+**Why?** SwiftUI Toggle appears to require a touch-down/touch-up event sequence rather than the synthetic tap event that `axe tap` generates.
+
+**Coordinates:** Tap the right side of the toggle row (where the switch control is), not the center. For a 402px wide row, use x ≈ 370.
+
 ### Multi-Device Screen Sizes
 ```
 iPhone 15:      390 x 844
@@ -274,6 +290,7 @@ xcrun simctl launch $UDID com.example.app
 6. **Check UI with describe-ui** - Understand element positions before automating
 7. **Record video for debugging** - Capture test runs for analysis
 8. **Re-query after scrolling** - Coordinates become stale after scroll/gesture; always call `describe-ui` again before tapping
+9. **Update tests with discovered IDs** - When you discover an accessibility ID (AXUniqueId) during a test run, add it to the test YAML as an `element_id` or in the step's `hint` field. This makes future runs more reliable and documents the element for other testers.
 
 ## Error Handling
 
