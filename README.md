@@ -1,10 +1,42 @@
-# Joe's Claude Skills
+# Claude Code Config
 
-A collection of custom skills for Claude Code to extend its capabilities with specialized knowledge, workflows, and tool integrations.
+A collection of custom extensions for Claude Code including skills, slash commands, and hooks.
+
+## Structure
+
+```
+claude-code-config/
+├── skills/      # Custom skills with specialized knowledge and workflows
+├── commands/    # Slash commands for quick actions
+└── hooks/       # Event-triggered automation
+```
 
 ## Skills
 
-- **git-workflow**: Enforce branch-first git workflow - prevents direct commits to main branch and ensures proper issue tracking through branch names, commit messages, and PR descriptions
-- **productivity-guru**: Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration
-- **filing-skill**: Process and organize scanned business and personal documents
-- **product-manager-apple**: Define product requirements, write user stories, and analyze features from a business perspective for Apple platforms with structured templates and analytics frameworks
+Custom skills extend Claude's capabilities with specialized knowledge, workflows, and tool integrations.
+
+| Skill | Description |
+|-------|-------------|
+| **filing-skill** | Process and organize scanned business and personal documents |
+| **git-workflow** | Enforce branch-first git workflow - prevents direct commits to main branch |
+| **ios-ui-tester** | iOS UI testing with SwiftUI and simulator automation |
+| **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
+| **product-manager-apple** | Define product requirements, write user stories, and analyze features for Apple platforms |
+| **python-code-reviewer** | Comprehensive Python code review for quality, security, and performance |
+| **swift-architect** | Swift/SwiftUI architecture consulting and design decisions |
+
+## Commands
+
+Slash commands for quick, repeatable actions. *(Coming soon)*
+
+## Hooks
+
+Event-triggered automation for Claude Code workflows. *(Coming soon)*
+
+## Installation
+
+Symlink skills into `~/.claude/skills/`:
+
+```bash
+ln -s /path/to/claude-code-config/skills/skill-name ~/.claude/skills/skill-name
+```

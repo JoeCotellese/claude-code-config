@@ -35,7 +35,8 @@
       "mcp__todoist__complete-tasks",
       "mcp__todoist__fetch",
       "mcp__core-memory__memory_search",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
