@@ -19,6 +19,31 @@ The calendar represents **actual available time**, not estimated availability. A
 - **Prime slots**: Before noon, especially before 9am
 - **Acceptable**: Any 2+ hour block if morning unavailable
 
+## Getting Current Time
+
+Before making any time-based comparisons (determining if events are "upcoming", "in progress", or "past"), you **must** first obtain the current time.
+
+**Tool**: `mcp__todoist__user-info`
+
+**Returns** (among other fields):
+- `currentLocalTime`: Current time in user's timezone (e.g., `"01/06/2026, 10:13:18"`)
+- `timezone`: User's configured timezone (e.g., `"US/Eastern"`)
+
+**Usage**:
+```
+mcp__todoist__user-info()
+```
+
+**Why this matters**: The system only provides the current date, not the current time. Without calling `user-info` first, you cannot accurately determine:
+- Whether a meeting is "coming up" vs "already over"
+- Which free block the user is currently in
+- Whether to show "← You are here" annotations
+
+**Always call this before**:
+- Workflow 1: "What Should I Be Working On?"
+- Workflow 8: "What's My Day Look Like?"
+- Any time you need to compare against calendar events
+
 ## Using iMCP Calendar Tools
 
 ### 1. Fetching Calendar Events
@@ -265,23 +290,30 @@ Want me to schedule either of these?
 
 ### Format for "What's My Day Look Like?"
 
+**Prerequisites**:
+1. Call `mcp__todoist__user-info` to get `currentLocalTime`
+2. Parse the time to compare against event start/end times
+
 **Structure**:
-1. Show all events chronologically
-2. Calculate free blocks between events
-3. Suggest appropriate tasks for each free block
-4. Highlight deep work opportunities
-5. Summarize total free time
+1. Get current time from `user-info`
+2. Show all events chronologically
+3. Calculate free blocks between events
+4. Mark current time position ("← You are here") by comparing `currentLocalTime` against event times
+5. Suggest appropriate tasks for each free block
+6. Highlight deep work opportunities
+7. Summarize total free time
 
 **Time block annotations**:
 - ⭐ for 2+ hour blocks (deep work potential)
 - → for task suggestions
 - **Bold** for current/next block
+- "← You are here" for blocks containing the current time (determined by comparing `currentLocalTime` to block start/end)
 
-**Example**:
+**Example** (assuming `currentLocalTime` returned `"11/12/2025, 08:15:00"`):
 ```
 Here's your day (Tuesday, Nov 12):
 
-**8:00 AM - 9:00 AM: FREE (1 hour)** ← You are here
+**8:00 AM - 9:00 AM: FREE (1 hour)** ← You are here (it's 8:15 AM)
 → Suggested: Create project reference @computer #energy-medium #time-15m
 
 9:00 AM - 10:00 AM: Team standup
@@ -485,6 +517,7 @@ Here are your upcoming events that might need preparation:
 ## Best Practices
 
 ### Do's
+✓ Always call `user-info` first to get current time before any time comparisons
 ✓ Always check calendar before suggesting tasks
 ✓ Respect user's energy level self-assessment
 ✓ Prioritize morning for #energy-high tasks
@@ -495,6 +528,7 @@ Here are your upcoming events that might need preparation:
 ✓ Create prep projects 2-7 days before events
 
 ### Don'ts
+✗ Don't assume you know the current time - always call `user-info` first
 ✗ Don't override calendar appointments to fit tasks
 ✗ Don't suggest tasks that don't fit available time
 ✗ Don't schedule deep work in afternoon if morning available
@@ -648,3 +682,188 @@ Please mark these as complete in Reminders app, or tell Siri:
 - **Identifies**: Meetings without preparation tasks
 - **Creates**: Projects and next actions for event prep
 - **Schedules**: Optional time blocking for preparation work
+
+## Reclaim.ai Integration
+
+### Overview
+
+Reclaim.ai provides AI-powered auto-scheduling as an alternative to manual calendar blocking. While iMCP is used for reading calendar events and creating specific time blocks, Reclaim handles intelligent task scheduling.
+
+### When to Use Each Tool
+
+| Task | iMCP | Reclaim |
+|------|------|---------|
+| Read calendar events | ✓ | ✓ |
+| Create event at specific time | ✓ | |
+| Auto-schedule task (flexible timing) | | ✓ |
+| Find deep work blocks | ✓ | ✓ |
+| Recurring time blocks (habits) | | ✓ |
+| Focus time protection | | ✓ |
+| Time tracking | | ✓ |
+
+### Reading Calendar with Reclaim
+
+Use Reclaim's calendar tools as an alternative to iMCP for viewing events:
+
+```
+mcp__reclaim__list_events with:
+  start: "2026-01-05",
+  end: "2026-01-12"
+```
+
+For Reclaim-managed events (tasks, habits, focus time):
+```
+mcp__reclaim__list_personal_events with:
+  start: "2026-01-05T00:00:00Z",
+  end: "2026-01-12T23:59:59Z",
+  limit: 50
+```
+
+### Auto-Scheduling Tasks
+
+Instead of manually finding time slots and creating calendar events, send tasks to Reclaim:
+
+**From Todoist task to Reclaim:**
+```
+mcp__reclaim__create_task with:
+  title: "Update EyeGuide video API",
+  duration_minutes: 120,
+  priority: "P1",
+  due_date: "2026-01-10",
+  min_chunk_size_minutes: 30
+```
+
+Reclaim will:
+1. Analyze your calendar for available time
+2. Find the optimal slot based on priority and energy
+3. Create a calendar event automatically
+4. Reschedule if conflicts arise
+
+### Energy-Aware Scheduling
+
+Map GTD energy levels to Reclaim scheduling behavior:
+
+**#energy-high tasks:**
+- Use `snooze_until` to prefer morning slots
+- Set higher priority (P1/P2)
+- Example:
+  ```
+  mcp__reclaim__create_task with:
+    title: "Deep work: API design",
+    duration_minutes: 120,
+    priority: "P1",
+    snooze_until: "2026-01-06T06:00:00Z"
+  ```
+
+**#energy-medium tasks:**
+- Default scheduling (Reclaim chooses best time)
+- Priority P2/P3
+
+**#energy-low tasks:**
+- Can fill gaps and end-of-day slots
+- Priority P3/P4
+- Good candidates for chunking into smaller pieces
+
+### Reclaim Habits for GTD Routines
+
+Use Reclaim habits for recurring GTD activities:
+
+**Weekly Review:**
+```
+mcp__reclaim__create_habit with:
+  title: "GTD Weekly Review",
+  ideal_time: "14:00",
+  duration_min_mins: 45,
+  duration_max_mins: 90,
+  frequency: "WEEKLY",
+  ideal_days: ["FRIDAY"],
+  defense_aggression: "HIGH"
+```
+
+**Daily Inbox Processing:**
+```
+mcp__reclaim__create_habit with:
+  title: "Process Inbox",
+  ideal_time: "09:00",
+  duration_min_mins: 15,
+  duration_max_mins: 30,
+  frequency: "DAILY",
+  event_type: "SOLO_WORK"
+```
+
+### Focus Time Protection
+
+Configure Reclaim to protect deep work time:
+
+```
+mcp__reclaim__get_focus_settings
+
+mcp__reclaim__update_focus_settings with:
+  settings_id: 123,
+  min_duration_mins: 90,
+  ideal_duration_mins: 120,
+  defense_aggression: "HIGH"
+```
+
+### Time Tracking
+
+Track time spent on tasks through Reclaim:
+
+**Start working:**
+```
+mcp__reclaim__start_task with:
+  task_id: 12345
+```
+
+**Stop working:**
+```
+mcp__reclaim__stop_task with:
+  task_id: 12345
+```
+
+**Log time manually:**
+```
+mcp__reclaim__add_time_to_task with:
+  task_id: 12345,
+  minutes: 45,
+  notes: "Completed first milestone"
+```
+
+### Completing Reclaim Tasks
+
+When marking tasks complete, update both systems:
+
+```
+# Complete in Todoist
+mcp__todoist__complete-tasks with:
+  ids: ["todoist-task-id"]
+
+# Complete in Reclaim
+mcp__reclaim__mark_task_complete with:
+  task_id: 12345
+```
+
+### Viewing Scheduled Tasks
+
+Check what Reclaim has scheduled:
+
+```
+mcp__reclaim__list_tasks with:
+  status: "SCHEDULED",
+  limit: 20
+```
+
+### Best Practices for Reclaim + GTD
+
+**Do's:**
+✓ Use Reclaim for tasks with flexible timing
+✓ Let Reclaim handle recurring GTD habits (weekly review, daily planning)
+✓ Mark tasks in both Todoist and Reclaim when complete
+✓ Use chunking for long tasks that can be split
+✓ Set appropriate priority to influence scheduling
+
+**Don'ts:**
+✗ Don't create Reclaim tasks for items that need specific times (use iMCP)
+✗ Don't duplicate every Todoist task in Reclaim (only scheduled ones)
+✗ Don't forget to mark Reclaim tasks complete when done
+✗ Don't set all tasks as P1 (defeats prioritization)

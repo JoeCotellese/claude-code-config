@@ -7,6 +7,10 @@
     "lastShownTime": 1754083880258
   },
   "defaultMode": "plan",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "hooks": {
     "SessionStart": [
       {
