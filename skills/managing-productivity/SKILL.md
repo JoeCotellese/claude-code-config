@@ -24,7 +24,9 @@ This skill implements a hybrid productivity system combining GTD (Getting Things
 |-----------|---------|
 | **Todoist** (via MCP) | Task execution - inbox, next actions, waiting for, someday/maybe |
 | **Reminders** (via iMCP) | Quick capture inbox, processed into Todoist |
-| **Calendar** (via MCP) | Availability checking, time blocking, meeting prep |
+| **Calendar** (via iMCP) | Availability checking, manual time blocking, meeting prep |
+| **Reclaim.ai** (via MCP) | Auto-scheduling tasks, habits, focus time protection |
+| **Email** (via zerolib-email MCP) | Email search, reading, sending, and management |
 | **Obsidian** | Project documentation and next action backlogs |
 
 **Key Design Principle:** Todoist is the *execution layer* (1-2 active tasks), Obsidian is the *planning layer* (full project backlogs).
@@ -61,12 +63,70 @@ When user asks to "process inbox" or "check inboxes", check ALL tracked inboxes 
 
 ### Calendar Integration
 
-Integrates with primary calendar via MCP for:
+Integrates with primary calendar via iMCP for:
 - Automatic availability checking when suggesting tasks
 - Calculating free blocks between meetings
 - Blocking time on calendar for specific tasks
 - Finding optimal time slots for deep work
 - Prioritizing morning/early morning (before noon, especially before 9am) for high-energy tasks
+
+### Reclaim.ai Integration
+
+Integrates with Reclaim.ai via MCP for intelligent auto-scheduling:
+
+**Task Scheduling:**
+- `mcp__reclaim__create_task` - Auto-schedule a task into available time
+- `mcp__reclaim__list_tasks` - View scheduled/active tasks
+- `mcp__reclaim__mark_task_complete` - Complete a task
+- `mcp__reclaim__start_task` / `mcp__reclaim__stop_task` - Time tracking
+
+**Habits (Recurring Blocks):**
+- `mcp__reclaim__create_habit` - Create recurring time blocks (e.g., Weekly Review)
+- `mcp__reclaim__list_habits` - View configured habits
+
+**Calendar Reading:**
+- `mcp__reclaim__list_events` - Get calendar events
+- `mcp__reclaim__list_personal_events` - Get Reclaim-managed events
+
+**Focus Time:**
+- `mcp__reclaim__get_focus_settings` - Check focus time configuration
+- `mcp__reclaim__update_focus_settings` - Adjust focus time protection
+
+**When to use Reclaim vs iMCP:**
+
+| Scenario | Use |
+|----------|-----|
+| "Schedule this task sometime" | Reclaim (auto-finds best slot) |
+| "Block 9am tomorrow" | iMCP (specific time) |
+| Recurring GTD routines | Reclaim habits |
+| One-time calendar event | iMCP |
+| Check calendar availability | Either |
+
+### Email Integration
+
+Integrates with email via zerolib-email MCP for:
+- Searching emails by sender, recipient, subject, or date range
+- Reading email content and metadata
+- Sending emails and replies with proper threading
+- Managing attachments
+
+**Default Account:** Use `"Home"` as the `account_name` for all email operations.
+
+**Email MCP Tools:**
+- `mcp__zerolib-email__list_available_accounts` - List configured email accounts
+- `mcp__zerolib-email__list_emails_metadata` - Search/filter emails (returns email_id, subject, sender, recipients, date)
+- `mcp__zerolib-email__get_emails_content` - Get full email body content by email_id
+- `mcp__zerolib-email__send_email` - Send new emails or replies (supports threading via `in_reply_to`)
+- `mcp__zerolib-email__delete_emails` - Delete emails by email_id
+- `mcp__zerolib-email__download_attachment` - Download email attachments (requires explicit enable)
+
+**Key Parameters for `list_emails_metadata`:**
+- `account_name` - Email account name (e.g., "Home")
+- `from_address` - Filter by sender (partial match)
+- `to_address` - Filter by recipient
+- `subject` - Filter by subject line
+- `since` / `before` - Date range filtering (UTC datetime)
+- `page` / `page_size` - Pagination
 
 ### Obsidian Vault
 
@@ -221,6 +281,11 @@ Use AskUserQuestion to confirm inferred values.
 - `mcp__iMCP__reminders_lists` - List available reminder lists
 - `mcp__iMCP__reminders_fetch` - Get reminders (filter by list, completed status)
 - `mcp__iMCP__reminders_create` - Create new reminders
+
+**Email (via zerolib-email MCP):**
+- `mcp__zerolib-email__list_emails_metadata` - Search/filter emails
+- `mcp__zerolib-email__get_emails_content` - Read full email content
+- `mcp__zerolib-email__send_email` - Send emails or replies
 
 ## Conversation Style
 

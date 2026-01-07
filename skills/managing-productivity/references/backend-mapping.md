@@ -491,6 +491,24 @@ Map time tags directly:
 - `#time-5m` → duration: "5m"
 - `#time-1h` → duration: "1h"
 
+### Due Date Natural Language
+
+The `dueString` parameter accepts specific natural language patterns. The API will reject ambiguous phrases.
+
+**Works:**
+- Day names: `"Monday"`, `"Friday"`, `"next Tuesday"`
+- Relative: `"tomorrow"`, `"today"`, `"next week"`
+- Specific dates: `"Jan 15"`, `"January 15"`, `"2026-01-15"`
+- Time combos: `"tomorrow at 9am"`, `"Friday at 3pm"`
+- Recurring: `"every Monday"`, `"every weekday at 9am"`
+
+**Doesn't work (returns 400 Bad Request):**
+- `"this week"` - ambiguous, no specific day
+- `"soon"`, `"later"` - too vague
+- `"sometime tomorrow"` - unnecessary qualifier
+
+**Best practice:** Use explicit day names or dates. When in doubt, use `"tomorrow"` or a specific day like `"Friday"`.
+
 ### Filtering Limitations
 
 Todoist MCP filtering:
@@ -785,6 +803,269 @@ Since iMCP uses title text search for metadata filtering:
 
 **Best practice:**
 Keep metadata tags at end of title to minimize false matches.
+
+---
+
+## Reclaim.ai MCP Implementation
+
+### Overview
+
+Reclaim.ai is an AI-powered calendar scheduling tool that automatically finds optimal time slots for tasks, habits, and focus time. Unlike manual calendar blocking (iMCP), Reclaim:
+
+- **Auto-schedules tasks** into available calendar slots
+- **Reschedules automatically** when conflicts arise
+- **Respects existing calendar** events and meetings
+- **Optimizes for energy** by scheduling high-priority tasks in preferred time windows
+
+**Best used for:** Tasks that need to happen but timing is flexible. Reclaim finds the best slot so you don't have to.
+
+**Use iMCP instead when:** You need a specific time slot (e.g., "block 9am tomorrow for this call").
+
+### GTD Integration Model
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│    Todoist      │     │   Reclaim.ai    │     │    Calendar     │
+│  (GTD System)   │────▶│  (Scheduler)    │────▶│   (Execution)   │
+│                 │     │                 │     │                 │
+│ - Next Actions  │     │ - Auto-schedule │     │ - Time blocks   │
+│ - Metadata      │     │ - Reschedule    │     │ - Reminders     │
+│ - Projects      │     │ - Time tracking │     │ - Visibility    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### Metadata Mapping: Todoist → Reclaim
+
+| Todoist | Reclaim Task | Notes |
+|---------|--------------|-------|
+| Task content | `title` | Direct mapping |
+| `duration: "2h"` | `duration_minutes: 120` | Convert to minutes |
+| `p1` (highest) | `priority: "P1"` | Same scale! |
+| `p2` (high) | `priority: "P2"` | |
+| `p3` (medium) | `priority: "P3"` | |
+| `p4` (lowest) | `priority: "P4"` | |
+| `#energy-high` | `snooze_until: <morning>` | Schedule in AM window |
+| Due date | `due_date` | ISO format YYYY-MM-DD |
+| Duration chunks | `min_chunk_size_minutes` | For splittable tasks |
+
+### Reclaim MCP Tools
+
+#### Task Management
+
+**1. create_task - Create auto-scheduled task**
+```
+mcp__reclaim__create_task with:
+  title: "Update EyeGuide video API",
+  duration_minutes: 120,
+  priority: "P1",
+  due_date: "2026-01-10",
+  min_chunk_size_minutes: 30,  # Can be split into 30min chunks
+  max_chunk_size_minutes: 120  # Or done in one 2hr block
+```
+
+**2. list_tasks - Get active Reclaim tasks**
+```
+mcp__reclaim__list_tasks with:
+  status: "NEW,SCHEDULED,IN_PROGRESS",
+  limit: 50
+```
+
+**3. update_task - Modify existing task**
+```
+mcp__reclaim__update_task with:
+  task_id: 12345,
+  duration_minutes: 90,
+  priority: "P2"
+```
+
+**4. mark_task_complete - Complete a task**
+```
+mcp__reclaim__mark_task_complete with:
+  task_id: 12345
+```
+
+**5. start_task / stop_task - Time tracking**
+```
+mcp__reclaim__start_task with:
+  task_id: 12345
+
+mcp__reclaim__stop_task with:
+  task_id: 12345
+```
+
+**6. add_time_to_task - Log time manually**
+```
+mcp__reclaim__add_time_to_task with:
+  task_id: 12345,
+  minutes: 45,
+  notes: "Completed API integration"
+```
+
+#### Calendar Reading
+
+**7. list_events - Get calendar events**
+```
+mcp__reclaim__list_events with:
+  start: "2026-01-05",
+  end: "2026-01-12"
+```
+
+**8. list_personal_events - Get Reclaim-managed events**
+```
+mcp__reclaim__list_personal_events with:
+  start: "2026-01-05T00:00:00Z",
+  end: "2026-01-12T23:59:59Z",
+  limit: 50
+```
+
+#### Habits (Recurring Auto-Scheduled Blocks)
+
+**9. create_habit - Create recurring time block**
+```
+mcp__reclaim__create_habit with:
+  title: "Morning Focus Time",
+  ideal_time: "08:00",
+  duration_min_mins: 60,
+  duration_max_mins: 120,
+  frequency: "WEEKLY",
+  ideal_days: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+  event_type: "FOCUS",
+  defense_aggression: "HIGH"  # Protect this time
+```
+
+**10. list_habits - Get all habits**
+```
+mcp__reclaim__list_habits
+```
+
+#### Focus Time
+
+**11. get_focus_settings - Check focus time config**
+```
+mcp__reclaim__get_focus_settings
+```
+
+**12. update_focus_settings - Modify focus protection**
+```
+mcp__reclaim__update_focus_settings with:
+  settings_id: 123,
+  min_duration_mins: 60,
+  ideal_duration_mins: 120,
+  defense_aggression: "HIGH"
+```
+
+### GTD Workflow Integration
+
+#### Schedule Task via Reclaim (Workflow 6 Alternative)
+
+**When to use Reclaim vs iMCP:**
+
+| Scenario | Use Reclaim | Use iMCP |
+|----------|-------------|----------|
+| "Schedule this task sometime this week" | ✓ | |
+| "Block 9am tomorrow for this" | | ✓ |
+| Task has flexible timing | ✓ | |
+| Task needs specific slot | | ✓ |
+| Want auto-reschedule on conflicts | ✓ | |
+| Creating a one-time event | | ✓ |
+
+**Reclaim Scheduling Process:**
+
+1. **Find task in Todoist**
+   ```
+   mcp__todoist__find-tasks with:
+     searchText: "task name",
+     projectId: "6fHPx2qmvwhq5x4X"  # Next Actions
+   ```
+
+2. **Extract metadata and map to Reclaim**
+   - Duration → `duration_minutes`
+   - Priority (p1-p4) → `priority` (P1-P4)
+   - Due date → `due_date`
+   - Energy level → Influences scheduling preferences
+
+3. **Create Reclaim task**
+   ```
+   mcp__reclaim__create_task with:
+     title: "[task content from Todoist]",
+     duration_minutes: 120,
+     priority: "P1",
+     due_date: "2026-01-10",
+     min_chunk_size_minutes: 30
+   ```
+
+4. **Update Todoist task with Reclaim reference**
+   ```
+   mcp__todoist__update-tasks with:
+     tasks: [{
+       id: "todoist-task-id",
+       description: "📅 Auto-scheduled via Reclaim\n\n[existing description]"
+     }]
+   ```
+
+5. **Confirm to user**
+   ```
+   I've sent "[task]" to Reclaim for auto-scheduling. It will find the best
+   2-hour block based on your calendar availability. The task will appear on
+   your calendar once scheduled.
+   ```
+
+#### Energy-Based Scheduling with Reclaim
+
+For `#energy-high` tasks, use `snooze_until` to ensure morning scheduling:
+
+```
+mcp__reclaim__create_task with:
+  title: "Deep work: API design",
+  duration_minutes: 120,
+  priority: "P1",
+  snooze_until: "2026-01-06T06:00:00Z"  # Don't schedule before 6am tomorrow
+```
+
+**Energy mapping strategy:**
+- `#energy-high` → Schedule in morning (6am-12pm window preferred)
+- `#energy-medium` → Any available slot
+- `#energy-low` → Can fill gaps, end of day
+
+### Syncing Todoist ↔ Reclaim
+
+**One-way sync (recommended):**
+- Todoist is the source of truth for GTD
+- Reclaim is used for scheduling specific tasks
+- Completion in either system should update both
+
+**Completion workflow:**
+1. When marking complete in Todoist: Also call `mcp__reclaim__mark_task_complete`
+2. When tracking time in Reclaim: Note in Todoist description
+
+**Avoiding duplicates:**
+- Only send tasks to Reclaim when user explicitly requests scheduling
+- Add "📅 Reclaim" marker to Todoist task description
+- Before creating Reclaim task, check if one already exists with same title
+
+### Reclaim Habits for GTD
+
+**Use Reclaim habits for recurring GTD activities:**
+
+| GTD Activity | Reclaim Habit |
+|--------------|---------------|
+| Weekly Review | `frequency: "WEEKLY"`, `ideal_days: ["FRIDAY"]`, `duration: 60min` |
+| Daily Planning | `frequency: "DAILY"`, `ideal_time: "08:00"`, `duration: 15min` |
+| Inbox Processing | `frequency: "DAILY"`, `ideal_time: "09:00"`, `duration: 30min` |
+
+**Example: Create Weekly Review habit**
+```
+mcp__reclaim__create_habit with:
+  title: "GTD Weekly Review",
+  ideal_time: "14:00",
+  duration_min_mins: 45,
+  duration_max_mins: 90,
+  frequency: "WEEKLY",
+  ideal_days: ["FRIDAY"],
+  event_type: "SOLO_WORK",
+  defense_aggression: "HIGH",
+  description: "Review projects, process loose ends, plan next week"
+```
 
 ---
 
