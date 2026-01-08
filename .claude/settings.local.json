@@ -36,7 +36,10 @@
       "mcp__todoist__fetch",
       "mcp__core-memory__memory_search",
       "Bash(cat:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "mcp__todoist__user-info",
+      "mcp__iMCP__events_fetch",
+      "Skill(git-submit)"
     ],
     "deny": [],
     "ask": []
