@@ -38,7 +38,7 @@ The system tracks multiple inboxes that should be processed to zero:
 | Inbox | Location | How to Check |
 |-------|----------|--------------|
 | **Todoist Inbox** | Todoist project `6CrffChVJmwxG79h` | `mcp__todoist__find-tasks` with projectId |
-| **Reminders Todo** | Apple Reminders "Todo List" | `mcp__iMCP__reminders_fetch` with lists: ["Todo List"] |
+| **Reminders Todo** | Apple Reminders "Todo" | `mcp__iMCP__reminders_fetch` with lists: ["Todo"] |
 
 When user asks to "process inbox" or "check inboxes", check ALL tracked inboxes and report counts.
 
@@ -69,6 +69,11 @@ Integrates with primary calendar via iMCP for:
 - Blocking time on calendar for specific tasks
 - Finding optimal time slots for deep work
 - Prioritizing morning/early morning (before noon, especially before 9am) for high-energy tasks
+
+**iMCP Calendar Limitations:**
+- Cannot create recurring events (must be set manually in Calendar app)
+- Cannot add attendees/invitees (must be added manually)
+- When these features are needed, create the event and inform user of required manual follow-up
 
 ### Reclaim.ai Integration
 
@@ -204,9 +209,16 @@ Find 2+ hour blocks in upcoming week, prioritize morning slots, suggest matching
 **Details:** See [references/workflows/find-deep-work.md](references/workflows/find-deep-work.md)
 
 ### 8. What's My Day Look Like?
-**Triggers:** "What's my schedule today?", "Show me my day", "What meetings do I have?"
+**Triggers:** "What's my schedule today?", "Show me my day", "What meetings do I have?", "What's my plan for the day?"
 
 Present chronological overview with free blocks and task suggestions for each slot.
+
+**Important:** Always check BOTH:
+1. Calendar events for the day
+2. Todoist tasks due today
+3. **Reminders "Todo" list** — User captures items here via Siri throughout the day
+
+Present Reminders items at the end as "Quick captures to process" if any exist.
 
 **Details:** See [references/workflows/daily-schedule.md](references/workflows/daily-schedule.md)
 
@@ -220,9 +232,31 @@ Scan next 7 days for meetings needing preparation, suggest creating prep project
 ### 10. Process Reminders Inbox
 **Triggers:** "Process my reminders", "Check Reminders inbox"
 
-Fetch incomplete items from Reminders "Todo List", apply GTD clarification, move to Todoist/Obsidian, mark complete.
+Fetch incomplete items from Reminders "Todo" list, apply GTD clarification, move to Todoist/Obsidian, mark complete.
 
 **Details:** See [references/workflows/process-reminders.md](references/workflows/process-reminders.md)
+
+### 11. Quick Inbox Triage
+**Triggers:** "Quick triage", "Fast inbox processing", "Speed through inbox"
+
+Rapid inbox processing mode for when user wants to quickly clear items without full GTD clarification.
+
+**Flow:**
+1. Fetch all inbox items (Todoist + Reminders)
+2. Present items in batches of 3-5
+3. Accept shorthand commands:
+   - `remove` / `delete` / `x` — Delete the item
+   - `done` / `complete` / `✓` — Mark as completed
+   - `keep` / `next` — Move to Next Actions with inferred metadata
+   - `someday` / `later` — Move to Someday/Maybe
+   - `note` — Convert to Permanent Note (triggers Zettelkasten flow)
+4. For items marked `keep`, infer metadata automatically (don't ask)
+5. Only pause to clarify if an item is too vague to keep (offer rewrite)
+
+**When to suggest this mode:**
+- Inbox has 5+ items
+- User is giving rapid-fire responses ("remove it", "done", "nope")
+- User explicitly asks to go faster
 
 ## Metadata System
 
@@ -287,6 +321,23 @@ Use AskUserQuestion to confirm inferred values.
 - `mcp__zerolib-email__get_emails_content` - Read full email content
 - `mcp__zerolib-email__send_email` - Send emails or replies
 
+## MCP Parameter Reference
+
+Common parameter formats that differ from intuitive naming:
+
+**Todoist:**
+- `mcp__todoist__complete-tasks` — Use `ids` (array of strings), not `taskIds`
+- `mcp__todoist__delete-object` — Use `type` and `id`, not `objectType`/`objectId`
+- `mcp__todoist__add-tasks` — Priority must be string: `"p1"`, `"p2"`, `"p3"`, `"p4"` (not numbers)
+- `mcp__todoist__find-tasks` — Use `searchText` for text search, not `query`
+
+**iMCP Calendar:**
+- `mcp__iMCP__events_create` — Dates must be ISO 8601 with timezone: `2026-09-01T09:00:00Z`
+- `mcp__iMCP__reminders_complete` — Use `identifiers` (array of UUID strings)
+
+**iMCP Reminders:**
+- List name is `"Todo"` (not `"Todo List"`)
+
 ## Conversation Style
 
 - Be conversational but efficient
@@ -296,6 +347,26 @@ Use AskUserQuestion to confirm inferred values.
 - Be encouraging but not patronizing
 - When filtering returns no matches, explain why and suggest relaxing criteria
 - When referencing vault documents, use Obsidian URL scheme links (e.g., `obsidian://open?vault=obsidian-vault&file=4_Projects%2FProjectName`)
+
+### Note to Future Self
+
+When processing inbox items, help rewrite vague captures into clear, actionable descriptions. Vague tasks become "orphans" that get deleted weeks later because the user can't remember what they meant.
+
+**Before keeping a task, ensure it answers:**
+- **What** specifically needs to be done?
+- **Why** does this matter? (context/purpose)
+- **Where** can I find more info? (links, project refs)
+
+**Examples:**
+
+| Vague (Bad) | Clear (Good) |
+|-------------|--------------|
+| "Update git repo" | "Push local askchef-firebase changes to sync cloud functions with production" |
+| "Follow up with John" | "Email John re: partnership proposal discussed at Dec 15 meeting" |
+| "Look up that thing" | DELETE - if you can't remember, it's not important |
+| "Research AI stuff" | "Research LLM fine-tuning approaches for customer support automation" |
+
+When a user's capture is vague, offer to help clarify before moving it to Next Actions.
 
 ## Obsidian Integration
 
@@ -355,6 +426,42 @@ todoist: https://app.todoist.com/app/task/[task-id]
 ## Notes
 [Planning notes, links...]
 ```
+
+## Inbox to Permanent Note (Zettelkasten)
+
+Some inbox items are **ideas** rather than **tasks**. These should become Permanent Notes in Obsidian, not Todoist tasks.
+
+### When to Create a Permanent Note
+
+| If the item is... | Then... |
+|-------------------|---------|
+| An insight or observation | → Permanent Note |
+| A content idea (blog, LinkedIn, video) | → Permanent Note for the *idea*, optional task for the *artifact* |
+| A question to explore | → Permanent Note (or Question template) |
+| A quote or concept to remember | → Permanent Note |
+| Something to *do* | → Todoist task |
+
+### Idea vs Artifact
+
+For content ideas, separate the **concept** from the **deliverable**:
+
+1. **Permanent Note** — Captures the core insight (evergreen, reusable)
+2. **Todoist Task** (optional) — "Draft LinkedIn post based on [[Note Title]]"
+
+The idea lives on even after the content is published and can inform future work.
+
+### Creating the Note
+
+Use the vault's Permanent Note structure:
+- Location: `/Users/joec/obsidian-vault/3_Permanent Notes/`
+- Title: Descriptive, no timestamps (e.g., `The Hidden Work Behind Just Let AI Do It.md`)
+- Include: tags, created/updated dates, Questions, Terms, References sections
+
+See vault `CLAUDE.md` for full formatting standards.
+
+### Quick Command
+
+During inbox processing, user can say `note` to trigger this flow instead of keeping as a task.
 
 ## References
 

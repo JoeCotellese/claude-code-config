@@ -54,8 +54,8 @@ mcp__todoist__user-info()
 ```
 mcp__imcp__events_fetch({
   calendars: ["Personal"],
-  start: "2025-11-12T00:00:00",  // Today at midnight
-  end: "2025-11-12T23:59:59"      // Today at end of day
+  start: "2025-11-12T00:00:00Z",  // Today at midnight (UTC)
+  end: "2025-11-12T23:59:59Z"      // Today at end of day (UTC)
 })
 ```
 
@@ -63,8 +63,8 @@ mcp__imcp__events_fetch({
 ```
 mcp__imcp__events_fetch({
   calendars: ["Personal"],
-  start: "2025-11-12T00:00:00",   // Today
-  end: "2025-11-19T23:59:59"       // 7 days from now
+  start: "2025-11-12T00:00:00Z",   // Today (UTC)
+  end: "2025-11-19T23:59:59Z"       // 7 days from now (UTC)
 })
 ```
 
@@ -83,8 +83,8 @@ mcp__imcp__events_fetch({
 mcp__imcp__events_create({
   calendar: "Personal",
   title: "Update EyeGuide video API",
-  start: "2025-11-13T08:00:00",    // Tomorrow at 8am
-  end: "2025-11-13T10:00:00",      // Tomorrow at 10am (2 hours)
+  start: "2025-11-13T13:00:00Z",    // Tomorrow at 8am EST (UTC)
+  end: "2025-11-13T15:00:00Z",      // Tomorrow at 10am EST (2 hours, UTC)
   notes: "@computer #energy-high #time-2h\n\nobsidian://open?vault=obsidian-vault&file=4_Projects/EyeGuide",
   availability: "busy"
 })
@@ -96,6 +96,10 @@ mcp__imcp__events_create({
 - `start`/`end`: ISO 8601 datetime
 - `notes`: Include @context, #energy, #time tags, and Obsidian link if applicable
 - `availability`: Always "busy" for time blocking
+
+**Date Format Requirement:**
+All dates MUST include timezone indicator (`Z` for UTC). Without it, you'll get:
+`Error: Invalid start or end date format. Expected ISO 8601 format.`
 
 ### 3. Listing Available Calendars
 
@@ -591,7 +595,7 @@ mcp__imcp__reminders_create({
   list: "Todo List",
   title: "Task description",
   notes: "Additional details",
-  due: "2025-11-15T09:00:00"  // Optional
+  due: "2025-11-15T09:00:00Z"  // Optional (UTC)
 })
 ```
 

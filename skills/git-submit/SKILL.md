@@ -56,7 +56,28 @@ Check that:
 - All changes are committed (clean working directory)
 - Branch name follows convention: `feature/`, `fix/`, or `hotfix/`
 
-### Step 2: Run Unit Tests (Fast Check)
+### Step 2: Run Code Review (Python Projects)
+
+For Python projects, run automated code review before submission:
+
+```bash
+# Get changed Python files
+CHANGED_PY_FILES=$(git diff --name-only main...HEAD --diff-filter=ACMR | grep '\.py$' || true)
+
+if [ -n "$CHANGED_PY_FILES" ]; then
+    # Run ruff linter
+    uv run ruff check $CHANGED_PY_FILES
+fi
+```
+
+**If ruff finds issues, STOP.** Report the issues and suggest fixes:
+- Show the specific errors and file locations
+- Suggest running `uv run ruff check --fix .` for auto-fixable issues
+- Wait for developer to fix before continuing
+
+**Only continue to Step 3 if ruff passes.**
+
+### Step 3: Run Unit Tests (Fast Check)
 
 Run **unit tests only** as a quick sanity check. Do NOT run UI/E2E tests—those are slow and should run in CI.
 
@@ -75,7 +96,7 @@ npm run test:unit
 
 **Note**: The developer explicitly requested submission, so trust their judgment. If you're unsure whether tests have been run, ask rather than running a long test suite.
 
-### Step 3: Push to Remote
+### Step 4: Push to Remote
 
 ```bash
 git push -u origin $(git branch --show-current)
@@ -89,7 +110,7 @@ git rebase origin/main
 git push -u origin $(git branch --show-current)
 ```
 
-### Step 4: Detect Platform and Check for Existing MR/PR
+### Step 5: Detect Platform and Check for Existing MR/PR
 
 First detect the platform:
 ```bash
@@ -104,7 +125,7 @@ EXISTING=$(gh pr list --head $(git branch --show-current) --json url --jq '.[0].
 if [ -n "$EXISTING" ]; then
     echo "✅ MR already exists: $EXISTING"
     gh pr view --web  # Open in browser, or just report URL
-    # Skip to Step 6 (report) - do not attempt to create
+    # Skip to Step 7 (report) - do not attempt to create
 fi
 ```
 
@@ -114,13 +135,13 @@ EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null
 if [ -n "$EXISTING" ]; then
     echo "✅ MR already exists for this branch"
     glab mr view  # Show existing MR details and URL
-    # Skip to Step 6 (report) - do not attempt to create
+    # Skip to Step 7 (report) - do not attempt to create
 fi
 ```
 
-If an MR already exists, skip directly to Step 6 and report the existing URL. Do NOT attempt to create a duplicate.
+If an MR already exists, skip directly to Step 7 and report the existing URL. Do NOT attempt to create a duplicate.
 
-### Step 5: Create MR/PR
+### Step 6: Create MR/PR
 
 Only if no existing MR was found, create one:
 
@@ -178,7 +199,7 @@ EOF
 
 See `references/pr_template.md` for complete examples.
 
-### Step 6: STOP and Report
+### Step 7: STOP and Report
 
 **CRITICAL**: After creating (or finding existing) MR, STOP and report:
 
@@ -221,13 +242,15 @@ Verify on feature branch
     ↓ (fail if on main)
 Check for uncommitted changes
     ↓ (warn and stop if dirty)
+Run code review (Python: ruff check)
+    ↓ (stop if linting errors)
 Run unit tests (fast check only)
     ↓ (stop if tests fail)
 Push branch to remote
     ↓ (handle rebase if needed)
 Detect platform (GitHub/GitLab)
     ↓
-Check for existing MR/PR ←── NEW: Avoid duplicate MR errors
+Check for existing MR/PR
     ↓
     ├── MR exists → Report existing URL → STOP
     │
@@ -246,6 +269,7 @@ Check for existing MR/PR ←── NEW: Avoid duplicate MR errors
 |-----------|--------|
 | On main/master branch | STOP - cannot submit from main |
 | Uncommitted changes | STOP - commit first (use git-develop) |
+| Ruff linting fails | STOP - fix linting errors before submission |
 | Unit tests fail | STOP - fix tests before submission |
 | Push rejected | Attempt rebase; if conflicts, STOP and report |
 | MR already exists | Report existing MR URL (no error, just skip creation) |
