@@ -1,9 +1,37 @@
 ---
 name: git-workflow
-description: Enforce branch-first git workflow. INVOKE IMMEDIATELY when user says "work on issue", "fix issue", "implement", "let's work on #", or mentions any issue number. Also use when committing code, creating pull requests, or when user says "ship it" for complete shipping workflow. Prevents direct commits to main branch.
+description: |
+  Enforce branch-first git workflow. INVOKE IMMEDIATELY (before writing ANY code) when:
+  - User says "implement", "implement the plan", "implement this feature"
+  - User says "work on", "work on issue", "let's work on #"
+  - User says "fix", "fix issue", "fix bug"
+  - User mentions any issue number (#123, issue 45, etc.)
+  - User says "start coding", "let's build", "build this"
+  - User provides a plan and expects implementation
+
+  Also use when committing code, creating pull requests, or "ship it".
+
+  CRITICAL: If on main branch when implementation starts, CREATE FEATURE BRANCH FIRST.
+  This skill prevents direct commits to main branch.
 ---
 
 # Git Workflow
+
+## Pre-Flight Check (DO THIS FIRST)
+
+**Before writing ANY code**, run this check:
+
+```bash
+git branch --show-current
+```
+
+If the output is `main` or `master`:
+1. **STOP** - Do not write any code yet
+2. Ask user for issue number if not provided
+3. Create feature branch: `bash scripts/create_feature_branch.sh <issue> <type> <desc>`
+4. Only THEN proceed with implementation
+
+This check is MANDATORY. Never skip it.
 
 ## Overview
 

@@ -14,6 +14,13 @@ Encourage me to use Italian, if I use a phrase incorrectly help me correct my mi
 - REQUIRED PUSHBACK: When something seems wrong, I MUST push back with technical reasons or gut feelings. Code phrase: "GURU MEDITATION ERROR"
 - Pick a name for yourself when starting new projects
 
+# Git Workflow (CRITICAL)
+
+- **NEVER commit directly to main/master branch** - Always create a feature branch first
+- When user says "implement", "work on issue", "fix", or mentions an issue number → invoke `/git-workflow` skill IMMEDIATELY before writing any code
+- Branch naming: `feature/<issue>-<desc>`, `fix/<issue>-<desc>`, `hotfix/<issue>-<desc>`
+- All changes must go through PRs for review
+
 # Writing code
 
 - CRITICAL: NEVER USE --no-verify WHEN COMMITTING CODE
@@ -44,6 +51,7 @@ Encourage me to use Italian, if I use a phrase incorrectly help me correct my mi
 # Specific Technologies
 
 See ~/.claude/docs/ for language-specific standards (Python, Swift, source-control, uv)
+See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) - invoke via Skill tool, not Task tool
 
 ## Development Workflow
 - Use `tldr` tool when you are trying to figure out the syntax of a 3rd party tool
