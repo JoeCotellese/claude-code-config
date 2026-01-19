@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(uv run python:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv add:*)",
+      "Bash(tree:*)",
+      "Bash(fd:*)",
+      "Bash(curl:*)",
+      "Bash(xargs ls:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git stash:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
+      "Skill(git-workflow)",
+      "Skill(python-architect)",
+      "mcp__docs-mcp-server__scrape_docs",
+      "mcp__mailjawn__stats_summary",
+      "mcp__mailjawn__subscribers_list",
+      "mcp__mailjawn__drafts_create",
+      "mcp__mailjawn__drafts_send_preview",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:django-allauth-webauthn.readthedocs.io)",
+      "WebFetch(domain:docs.allauth.org)",
+      "Bash(python3:*)",
+      "Bash(find:*)",
+      "Bash(uv sync:*)",
+      "Bash(rg:*)",
+      "Bash(gh auth:*)",
+      "Bash(test:*)",
+      "WebSearch",
+      "WebFetch(domain:www.ragie.ai)",
+      "mcp__supjawn__stats_summary",
+      "mcp__supjawn__subscribers_list",
+      "mcp__supjawn__drafts_create",
+      "mcp__supjawn__drafts_schedule",
+      "mcp__supjawn__drafts_send",
+      "Bash(pkill:*)",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings.local uv run python:*)",
+      "Bash(bash:*)",
+      "Bash(grep:*)",
+      "Bash(git log:*)",
+      "mcp__supjawn__email_send_test",
+      "Bash(uv run pip show:*)",
+      "Skill(git-submit)",
+      "Bash(xargs:*)",
+      "mcp__supjawn__drafts_list",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_close",
+      "mcp__docs-mcp-server__list_libraries",
+      "mcp__docs-mcp-server__search_docs",
+      "Bash(python:*)",
+      "Skill(python-code-reviewer)",
+      "Bash(uv run black:*)",
+      "Bash(git rebase:*)",
+      "Bash(uv run:*)",
+      "mcp__supjawn-dev__stats_summary",
+      "Bash(docker ps:*)",
+      "Bash(cat:*)",
+      "Bash(mailpit --version:*)",
+      "mcp__playwright__browser_type",
+      "mcp__supjawn-dev__assets_list",
+      "mcp__supjawn-dev__drafts_create",
+      "mcp__supjawn-dev__drafts_send",
+      "mcp__posthog__docs-search",
+      "Bash(gh label list:*)",
+      "Bash(docker compose:*)",
+      "Bash(date:*)",
+      "mcp__supjawn-dev__drafts_schedule",
+      "mcp__supjawn-dev__drafts_get",
+      "Bash(ls:*)",
+      "WebFetch(domain:mailpit.axllent.org)",
+      "Bash(git rev-parse:*)",
+      "Bash(git -C /Users/joec/git/mailjawn/mailjawn show 990e6b7 --stat)",
+      "Bash(aws sns list-subscriptions-by-topic:*)",
+      "Bash(ssh root@supjawn.com \"cd /home/supjawn && docker compose exec -T db psql -U supjawn -d supjawn -c \"\"SELECT name, from_name, from_email FROM projects_project;\"\"\")",
+      "Bash(ssh supjawn@supjawn.com 'cd /opt/supjawn/deploy && docker compose exec -T web ls -la /app/mailjawn/analytics/')",
+      "Bash(ssh:*)",
+      "Skill(summarize)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_run_code",
+      "Bash(lsof:*)"
+    ],
+    "defaultMode": "plan"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/scripts/time-based-reminders.py session_start"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/scripts/time-based-reminders.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "swift-lsp@claude-plugins-official": true
+  },
+  "autoUpdatesChannel": "latest",
+  "feedbackSurveyState": {
+    "lastShownTime": 1754083880258
+  },
+  "defaultMode": "plan"
+}

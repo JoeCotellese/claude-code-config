@@ -2,13 +2,58 @@
 
 A collection of custom extensions for Claude Code including skills, slash commands, and hooks.
 
+## Installation
+
+This repository uses [GNU Stow](https://www.gnu.org/software/stow/) to manage symlinks to `~/.claude`.
+
+### Prerequisites
+
+Install GNU Stow via Homebrew:
+```bash
+brew install stow
+```
+
+### Install symlinks
+
+```bash
+cd ~/git/claude-code-config
+stow -t ~ claude
+```
+
+This creates symlinks in `~/.claude/` for all managed configuration files.
+
+### Uninstall symlinks
+
+```bash
+cd ~/git/claude-code-config
+stow -t ~ -D claude
+```
+
+### Update after pulling changes
+
+```bash
+cd ~/git/claude-code-config
+git pull
+stow -t ~ -R claude   # Restow (removes then recreates symlinks)
+```
+
 ## Structure
 
 ```
 claude-code-config/
-├── skills/      # Custom skills with specialized knowledge and workflows
-├── commands/    # Slash commands for quick actions
-└── hooks/       # Event-triggered automation
+├── claude/              # Stow package (symlinked to ~/.claude)
+│   └── .claude/
+│       ├── agents/      # Custom agent configurations
+│       ├── CLAUDE.md    # Global instructions
+│       ├── commands/    # Slash commands for quick actions
+│       ├── docs/        # Language-specific standards
+│       ├── output-styles/
+│       ├── scripts/
+│       ├── settings.json
+│       ├── skills/      # Custom skills
+│       └── statusline-command.sh
+├── README.md
+└── .claude/             # Local settings (gitignored)
 ```
 
 ## Skills
@@ -33,11 +78,3 @@ Slash commands for quick, repeatable actions. *(Coming soon)*
 ## Hooks
 
 Event-triggered automation for Claude Code workflows. *(Coming soon)*
-
-## Installation
-
-Symlink skills into `~/.claude/skills/`:
-
-```bash
-ln -s /path/to/claude-code-config/skills/skill-name ~/.claude/skills/skill-name
-```
