@@ -21,6 +21,7 @@ Custom skills extend Claude's capabilities with specialized knowledge, workflows
 | **git-workflow** | Enforce branch-first git workflow - prevents direct commits to main branch |
 | **ios-ui-tester** | iOS UI testing with SwiftUI and simulator automation |
 | **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
+| **product-manager** | Unified PM skill for prioritization (RICE, Kano, MoSCoW) and specifications (PRDs, user stories) across platforms |
 | **product-manager-apple** | Define product requirements, write user stories, and analyze features for Apple platforms |
 | **python-code-reviewer** | Comprehensive Python code review for quality, security, and performance |
 | **swift-architect** | Swift/SwiftUI architecture consulting and design decisions |
