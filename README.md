@@ -88,7 +88,6 @@ Custom agent configurations for specialized tasks.
 
 | Agent | Description |
 |-------|-------------|
-| **apple-ux-designer** | iOS/macOS UX design guidance |
 | **git-release-tagger** | Git release tagging automation |
 | **product-manager-apple** | Apple platform product management |
 | **swift-swiftui-reviewer** | Swift/SwiftUI code review |
