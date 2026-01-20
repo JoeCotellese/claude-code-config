@@ -4,57 +4,61 @@ A collection of custom extensions for Claude Code including skills, slash comman
 
 ## Installation
 
-This repository uses [GNU Stow](https://www.gnu.org/software/stow/) to manage symlinks to `~/.claude`.
-
-### Prerequisites
-
-Install GNU Stow via Homebrew:
-```bash
-brew install stow
-```
+This repository uses a Makefile to manage symlinks to `~/.claude`. Unlike directory-level symlinks, this approach creates individual symlinks for each skill/agent/etc., allowing third-party additions to coexist without polluting the repo.
 
 ### Install symlinks
 
 ```bash
 cd ~/git/claude-code-config
-stow -t ~ claude
+make install
 ```
 
-This creates symlinks in `~/.claude/` for all managed configuration files.
+This creates symlinks in `~/.claude/` for all managed configuration files while preserving any third-party skills or extensions you've installed.
+
+### Check status
+
+```bash
+make status
+```
+
+Shows which items are managed (symlinked to this repo) vs third-party (installed directly).
 
 ### Uninstall symlinks
 
 ```bash
-cd ~/git/claude-code-config
-stow -t ~ -D claude
+make uninstall
 ```
+
+Removes only the managed symlinks, preserving third-party items.
 
 ### Update after pulling changes
 
 ```bash
 cd ~/git/claude-code-config
 git pull
-stow -t ~ -R claude   # Restow (removes then recreates symlinks)
+# Symlinks update automatically since they point to the repo files
 ```
 
 ## Structure
 
 ```
 claude-code-config/
-├── claude/              # Stow package (symlinked to ~/.claude)
-│   └── .claude/
-│       ├── agents/      # Custom agent configurations
-│       ├── CLAUDE.md    # Global instructions
-│       ├── commands/    # Slash commands for quick actions
-│       ├── docs/        # Language-specific standards
-│       ├── output-styles/
-│       ├── scripts/
-│       ├── settings.json
-│       ├── skills/      # Custom skills
-│       └── statusline-command.sh
-├── README.md
-└── .claude/             # Local settings (gitignored)
+├── skills/              # Custom skill packages
+├── agents/              # Agent configurations
+├── commands/            # Slash command definitions
+├── docs/                # Language/tech standards
+├── scripts/             # Helper scripts
+├── output-styles/       # Output formatting
+├── CLAUDE.md            # Global instructions
+├── statusline-command.sh
+├── Makefile             # Install/uninstall automation
+├── README.md            # This file
+└── .gitignore
 ```
+
+After installation, `~/.claude/skills/` will contain:
+- Your skills as symlinks pointing to this repo
+- Third-party skills as real directories (not tracked by git)
 
 ## Skills
 
@@ -62,19 +66,38 @@ Custom skills extend Claude's capabilities with specialized knowledge, workflows
 
 | Skill | Description |
 |-------|-------------|
-| **filing-skill** | Process and organize scanned business and personal documents |
 | **git-workflow** | Enforce branch-first git workflow - prevents direct commits to main branch |
-| **ios-ui-tester** | iOS UI testing with SwiftUI and simulator automation |
+| **git-submit** | Submit changes through proper PR workflow |
+| **kaizen** | Continuous improvement practices |
 | **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
 | **product-manager** | Unified PM skill for prioritization (RICE, Kano, MoSCoW) and specifications (PRDs, user stories) across platforms |
-| **product-manager-apple** | Define product requirements, write user stories, and analyze features for Apple platforms |
-| **python-code-reviewer** | Comprehensive Python code review for quality, security, and performance |
-| **swift-architect** | Swift/SwiftUI architecture consulting and design decisions |
+| **react-native-reviewer** | React Native code review |
 
 ## Commands
 
-Slash commands for quick, repeatable actions. *(Coming soon)*
+Slash commands for quick, repeatable actions.
 
-## Hooks
+| Command | Description |
+|---------|-------------|
+| **cpr** | Code review |
+| **summarize** | Summarize content |
 
-Event-triggered automation for Claude Code workflows. *(Coming soon)*
+## Agents
+
+Custom agent configurations for specialized tasks.
+
+| Agent | Description |
+|-------|-------------|
+| **apple-ux-designer** | iOS/macOS UX design guidance |
+| **git-release-tagger** | Git release tagging automation |
+| **product-manager-apple** | Apple platform product management |
+| **swift-swiftui-reviewer** | Swift/SwiftUI code review |
+| **xcode-release-manager** | Xcode release management |
+
+## Benefits of This Approach
+
+1. **Clean separation**: Your skills are symlinks, third-party skills are real directories
+2. **No pollution**: Installing a third-party skill never touches your repo
+3. **Easy identification**: `ls -la ~/.claude/skills/` shows which are yours (symlinks) vs third-party (real)
+4. **Simple updates**: `git pull` in repo automatically updates symlinked content
+5. **No dependencies**: Just `make` - no need for GNU Stow

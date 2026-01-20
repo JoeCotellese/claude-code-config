@@ -1,5 +1,9 @@
-# Local settings directory (not the stow package)
+# ABOUTME: Git ignore file for claude-code-config repo.
+# ABOUTME: Excludes local project settings and any machine-specific files.
+
+# Local project settings directory (Claude Code runtime files)
 .claude/
 
-# Machine-local settings - not shared across machines
-claude/.claude/settings.json
+# Machine-local settings (if ever added to repo root)
+settings.json
+settings.local.json

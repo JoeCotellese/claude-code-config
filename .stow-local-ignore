@@ -1,5 +1,0 @@
-# ABOUTME: Stow ignore file to exclude machine-specific files from symlink management.
-# ABOUTME: Files listed here will not be symlinked by GNU Stow.
-
-# Machine-local settings - each machine maintains its own copy
-settings.json
