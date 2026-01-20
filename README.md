@@ -93,6 +93,34 @@ Custom agent configurations for specialized tasks.
 | **swift-swiftui-reviewer** | Swift/SwiftUI code review |
 | **xcode-release-manager** | Xcode release management |
 
+## Status Line
+
+A custom status line script that displays contextual information at the bottom of Claude Code, styled with Dracula theme colors.
+
+### What it shows
+
+- **Directory** - Current working directory name (green)
+- **Git branch** - Branch name when in a git repo (pink)
+- **Dirty indicator** - Red asterisk (`*`) if there are uncommitted changes
+- **Context usage** - Percentage of context window used (yellow)
+
+Example output: `claude-code-config on main* 42%`
+
+### Setup
+
+Add to your `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
+}
+```
+
+The `make install` command symlinks the script to `~/.claude/`, so this configuration will work after installation.
+
 ## Benefits of This Approach
 
 1. **Clean separation**: Your skills are symlinks, third-party skills are real directories
