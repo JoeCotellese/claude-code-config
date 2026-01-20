@@ -1,2 +1,5 @@
 # Local settings directory (not the stow package)
 .claude/
+
+# Machine-local settings - not shared across machines
+claude/.claude/settings.json
