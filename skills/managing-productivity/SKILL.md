@@ -8,6 +8,7 @@ description: Help manage productivity using a hybrid GTD + Energy/Time filtering
 ## Contents
 
 - [Overview](#overview)
+- [On Invocation](#on-invocation)
 - [System Architecture](#system-architecture)
 - [Core Workflows](#core-workflows)
 - [Metadata System](#metadata-system)
@@ -19,6 +20,24 @@ description: Help manage productivity using a hybrid GTD + Energy/Time filtering
 ## Overview
 
 This skill implements a hybrid productivity system combining GTD (Getting Things Done) methodology with energy/time-based execution filtering and calendar integration.
+
+## On Invocation
+
+**First step - always check the current time:**
+
+```bash
+date "+%A, %B %d, %Y at %I:%M %p"
+```
+
+This establishes:
+- **Current date** — What "today" means for calendar queries
+- **Time of day** — Determines energy recommendations:
+  - Before 9am: Prime high-energy time
+  - 9am-12pm: Morning, still good for high-energy work
+  - 12pm-2pm: Post-lunch, typically medium/low energy
+  - 2pm-5pm: Afternoon, medium energy
+  - After 5pm: End of day, low energy tasks or wind-down
+- **Day of week** — Relevant for weekly patterns (e.g., Monday planning, Friday wrap-up)
 
 | Component | Purpose |
 |-----------|---------|
