@@ -55,36 +55,19 @@ Check that:
 
 ### Step 2: Run Code Review
 
-Run domain-specific automated code review:
+Detect project domain and invoke the appropriate code reviewer:
 
-**Python:**
-```bash
-CHANGED_PY_FILES=$(git diff --name-only main...HEAD --diff-filter=ACMR | grep '\.py$' || true)
-if [ -n "$CHANGED_PY_FILES" ]; then
-    uv run ruff check $CHANGED_PY_FILES
-fi
-```
-
-**Swift:** Invoke `swift-swiftui-reviewer` agent.
-
-**React Native:** Invoke `react-native-reviewer` skill.
+| Domain | Reviewer |
+|--------|----------|
+| Swift | `swift-swiftui-reviewer` agent |
+| Python | `python-code-reviewer` skill |
+| React Native | `react-native-reviewer` skill |
 
 **If critical issues found, STOP.** Report issues and wait for fixes.
 
 ### Step 3: Run Unit Tests
 
-Quick sanity check before pushing:
-
-```bash
-# Swift/iOS
-swift test
-
-# Python
-pytest tests/unit/
-
-# React Native
-npm run test:unit
-```
+Quick sanity check before pushing. Run the project's test command (detected from project config or conventions).
 
 **If tests fail, STOP.** Report failures and wait for fixes.
 
