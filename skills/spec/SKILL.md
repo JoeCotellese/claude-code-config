@@ -1,26 +1,41 @@
 ---
-name: workflow-plan
-description: "User-invoked slash command for feature planning. Invoke with `/workflow:plan <feature description>`. Orchestrates product management, UX design, and architecture planning into a single GitHub/GitLab issue. Detects project domain (Swift, Python, React Native) and calls appropriate specialists."
+name: spec
+description: "Feature specification phase. Invoke with `/spec <feature description>` or when user says 'new feature', 'plan feature', 'create spec'. Orchestrates product management, UX design, and architecture planning into a single GitHub/GitLab issue. Gates to /implement when complete."
 ---
 
-# Feature Planning Workflow
+# Feature Specification Phase
 
 Orchestrate a complete feature planning pipeline that produces a comprehensive issue ready for implementation.
 
 ## Usage
 
 ```
-/workflow:plan <brief feature description>
+/spec <brief feature description>
 ```
 
 **Example:**
 ```
-/workflow:plan Add a recipe sharing feature with social integration
+/spec Add a recipe sharing feature with social integration
+```
+
+**Also triggers on:**
+- "new feature X"
+- "plan feature X"
+- "create spec for X"
+- "I have an idea for X"
+
+## Workflow Overview
+
+```
+Step 1-3: PM → UX           (automatic)
+Step 4:   GATE              ← "Ready for architecture?"
+Step 5-8: Arch → Issue      (automatic)
+Step 9:   GATE              ← "Ready to implement?"
 ```
 
 ## Workflow Steps
 
-Execute these steps sequentially, collecting output from each phase.
+Execute these steps sequentially. Steps flow automatically EXCEPT at gates (Steps 4 and 9) where you MUST stop and ask the user.
 
 ### Step 1: Detect Project Domain
 
@@ -46,7 +61,7 @@ Store the result for architect selection in Step 4.
 
 ### Step 2: Product Requirements (PM Phase)
 
-Invoke the `product-manager-apple` skill to define requirements.
+Invoke the `product-manager` skill to define requirements.
 
 **Prompt the skill with:**
 ```
@@ -65,7 +80,7 @@ Output format: Feature brief (not full PRD unless complex)
 
 ### Step 3: UX Design (Designer Phase)
 
-Use the Task tool to invoke the `apple-ux-designer` agent.
+Invoke the `ux-designer` skill.
 
 **Prompt:**
 ```
@@ -77,7 +92,7 @@ Context from PM:
 <PM_OUTPUT summary - key user flows only>
 
 Provide:
-- HIG compliance considerations
+- Platform-specific design guidelines compliance
 - Navigation and interaction patterns
 - Accessibility UX requirements
 - Visual hierarchy recommendations
@@ -85,15 +100,34 @@ Provide:
 
 **Collect output as:** `UX_OUTPUT`
 
-### Step 4: Architecture (Architect Phase)
+### Step 4: GATE - Review Requirements & UX
 
-Select architect based on DOMAIN from Step 1:
+**CRITICAL**: STOP and ask user before proceeding to architecture.
+
+Use the AskUserQuestion tool to prompt:
+```
+Requirements and UX design complete.
+
+**PM Requirements:** <brief summary>
+**UX Guidance:** <brief summary>
+
+Ready to proceed to architecture design?
+- Yes → Continue to architecture phase
+- Refine requirements → Let's adjust the PM requirements
+- Refine UX → Let's adjust the UX design
+```
+
+**DO NOT continue to architecture until user explicitly confirms.**
+
+### Step 5: Architecture (Architect Phase)
+
+Select architect based on DOMAIN from Step 1 (detected earlier):
 
 | Domain | Architect |
 |--------|-----------|
 | swift | Invoke `swift-architect` skill |
-| react-native | Task agent: `react-native-architect` |
-| python | Provide architecture inline (no dedicated skill) |
+| react-native | Invoke `react-native-architect` skill |
+| python | Invoke `python-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
 **Prompt the architect with:**
@@ -115,10 +149,11 @@ Provide:
 
 **Collect output as:** `ARCH_OUTPUT`
 
-### Step 5: Detect Git Platform
+**After architecture is complete, AUTOMATICALLY proceed to create the issue. No gate here.**
+
+### Step 6: Detect Git Platform
 
 ```bash
-# From git-workflow skill
 REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
 if echo "$REMOTE_URL" | grep -qi "github"; then
     PLATFORM="github"
@@ -130,9 +165,9 @@ fi
 echo "$PLATFORM"
 ```
 
-### Step 6: Create Issue
+### Step 7: Create Issue
 
-Compose the issue from collected outputs using `assets/issue-template.md`.
+Compose the issue from collected outputs.
 
 **For GitHub:**
 ```bash
@@ -156,16 +191,42 @@ EOF
 
 **For unknown platform:** Output the composed issue to the user for manual creation.
 
-### Step 7: Report Success
+### Step 8: Report Success
 
 Return to user:
 - Issue URL (if created)
+- Issue number (e.g., #123)
 - Summary of what was planned
-- Suggested next steps (e.g., "Ready to start implementation with `/git-workflow`")
+
+**Then IMMEDIATELY proceed to Step 9 (the final gate).**
+
+### Step 9: GATE - Ready to Implement
+
+**CRITICAL**: STOP and ask user before proceeding to implementation phase.
+
+Use the AskUserQuestion tool to prompt:
+```
+✅ Spec complete!
+
+Issue: #<issue_number>
+URL: <issue_url>
+
+Ready to start implementation?
+- Yes → Continue to /implement #<issue_number>
+- Refine spec → Let's adjust before implementing
+- Stop here → I'll implement later
+```
+
+**DO NOT invoke /implement until user explicitly confirms "Yes".**
+
+**When user confirms "Yes":** Invoke the `implement` skill using the Skill tool:
+```
+Skill tool: skill="implement", args="#<issue_number>"
+```
+
+This hands off to the implementation phase with the issue context.
 
 ## Output Composition
-
-Use the template in `assets/issue-template.md` to structure the final issue.
 
 The issue should be scannable with clear sections:
 1. **Overview** - One paragraph summary
@@ -180,13 +241,17 @@ The issue should be scannable with clear sections:
 - **No git remote:** Output issue content for manual creation
 - **CLI not authenticated:** Provide `gh auth login` or `glab auth login` instructions
 - **Domain unknown:** Ask user to specify or provide generic architecture
-- **Skill/agent unavailable:** Skip that phase with a note, continue with available phases
+- **Skill unavailable:** Skip that phase with a note, continue with available phases
 
 ## Dependencies
 
 This skill orchestrates:
-- `product-manager-apple` skill (for PM phase)
-- `apple-ux-designer` Task agent (for design phase)
-- `swift-architect` skill OR `react-native-architect` agent (for architecture)
+- `product-manager` skill (for PM phase)
+- `ux-designer` skill (for design phase)
+- `swift-architect`, `react-native-architect`, or `python-architect` skill (for architecture)
 - `gh` CLI (for GitHub issues)
 - `glab` CLI (for GitLab issues)
+
+## Next Phase
+
+After spec is complete and user confirms, chains to → `/implement`
