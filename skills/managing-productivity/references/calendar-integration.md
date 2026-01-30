@@ -46,13 +46,21 @@ mcp__todoist__user-info()
 
 ## Using iMCP Calendar Tools
 
-### 1. Fetching Calendar Events
+### 1. Fetching Calendar Events (Summary)
 
-**Tool**: `mcp__imcp__events_fetch`
+**Tool**: `mcp__iMCP__events_fetch`
+
+Returns **summary fields only** for efficient listing. Use `events_get` when you need full details.
+
+**Summary fields returned:**
+- `identifier`, `title`, `start`, `end`, `calendar`
+- `availability`, `isAllDay`, `isOrganizer`, `location`
+- `attendeeCount` (number only, not attendee details)
+- `hasNotes`, `hasUrl` (booleans—not actual content)
 
 **Basic usage for today's availability**:
 ```
-mcp__imcp__events_fetch({
+mcp__iMCP__events_fetch({
   calendars: ["Personal"],
   start: "2025-11-12T00:00:00Z",  // Today at midnight (UTC)
   end: "2025-11-12T23:59:59Z"      // Today at end of day (UTC)
@@ -61,7 +69,7 @@ mcp__imcp__events_fetch({
 
 **Getting this week's events for deep work planning**:
 ```
-mcp__imcp__events_fetch({
+mcp__iMCP__events_fetch({
   calendars: ["Personal"],
   start: "2025-11-12T00:00:00Z",   // Today (UTC)
   end: "2025-11-19T23:59:59Z"       // 7 days from now (UTC)
@@ -74,13 +82,39 @@ mcp__imcp__events_fetch({
 - `end`: ISO 8601 datetime for range end
 - `includeAllDay`: Set to `true` to include all-day events (default: true)
 
+### 1b. Getting Full Event Details
+
+**Tool**: `mcp__iMCP__events_get`
+
+Use this when you need the actual notes content, creation/modification timestamps, or other details not returned by `events_fetch`.
+
+**Additional fields returned:**
+- `notes` (full content, not just hasNotes boolean)
+- `createdAt`, `modifiedAt` (timestamps)
+- `hasRecurrenceRules` (boolean)
+
+**Usage**:
+```
+mcp__iMCP__events_get({
+  identifier: "event-identifier-from-fetch"
+})
+```
+
+**When to use each:**
+| Need | Tool |
+|------|------|
+| List events for a date range | `events_fetch` |
+| Check availability/free time | `events_fetch` |
+| Read meeting notes or description | `events_get` |
+| Check if event was recently modified | `events_get` |
+
 ### 2. Creating Calendar Events (Time Blocking)
 
-**Tool**: `mcp__imcp__events_create`
+**Tool**: `mcp__iMCP__events_create`
 
 **Example**: Block time for a task
 ```
-mcp__imcp__events_create({
+mcp__iMCP__events_create({
   calendar: "Personal",
   title: "Update EyeGuide video API",
   start: "2025-11-13T13:00:00Z",    // Tomorrow at 8am EST (UTC)
@@ -101,13 +135,71 @@ mcp__imcp__events_create({
 All dates MUST include timezone indicator (`Z` for UTC). Without it, you'll get:
 `Error: Invalid start or end date format. Expected ISO 8601 format.`
 
-### 3. Listing Available Calendars
+### 3. Updating Calendar Events
 
-**Tool**: `mcp__imcp__calendars_list`
+**Tool**: `mcp__iMCP__events_update`
+
+Modify existing events. Get the `identifier` from `events_fetch` first.
+
+**Example**: Reschedule an event
+```
+mcp__iMCP__events_update({
+  identifier: "event-identifier",
+  start: "2025-11-14T14:00:00Z",
+  end: "2025-11-14T15:00:00Z"
+})
+```
+
+**Example**: Update event details
+```
+mcp__iMCP__events_update({
+  identifier: "event-identifier",
+  title: "Updated Meeting Title",
+  notes: "New notes content",
+  location: "https://meet.google.com/xyz"
+})
+```
+
+**Parameters**:
+- `identifier`: (required) Event identifier from `events_fetch`
+- `span`: For recurring events: `"thisEvent"` (default) or `"futureEvents"`
+- `title`, `start`, `end`, `notes`, `location`, `availability`: Fields to update
+
+### 4. Deleting Calendar Events
+
+**Tool**: `mcp__iMCP__events_delete`
+
+Delete or cancel events. For recurring events, can delete just one occurrence or all future occurrences.
+
+**Example**: Delete single event or occurrence
+```
+mcp__iMCP__events_delete({
+  identifier: "event-identifier",
+  span: "thisEvent"
+})
+```
+
+**Example**: Delete all future occurrences of recurring event
+```
+mcp__iMCP__events_delete({
+  identifier: "event-identifier",
+  span: "futureEvents"
+})
+```
+
+**Parameters**:
+- `identifier`: (required) Event identifier from `events_fetch`
+- `span`: `"thisEvent"` (default) or `"futureEvents"` for recurring events
+
+**Note**: If you're the organizer with attendees, deleting sends cancellation notices.
+
+### 5. Listing Available Calendars
+
+**Tool**: `mcp__iMCP__calendars_list`
 
 Use this on first run to verify "Personal" calendar exists:
 ```
-mcp__imcp__calendars_list()
+mcp__iMCP__calendars_list()
 ```
 
 If "Personal" not found, ask user which calendar to use as default.
@@ -364,7 +456,7 @@ Total free time: 8 hours with 2 prime deep work blocks
 **Goal**: Identify meetings/events in next 7 days that might need preparation.
 
 **Algorithm**:
-1. Fetch events 7 days forward: `mcp__imcp__events_fetch` with date range
+1. Fetch events 7 days forward: `mcp__iMCP__events_fetch` with date range
 2. Filter for events likely needing prep:
    - Duration > 30 minutes (shorter meetings often don't need prep)
    - Not all-day events
@@ -558,11 +650,11 @@ Apple Reminders integration via iMCP enables processing of Siri-captured tasks a
 
 **1. Fetching Reminders for Inbox Processing**
 
-**Tool**: `mcp__imcp__reminders_fetch`
+**Tool**: `mcp__iMCP__reminders_fetch`
 
 **Basic usage**:
 ```
-mcp__imcp__reminders_fetch({
+mcp__iMCP__reminders_fetch({
   lists: ["Todo List"],
   completed: false
 })
@@ -576,22 +668,22 @@ mcp__imcp__reminders_fetch({
 
 **2. Listing Available Reminder Lists**
 
-**Tool**: `mcp__imcp__reminders_lists`
+**Tool**: `mcp__iMCP__reminders_lists`
 
 Use this on first run or if "Todo List" not found:
 ```
-mcp__imcp__reminders_lists()
+mcp__iMCP__reminders_lists()
 ```
 
 Returns all reminder lists. Verify "Todo List" exists or ask user which list to use.
 
 **3. Creating Reminders (Rarely Used)**
 
-**Tool**: `mcp__imcp__reminders_create`
+**Tool**: `mcp__iMCP__reminders_create`
 
 Generally prefer Obsidian Quick Capture (Workflow 3), but available if needed:
 ```
-mcp__imcp__reminders_create({
+mcp__iMCP__reminders_create({
   list: "Todo List",
   title: "Task description",
   notes: "Additional details",
@@ -620,38 +712,51 @@ mcp__imcp__reminders_create({
      - Inform user: "Processed '[title]' - please mark complete via Reminders app or Siri"
      - Provide Siri command: "Mark [title] as complete in Todo List"
 
-### Limitation: Cannot Complete Reminders
+### Completing Reminders
 
-**Issue**: iMCP can read and create reminders but cannot mark them complete.
+**Tool**: `mcp__iMCP__reminders_complete`
 
-**Workaround**:
-1. After processing reminder, inform user it needs manual completion
-2. Suggest Siri command for easy completion
-3. User can batch-complete reminders in Reminders app after inbox session
+Reminders CAN be marked complete via iMCP.
+
+**Usage**:
+```
+mcp__iMCP__reminders_complete({
+  identifiers: ["reminder-uuid-1", "reminder-uuid-2"]
+})
+```
+
+**Parameters**:
+- `identifiers`: Array of reminder UUID strings (from `reminders_fetch`)
+
+**Example workflow**:
+```
+1. Fetch reminders: mcp__iMCP__reminders_fetch({ lists: ["Todo"] })
+2. Process each reminder through GTD workflow
+3. Mark complete: mcp__iMCP__reminders_complete({ identifiers: ["uuid-here"] })
+```
 
 **Example output**:
 ```
 Processed 3 reminders:
-- "Buy groceries" → Added to next-actions.md
-- "Call dentist" → Added to next-actions.md
-- "Research vacation spots" → Added to someday-maybe.md
+- "Buy groceries" → Added to Todoist Next Actions ✓
+- "Call dentist" → Added to Todoist Next Actions ✓
+- "Research vacation spots" → Added to Someday/Maybe ✓
 
-Please mark these as complete in Reminders app, or tell Siri:
-"Mark 'Buy groceries' as complete in Todo List"
+All reminders marked complete in Apple Reminders.
 ```
 
 ### Best Practices
 
 **Do's:**
 ✓ Always fetch reminders during inbox processing
-✓ Process reminders with same GTD rigor as Obsidian items
-✓ Inform user about manual completion requirement
-✓ Provide Siri commands for easy cleanup
+✓ Process reminders with same GTD rigor as Todoist items
+✓ Mark reminders complete after processing via `reminders_complete`
+✓ Use the reminder's `identifier` (UUID) for completion
 
 **Don'ts:**
 ✗ Don't skip reminders - they're captured intentions
-✗ Don't try to complete via iMCP (no such function)
-✗ Don't leave processed reminders incomplete (remind user)
+✗ Don't leave processed reminders incomplete in Apple Reminders
+✗ Don't forget to collect identifiers during processing for batch completion
 
 ## Integration with GTD Workflows
 

@@ -89,10 +89,19 @@ Integrates with primary calendar via iMCP for:
 - Finding optimal time slots for deep work
 - Prioritizing morning/early morning (before noon, especially before 9am) for high-energy tasks
 
+**iMCP Calendar Capabilities:**
+- `events_fetch` — List events (returns summary: title, times, hasNotes, hasUrl, attendeeCount)
+- `events_get` — Get full event details (includes notes content, createdAt, modifiedAt)
+- `events_create` — Create new events
+- `events_update` — Modify existing events (title, times, location, notes, availability)
+- `events_delete` — Delete events (single occurrence or future events for recurring)
+
 **iMCP Calendar Limitations:**
 - Cannot create recurring events (must be set manually in Calendar app)
 - Cannot add attendees/invitees (must be added manually)
 - When these features are needed, create the event and inform user of required manual follow-up
+
+**Important:** Use `events_fetch` for listing/filtering, then `events_get` with the identifier when you need full details like notes content.
 
 ### Reclaim.ai Integration
 
@@ -351,7 +360,11 @@ Common parameter formats that differ from intuitive naming:
 - `mcp__todoist__find-tasks` — Use `searchText` for text search, not `query`
 
 **iMCP Calendar:**
+- `mcp__iMCP__events_fetch` — Returns summary fields only (hasNotes, hasUrl, attendeeCount—not actual content)
+- `mcp__iMCP__events_get` — Returns full details including notes content, createdAt, modifiedAt
 - `mcp__iMCP__events_create` — Dates must be ISO 8601 with timezone: `2026-09-01T09:00:00Z`
+- `mcp__iMCP__events_update` — Use `identifier` and `span` ("thisEvent" or "futureEvents" for recurring)
+- `mcp__iMCP__events_delete` — Use `identifier` and `span` ("thisEvent" or "futureEvents" for recurring)
 - `mcp__iMCP__reminders_complete` — Use `identifiers` (array of UUID strings)
 
 **iMCP Reminders:**

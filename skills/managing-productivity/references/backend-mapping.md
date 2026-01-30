@@ -570,14 +570,14 @@ The iMCP backend uses MCP tools directly. Here's how each abstract operation map
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_create with:
+mcp__iMCP__reminders_create with:
   title: "task description",
   list: "Inbox"
 ```
 
 **With metadata (encoded in title):**
 ```
-mcp__imcp__reminders_create with:
+mcp__iMCP__reminders_create with:
   title: "task description @computer #energy-medium #time-30m",
   list: "Inbox"
 ```
@@ -589,7 +589,7 @@ mcp__imcp__reminders_create with:
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Inbox"],
   completed: false
 ```
@@ -601,7 +601,7 @@ mcp__imcp__reminders_fetch with:
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Next Actions"],  # or "Projects", "Waiting For", "Someday/Maybe", "Reference"
   completed: false
 ```
@@ -609,12 +609,12 @@ mcp__imcp__reminders_fetch with:
 **Examples:**
 ```
 # Get all next actions
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Next Actions"],
   completed: false
 
 # Get all projects
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Projects"],
   completed: false
 ```
@@ -626,14 +626,14 @@ mcp__imcp__reminders_fetch with:
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   query: "search keyword",
   completed: false
 ```
 
 **With GTD list filter:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   query: "search keyword",
   lists: ["Next Actions"],
   completed: false
@@ -644,40 +644,56 @@ mcp__imcp__reminders_fetch with:
 #### 5. add_metadata
 **Operation:** Add tags/metadata to an item (context, energy, time)
 
-**Implementation:** Since iMCP doesn't support updating existing reminders, you need to:
-1. Fetch the reminder by ID or search
-2. Delete the old reminder
-3. Create a new reminder with updated title containing metadata
+**Direct Call:**
+```
+mcp__iMCP__reminders_update with:
+  identifier: "reminder-uuid",
+  title: "Updated task description @computer #energy-high #time-30m"
+```
 
-**Note:** This is a limitation of the current iMCP implementation. Future versions may support update operations.
-
-**Workaround:**
-For now, guide users to manually edit reminder titles to add metadata tags, or recreate the reminder with metadata included from the start during inbox processing.
+**Note:** Since iMCP stores metadata in the title, update the full title with new metadata tags appended.
 
 ---
 
 #### 6. move_to_list
 **Operation:** Move item between GTD lists
 
-**Implementation:** Similar to add_metadata, this requires:
-1. Fetch the reminder
-2. Delete from old list
-3. Create in new list with same content
+**Direct Call:**
+```
+mcp__iMCP__reminders_update with:
+  identifier: "reminder-uuid",
+  list: "Next Actions"
+```
 
-**Note:** This is a limitation of the current iMCP implementation.
-
-**Workaround:**
-Guide users to manually move reminders between lists in the Reminders app, or recreate when processing.
+**Parameters:**
+- `identifier`: Reminder UUID from `reminders_fetch`
+- `list`: Target list name (e.g., "Next Actions", "Someday/Maybe")
 
 ---
 
 #### 7. mark_complete
 **Operation:** Mark item as done
 
-**Implementation:** iMCP doesn't currently support marking reminders complete via MCP.
+**Direct Call:**
+```
+mcp__iMCP__reminders_complete with:
+  identifiers: ["reminder-uuid-1", "reminder-uuid-2"]
+```
 
-**Workaround:**
-Guide users to manually complete reminders in the Reminders app. Future iMCP versions may support completion.
+**Parameters:**
+- `identifiers`: Array of reminder UUID strings (obtained from `reminders_fetch`)
+
+**Example:**
+```
+# 1. Fetch reminders to get identifiers
+mcp__iMCP__reminders_fetch with:
+  lists: ["Next Actions"],
+  completed: false
+
+# 2. Mark specific ones complete
+mcp__iMCP__reminders_complete with:
+  identifiers: ["ABC-123-UUID"]
+```
 
 ---
 
@@ -686,7 +702,7 @@ Guide users to manually complete reminders in the Reminders app. Future iMCP ver
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   query: "exact reminder title or partial match",
   completed: false,
   limit: 1
@@ -701,7 +717,7 @@ mcp__imcp__reminders_fetch with:
 
 **Direct Call:**
 ```
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Next Actions"],
   query: "@computer #energy-medium",
   completed: false
@@ -720,7 +736,7 @@ mcp__imcp__reminders_fetch with:
 **Example:**
 ```
 # Find next actions for computer with medium energy
-mcp__imcp__reminders_fetch with:
+mcp__iMCP__reminders_fetch with:
   lists: ["Next Actions"],
   query: "@computer #energy-medium",
   completed: false
@@ -742,7 +758,7 @@ Before using iMCP backend, create these reminder lists in Apple Reminders:
 
 **To verify lists exist:**
 ```
-mcp__imcp__reminders_lists
+mcp__iMCP__reminders_lists
 ```
 
 ### Metadata Encoding Strategy
@@ -763,35 +779,35 @@ Since Apple Reminders doesn't have native tag support, we embed metadata in the 
 - Tags can appear in any order at end of title
 - Multiple spaces between tags are ok
 
-### Current Limitations
+### Current Capabilities & Limitations
 
-The iMCP implementation has several limitations compared to Todoist/Drafts:
+**Supported operations:**
+1. **Create reminders** - `mcp__iMCP__reminders_create`
+2. **List reminders** - `mcp__iMCP__reminders_fetch`
+3. **Complete reminders** - `mcp__iMCP__reminders_complete` (use `identifiers` array of UUIDs)
+4. **Update reminders** - `mcp__iMCP__reminders_update`
+5. **Delete reminders** - `mcp__iMCP__reminders_delete`
 
-1. **No update support** - Can't modify existing reminders via MCP
-2. **No completion support** - Can't mark reminders complete via MCP
-3. **No move support** - Can't move reminders between lists via MCP
-4. **Title-based metadata** - Must encode tags in title text, not native fields
-5. **Text search only** - Query searches title text, not structured metadata
+**Limitations:**
+1. **Title-based metadata** - Must encode tags in title text, not native fields
+2. **Text search only** - Query searches title text, not structured metadata
 
-**Workarounds:**
-- For update/move/complete operations, guide users to use Reminders app manually
-- For metadata, use consistent title format and text search
-- Consider Todoist or Drafts backends if programmatic updates are critical
+**Notes:**
+- Use consistent title format for metadata encoding
+- Consider Todoist backend if native tag support is required
 
 ### When to Use iMCP Backend
 
 **Good fit when:**
 - User already uses Apple Reminders
-- Read-only operations are sufficient (listing, filtering, searching)
-- Quick capture is primary use case
-- User is willing to manually process/update in Reminders app
 - Apple ecosystem integration is important
+- Quick capture via Siri is primary use case
+- Full CRUD operations needed (create, read, update, delete, complete)
 
 **Not ideal when:**
-- Need programmatic updates, moves, or completions
-- Heavy automation is required
+- Need native tag support (must encode in title)
 - Cross-platform access needed
-- Prefer text search over structured metadata
+- Prefer structured metadata over text search
 
 ### Filtering Performance
 
