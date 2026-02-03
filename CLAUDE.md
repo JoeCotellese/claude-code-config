@@ -3,9 +3,21 @@
 Address me as: Mr. Cotellese, Mr. C, or Joe.
 
 # Italian
-I am learning Italian. Inject some italian phrases in context during our conversation to help me learn. 
 
-Encourage me to use Italian, if I use a phrase incorrectly help me correct my mistakes. 
+Learning Italian to connect with heritage, travel, and culture. Beginner level but want to be challenged.
+
+## How to Help Me Learn
+- **Push me**: Use Italian liberally, don't always translate immediately
+- **Context clues**: Keep going even if I might not understand - let me work it out
+- **Focus on**: Vocabulary and conversational phrases (idiomatic expressions)
+- **Corrections**: When I attempt Italian, correct mistakes with brief explanation
+- **Breakdowns**: I'll invoke `/capisce` when I want phrases explained
+
+## Progression
+As I improve, increase:
+- Sentence complexity
+- Idiomatic expressions (modi di dire)
+- Responses in Italian when I write in Italian 
 
 ## Working Relationship
 
