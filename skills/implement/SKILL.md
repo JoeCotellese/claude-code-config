@@ -33,7 +33,7 @@ Step 2: Fetch issue content
 Step 3: Create feature branch
 Step 4: Enter plan mode → write implementation plan
 Step 5: GATE              ← "Plan approved?"
-Step 6: Implement (TDD or tests-after)
+Step 6: Implement (TDD)
 Step 7: QA (tests + code review)
 Step 8: GATE              ← "Ready for review?"
 ```
@@ -98,15 +98,17 @@ fi
 Use the **EnterPlanMode** tool, then:
 1. Explore the codebase based on architecture from the issue
 2. Identify files to create/modify
-3. Determine test strategy (check for TDD preference in `.claude/project.json` or `pyproject.toml`)
+3. Map each task to its TDD cycle (failing test → minimal code → refactor)
 4. Write a step-by-step implementation plan
 
 **Plan should include:**
 - Files to create/modify (with full paths)
 - Order of implementation (dependencies first)
-- Test strategy: TDD (test first) or tests-after
+- For each task: the test to write first, then the implementation
 - Key code patterns to follow from existing codebase
 - Acceptance criteria mapped to implementation tasks
+
+**TDD is the default.** Every task in the plan should specify what test gets written first. If any task genuinely cannot be test-driven (e.g., pure UI layout, config-only changes, infrastructure wiring), it MUST be explicitly marked in the plan with a reason. These exceptions will be flagged to the user at the plan approval gate.
 
 Write the plan to the plan file (path provided by plan mode).
 
@@ -121,21 +123,31 @@ If user approves → proceed to Step 6.
 
 ### Step 6: Implementation Loop
 
-Execute the approved plan:
+Execute the approved plan using TDD:
 
-**If TDD mode:**
-1. Write failing test for first task
-2. Implement minimal code to pass
-3. Refactor if needed
-4. Commit
-5. Repeat for next task
+1. Write a failing test for the first task
+2. Run the test — confirm it fails
+3. Implement the minimal code to make it pass
+4. Run the test — confirm it passes
+5. Refactor if needed
+6. Commit (test and implementation together)
+7. Repeat for the next task
 
-**If tests-after mode:**
-1. Implement task
-2. Commit
-3. Repeat until features complete
-4. Write tests for all implemented code
-5. Commit tests
+**TDD Exception Gate:** If you encounter a task where TDD is not feasible and it was not already flagged in the plan, you MUST stop and use **AskUserQuestion** before proceeding:
+
+```
+⚠️ TDD Exception
+
+Task: <description of the task>
+Reason TDD isn't feasible: <explanation>
+Proposed approach: <tests-after / manual verification / etc.>
+
+Proceed without TDD for this task?
+- Yes → Continue with proposed approach
+- No → Let's discuss an alternative
+```
+
+**Do NOT silently skip TDD.** Writing all tests at the end is not acceptable without explicit human acknowledgment.
 
 **Commit format:**
 ```bash
@@ -174,6 +186,9 @@ npm run test
 | Swift | `swift-swiftui-reviewer` agent |
 | Python | `python-code-reviewer` skill |
 | React Native | `react-native-reviewer` skill |
+
+**TDD compliance check:**
+Review the commit history for this branch. Tests should appear in commits *alongside* their implementation code, not lumped together at the end. If all tests were written after all implementation, flag this to the user — TDD was not followed.
 
 **Manual QA (if needed):**
 - Build and run the app
