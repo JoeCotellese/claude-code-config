@@ -31,7 +31,17 @@ basename "$(pwd)"
 
 Store the result as `PROJECT_NAME`.
 
-### Step 2: Scan Recent Conversation
+### Step 2: Check for User Message
+
+If the user provided text after `/log` (e.g., `/log "Tests finally passing but intermittent"`):
+- This text MUST appear **verbatim** in the log entry — do not paraphrase, summarize, or reword it
+- Use it as the primary content of the entry
+- Still scan conversation for supplementary technical context (file paths, code references) to include as additional bullets below the user's message
+- If the user's text is sufficient on its own, no supplementary context is needed
+
+If no text was provided, proceed to scan conversation as usual.
+
+### Step 3: Scan Recent Conversation
 
 Review the last 10-15 messages for relevant problem-solving context:
 - What problem/bug was being investigated?
@@ -41,7 +51,7 @@ Review the last 10-15 messages for relevant problem-solving context:
 - What code files/locations were touched?
 - What are the next steps?
 
-### Step 3: Extract Key Points
+### Step 4: Extract Key Points
 
 Distill into concise freeform bullet points. Think "notebook jottings" not "meeting minutes":
 - Focus on progression and learnings
@@ -50,7 +60,7 @@ Distill into concise freeform bullet points. Think "notebook jottings" not "meet
 - Note dead ends briefly (they inform future debugging)
 - No rigid structure required — just bullets that capture what matters
 
-### Step 4: Format Entry
+### Step 5: Format Entry
 
 Use this markdown format:
 
@@ -59,12 +69,13 @@ Use this markdown format:
 
 ### Optional session topic
 
+- User's verbatim text here (if provided via /log argument)
 - Freeform bullet points capturing what happened
 - Include `file:line` references where relevant
 - Note decisions, discoveries, dead ends, next steps
 ```
 
-### Step 5: Write to Obsidian Vault
+### Step 6: Write to Obsidian Vault
 
 The dev log lives at: `~/obsidian-vault/3_Permanent Notes/Dev Log - <PROJECT_NAME>.md`
 
