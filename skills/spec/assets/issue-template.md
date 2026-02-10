@@ -34,10 +34,16 @@
 
 ---
 
+## Sizing
+
+| Dimension | Rating | Rationale |
+|-----------|--------|-----------|
+| **Value** | {VALUE_SIZE} | {VALUE_RATIONALE} |
+| **Effort** | {EFFORT_SIZE} | {EFFORT_RATIONALE} |
+
 ## Implementation Notes
 
 - **Domain:** {DOMAIN}
-- **Estimated Complexity:** {COMPLEXITY}
 
 ---
 

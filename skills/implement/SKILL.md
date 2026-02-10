@@ -96,10 +96,11 @@ fi
 **CRITICAL**: Enter plan mode to create an implementation plan before writing code.
 
 Use the **EnterPlanMode** tool, then:
-1. Explore the codebase based on architecture from the issue
-2. Identify files to create/modify
-3. Map each task to its TDD cycle (failing test → minimal code → refactor)
-4. Write a step-by-step implementation plan
+1. If implementing a Django feature, read `~/.claude/docs/django.md` for design principles to align against
+2. Explore the codebase based on architecture from the issue
+3. Identify files to create/modify
+4. Map each task to its TDD cycle (failing test → minimal code → refactor)
+5. Write a step-by-step implementation plan
 
 **Plan should include:**
 - Files to create/modify (with full paths)

@@ -75,7 +75,19 @@ from app.utils import helpers
 - **HTTP Client**: httpx (supports async) or requests
 - **Testing**: pytest with pytest-asyncio for async tests
 - **Linting**: ruff (preferred) or flake8 + black
-- **Type Checking**: mypy or pyright
+- **Type Checking**: pyright (preferred) with django-stubs for Django projects
+
+## Type Checking
+- Use pyright for static type analysis
+- Add type annotations to all new function signatures (parameters and return types)
+- Use `X | None` union syntax (PEP 604), not `Optional[X]`
+- Use `django-stubs` for Django model/queryset type awareness
+- For Django models with custom managers or related fields, use explicit type annotations rather than relying on inference
+- Common django-stubs patterns:
+  - `QuerySet[MyModel]` for queryset return types
+  - `ForeignKey` fields resolve to the related model type
+  - `request.user` typed via `AUTH_USER_MODEL` setting in django-stubs config
+- When pyright reports false positives on Django dynamic attributes (e.g., reverse relations, custom manager methods), use `# type: ignore[reportAttributeAccessIssue]` with a brief comment explaining why
 
 ## Project Structure
 ```

@@ -72,7 +72,17 @@ The script will:
 pip install ruff black
 ```
 
-### 3. Manual Code Review
+### 3. Load Django Design Principles (if applicable)
+
+If the code under review is part of a Django project, read the design principles:
+
+```
+Read: ~/.claude/docs/django.md
+```
+
+Use these principles as additional review criteria (service layer separation, DRY, composition over inheritance, KISS, etc.) alongside the checks below.
+
+### 4. Manual Code Review
 
 After automated checks, perform manual review of the changed code focusing on:
 
@@ -144,7 +154,7 @@ If the code is a web app or CLI tool, check `references/web-cli-specifics.md` fo
 - Error handling with user-friendly messages
 - Configuration file support
 
-### 4. Report Findings
+### 5. Report Findings
 
 Structure your code review report as follows:
 
@@ -183,7 +193,7 @@ Structure your code review report as follows:
 - **Medium**: Style issues, minor anti-patterns - GOOD to fix
 - **Low**: Suggestions, optional improvements - NICE to have
 
-### 5. Provide Actionable Feedback
+### 6. Provide Actionable Feedback
 
 For each issue:
 1. **Show the problematic code** with file name and line number
@@ -224,6 +234,8 @@ Run automated checks (scripts/run_checks.py)
 Ruff/black issues found?
     ↓ YES → Report automated issues
     ↓ NO → Continue
+    ↓
+Django project? → Read ~/.claude/docs/django.md for design principles
     ↓
 Perform manual review:
     ↓

@@ -27,15 +27,17 @@ Orchestrate a complete feature planning pipeline that produces a comprehensive i
 ## Workflow Overview
 
 ```
-Step 1-3: PM → UX           (automatic)
-Step 4:   GATE              ← "Ready for architecture?"
-Step 5-8: Arch → Issue      (automatic)
-Step 9:   GATE              ← "Ready to implement?"
+Step 1-3:  PM → UX           (automatic)
+Step 4:    GATE              ← "Ready for architecture?"
+Step 5:    Arch              (automatic)
+Step 6:    Sizing            (automatic)
+Step 7-9:  Issue creation    (automatic)
+Step 10:   GATE              ← "Ready to implement?"
 ```
 
 ## Workflow Steps
 
-Execute these steps sequentially. Steps flow automatically EXCEPT at gates (Steps 4 and 9) where you MUST stop and ask the user.
+Execute these steps sequentially. Steps flow automatically EXCEPT at gates (Steps 4 and 10) where you MUST stop and ask the user.
 
 ### Step 1: Detect Project Domain
 
@@ -149,9 +151,47 @@ Provide:
 
 **Collect output as:** `ARCH_OUTPUT`
 
-**After architecture is complete, AUTOMATICALLY proceed to create the issue. No gate here.**
+**After architecture is complete, AUTOMATICALLY proceed to sizing.**
 
-### Step 6: Detect Git Platform
+### Step 6: Value/Effort Sizing
+
+Assess the feature on two dimensions using the labels available in the repo. Use AskUserQuestion to confirm sizing with the user.
+
+**Value** — business impact to users or the product:
+| Rating | Meaning |
+|--------|---------|
+| S | Nice-to-have, minor polish |
+| M | Useful improvement, affects some users |
+| L | Important feature, clear user demand |
+| XL | Critical capability, blocks major goals |
+
+**Effort** — implementation complexity:
+| Rating | Meaning |
+|--------|---------|
+| S | 1-2 files, clear scope, < 1 hour |
+| M | Multiple files, some investigation needed |
+| L | Cross-cutting, multi-service, needs design |
+| XL | Epic-level, should be broken into sub-issues |
+
+Present the proposed sizing to the user with brief rationale for each. Use the AskUserQuestion tool:
+```
+Based on the requirements and architecture:
+
+**Value: <proposed>** — <one-line rationale>
+**Effort: <proposed>** — <one-line rationale>
+
+Does this sizing look right?
+- Yes
+- Adjust value
+- Adjust effort
+- Adjust both
+```
+
+**Collect confirmed sizing as:** `VALUE_SIZE`, `EFFORT_SIZE`, `VALUE_RATIONALE`, `EFFORT_RATIONALE`
+
+**Then AUTOMATICALLY proceed to create the issue.**
+
+### Step 7: Detect Git Platform
 
 ```bash
 REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
@@ -165,14 +205,16 @@ fi
 echo "$PLATFORM"
 ```
 
-### Step 7: Create Issue
+### Step 8: Create Issue
 
-Compose the issue from collected outputs.
+Compose the issue from collected outputs, using the template in `assets/issue-template.md`.
 
 **For GitHub:**
 ```bash
 gh issue create \
   --title "Feature: <brief title from feature description>" \
+  --label "value/<VALUE_SIZE>" \
+  --label "effort/<EFFORT_SIZE>" \
   --body "$(cat <<'EOF'
 <composed issue body>
 EOF
@@ -183,24 +225,27 @@ EOF
 ```bash
 glab issue create \
   --title "Feature: <brief title from feature description>" \
+  --label "value/<VALUE_SIZE>" \
+  --label "effort/<EFFORT_SIZE>" \
   --description "$(cat <<'EOF'
 <composed issue body>
 EOF
 )"
 ```
 
-**For unknown platform:** Output the composed issue to the user for manual creation.
+**For unknown platform:** Output the composed issue to the user for manual creation, noting the recommended labels.
 
-### Step 8: Report Success
+### Step 9: Report Success
 
 Return to user:
 - Issue URL (if created)
 - Issue number (e.g., #123)
 - Summary of what was planned
+- Value/Effort sizing applied
 
-**Then IMMEDIATELY proceed to Step 9 (the final gate).**
+**Then IMMEDIATELY proceed to Step 10 (the final gate).**
 
-### Step 9: GATE - Ready to Implement
+### Step 10: GATE - Ready to Implement
 
 **CRITICAL**: STOP and ask user before proceeding to implementation phase.
 
@@ -235,6 +280,7 @@ The issue should be scannable with clear sections:
 4. **Architecture** - From architect phase
 5. **Acceptance Criteria** - Consolidated checklist
 6. **Analytics Events** - From PM phase
+7. **Sizing** - Value/Effort ratings with rationale
 
 ## Error Handling
 

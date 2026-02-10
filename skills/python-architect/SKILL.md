@@ -35,24 +35,30 @@ Invoke when:
 
 ## Core Capabilities
 
-### 0. Architecture Document Discovery
+### 0. Design Principles and Architecture Discovery
 
-**Before starting any consultation**, search for existing architecture documentation:
+**Before starting any consultation**, read the Django design principles and search for existing architecture documentation:
 
-1. **Search locations:**
+1. **Read design principles:**
+   ```
+   Read: ~/.claude/docs/django.md
+   ```
+   This contains the project's opinionated Django philosophy (DRY, service layer, composition over inheritance, KISS, etc.). All architectural recommendations must align with these principles.
+
+2. **Search for architecture docs:**
    ```
    Glob: "**/[Aa]rchitecture*.md"
    Glob: "**/ARCHITECTURE.md"
    Glob: "**/docs/[Aa]rchitecture*.md"
    ```
 
-2. **If found**, read and incorporate:
+3. **If found**, read and incorporate:
    - Existing patterns and conventions
    - Model naming standards
    - App organization decisions
    - Technology choices and constraints
 
-3. **If not found**, offer to help create one after consultation.
+4. **If not found**, offer to help create one after consultation.
 
 ### 1. Django Documentation Lookup
 
