@@ -1,11 +1,11 @@
 ---
 name: log
-description: "Capture debugging and problem-solving progress to DEVLOG.txt. Use when user invokes /log, says 'log this', 'capture progress', or 'write that down'. Scans recent conversation for relevant context and appends timestamped notebook-style entries."
+description: "Capture debugging and problem-solving progress to Obsidian vault. Use when user invokes /log, says 'log this', 'capture progress', or 'write that down'. Scans recent conversation for relevant context and appends timestamped notebook-style entries to a per-project dev log note."
 ---
 
 # Development Log Skill
 
-Capture the progression of debugging sessions and problem-solving discussions as concise, timestamped entries in a `DEVLOG.txt` file.
+Capture the progression of debugging sessions and problem-solving discussions as concise, timestamped entries in an Obsidian vault note (one note per project).
 
 ## When to Use This Skill
 
@@ -15,7 +15,23 @@ Capture the progression of debugging sessions and problem-solving discussions as
 
 ## Workflow
 
-### Step 1: Scan Recent Conversation
+### Step 1: Detect Project Name
+
+Derive the project name from the git remote:
+
+```bash
+git remote get-url origin 2>/dev/null | sed 's/.*[:/]\([^/]*\)\.git$/\1/' | sed 's/.*[:/]\([^/]*\)$/\1/'
+```
+
+If no git remote exists, fall back to the current directory name:
+
+```bash
+basename "$(pwd)"
+```
+
+Store the result as `PROJECT_NAME`.
+
+### Step 2: Scan Recent Conversation
 
 Review the last 10-15 messages for relevant problem-solving context:
 - What problem/bug was being investigated?
@@ -25,44 +41,57 @@ Review the last 10-15 messages for relevant problem-solving context:
 - What code files/locations were touched?
 - What are the next steps?
 
-### Step 2: Extract Key Points
+### Step 3: Extract Key Points
 
-Distill into concise bullet points. Think "notebook jottings" not "meeting minutes":
+Distill into concise freeform bullet points. Think "notebook jottings" not "meeting minutes":
 - Focus on progression and learnings
 - Include specific file paths, function names, line numbers when relevant
 - Capture the "why" behind decisions
 - Note dead ends briefly (they inform future debugging)
+- No rigid structure required — just bullets that capture what matters
 
-### Step 3: Format Entry
+### Step 4: Format Entry
 
 Use this markdown format:
 
 ```markdown
 ## Mon D, YYYY HH:MM
 
-- **Problem**: Brief description of what was being investigated
-- **Tried**: Approaches attempted
-- **Found**: Key discoveries or root cause
-- **Fixed/Changed**: What was done (include file:line references)
-- **Next**: Outstanding items or follow-up needed
+### Optional session topic
+
+- Freeform bullet points capturing what happened
+- Include `file:line` references where relevant
+- Note decisions, discoveries, dead ends, next steps
 ```
 
-Not all sections are required - only include what's relevant to the session.
+### Step 5: Write to Obsidian Vault
 
-### Step 4: Write to DEVLOG.txt
+The dev log lives at: `~/obsidian-vault/3_Permanent Notes/Dev Log - <PROJECT_NAME>.md`
 
-1. Check if `DEVLOG.txt` exists in the current working directory
-2. If not, create it with a header:
-   ```markdown
-   # Development Log
+**If the file does not exist**, create it with frontmatter and header:
 
-   Progress notes from debugging and development sessions.
+```markdown
+---
+tags:
+  - type/devlog
+  - project/<PROJECT_NAME>
+created: "YYYY-MM-DD, HH:MM"
+updated: "YYYY-MM-DD, HH:MM"
+---
 
-   ---
+# Dev Log — <PROJECT_NAME>
 
-   ```
-3. Append the new entry to the file
-4. Confirm to user what was logged
+Development session notes.
+
+---
+
+```
+
+**If the file already exists**:
+1. Update the `updated` timestamp in the frontmatter to the current time
+2. Append the new entry to the end of the file
+
+**After writing**, confirm to the user what was logged and to which project note.
 
 ## What to Capture
 
@@ -89,38 +118,40 @@ Not all sections are required - only include what's relevant to the session.
 ```markdown
 ## Feb 3, 2026 14:30
 
-- **Problem**: API returning 500 on user creation endpoint
-- **Tried**: Added logging to auth middleware - all passing
-- **Found**: Null pointer in `validateUser()` when email field empty
-- **Fixed**: Added null check in `src/validators/user.ts:42`
-- **Next**: Add test coverage for empty field edge cases
+### Null pointer in user creation endpoint
+
+- API returning 500 on user creation — null pointer in `validateUser()` when email field empty
+- Added null check in `src/validators/user.ts:42`
+- Need test coverage for empty field edge cases
 ```
 
 ### Architecture Decision
 ```markdown
 ## Feb 3, 2026 16:45
 
-- **Context**: Needed caching strategy for recipe API
-- **Options considered**: Redis vs in-memory vs SQLite
-- **Decision**: In-memory with LRU eviction - simpler ops, sufficient for current scale
-- **Rationale**: 95% of requests hit same 50 recipes, Redis overkill for MVP
+### Caching strategy for recipe API
+
+- Needed caching strategy for recipe API
+- Considered Redis vs in-memory vs SQLite
+- Went with in-memory LRU — 95% of requests hit same 50 recipes, Redis overkill for MVP
 ```
 
 ### Investigation (No Fix Yet)
 ```markdown
 ## Feb 4, 2026 09:15
 
-- **Problem**: Intermittent test failures in CI, passes locally
-- **Tried**: Increased timeouts - no change
-- **Tried**: Ran with `--runInBand` - still fails
-- **Found**: Failure correlates with parallel DB tests, possible connection pool exhaustion
-- **Next**: Check pool size config, add connection logging
+### Intermittent CI test failures
+
+- Intermittent test failures in CI, passes locally
+- Increased timeouts — no change. Ran with `--runInBand` — still fails
+- Failure correlates with parallel DB tests, possible connection pool exhaustion
+- Next: check pool size config, add connection logging
 ```
 
 ## Guidelines
 
 1. **Be concise**: Each entry should be scannable in 10 seconds
 2. **Be specific**: Include file paths, line numbers, function names
-3. **Be honest**: Note dead ends - they're valuable context
+3. **Be honest**: Note dead ends — they're valuable context
 4. **Don't duplicate**: If something was logged before, don't repeat it
 5. **Timestamp format**: Use the user's local time, format as `Mon D, YYYY HH:MM`
