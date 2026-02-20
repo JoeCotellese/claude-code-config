@@ -39,6 +39,16 @@ This establishes:
   - After 5pm: End of day, low energy tasks or wind-down
 - **Day of week** — Relevant for weekly patterns (e.g., Monday planning, Friday wrap-up)
 
+**Second step - pre-load MCP tool schemas:**
+
+Use `ToolSearch` to load the Todoist write tools before you need them. This prevents parameter-guessing errors (e.g., using `taskIds` instead of `ids`).
+
+```
+ToolSearch: "+todoist complete add update"
+```
+
+This single query loads `complete-tasks`, `add-tasks`, and `update-tasks` so their parameter schemas are available for the session. Do this once at invocation — the tools stay loaded for the rest of the conversation.
+
 | Component | Purpose |
 |-----------|---------|
 | **Todoist** (via MCP) | Task execution - inbox, next actions, waiting for, someday/maybe |
@@ -357,6 +367,7 @@ Common parameter formats that differ from intuitive naming:
 - `mcp__todoist__complete-tasks` — Use `ids` (array of strings), not `taskIds`
 - `mcp__todoist__delete-object` — Use `type` and `id`, not `objectType`/`objectId`
 - `mcp__todoist__add-tasks` — Priority must be string: `"p1"`, `"p2"`, `"p3"`, `"p4"` (not numbers)
+- **Todoist priority values are inverted in the API**: API `priority: 4` = UI "P1" (highest/red), API `priority: 1` = UI "P4" (lowest/no color). When reading task data back, don't be confused by this — a response showing `priority: 4` means the task IS p1.
 - `mcp__todoist__find-tasks` — Use `searchText` for text search, not `query`
 
 **iMCP Calendar:**
