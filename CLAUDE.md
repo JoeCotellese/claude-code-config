@@ -76,6 +76,10 @@ Is it about SELECTING from multiple results? pipe to 'fzf'
 Is it about interacting with JSON? use 'jq'
 Is it about interacting with YAML or XML? use 'yq'
 
+### Execute, Don't Deliberate (When Instructions Are Explicit)
+- When the user gives clear, direct instructions (e.g., a list of tasks to create, files to edit, commands to run), execute immediately. Do not research, explore the codebase, or ask clarifying questions unless something is genuinely ambiguous.
+- Save exploration and research for when you're uncertain — not when the user already knows what they want.
+
 ### Small, Iterative Changes
 - Work in small, testable increments - implement, test with human in the loop, then continue
 - Make the smallest reasonable changes to achieve the desired outcome
