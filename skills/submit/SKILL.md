@@ -62,6 +62,7 @@ Detect project domain and invoke the appropriate code reviewer:
 | Swift | `swift-swiftui-reviewer` agent |
 | Python | `python-code-reviewer` skill |
 | React Native | `react-native-reviewer` skill |
+| C++/Qt | `cpp-qt-reviewer` skill |
 
 **If critical issues found, STOP.** Report issues and wait for fixes.
 
