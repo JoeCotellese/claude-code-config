@@ -1,8 +1,5 @@
-# ABOUTME: Apple platform considerations for product managers.
-# ABOUTME: Covers iOS/macOS capabilities, App Store, monetization, accessibility, and analytics.
 
 # Apple Platform Considerations
-
 This reference consolidates Apple-specific product considerations including platform capabilities, App Store guidelines, monetization strategies, accessibility requirements, and analytics implementation.
 
 ---

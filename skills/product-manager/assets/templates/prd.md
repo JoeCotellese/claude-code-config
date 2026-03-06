@@ -1,8 +1,5 @@
-# ABOUTME: Generic PRD template for complex features requiring detailed planning.
-# ABOUTME: Platform-agnostic structure; load platform-specific templates for examples.
 
 # [Feature Name] - Product Requirements Document
-
 ## Executive Summary
 
 **Feature**: [One-sentence description]

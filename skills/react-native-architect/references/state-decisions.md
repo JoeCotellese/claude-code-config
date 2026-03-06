@@ -1,8 +1,5 @@
-# ABOUTME: Decision guide for React Native state management approaches
-# ABOUTME: Covers when to use local state, Recoil, props, or context
 
 # State Management Decisions
-
 ## Decision Tree
 
 ```

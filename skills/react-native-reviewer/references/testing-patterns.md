@@ -1,8 +1,5 @@
-# ABOUTME: React Native testing patterns and best practices reference
-# ABOUTME: Covers Jest, React Testing Library, component testing, and mocking
 
 # React Native Testing Patterns
-
 ## Test Structure
 
 ### File Organization

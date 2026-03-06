@@ -1,5 +1,4 @@
 # Swift & SwiftUI Coding Standards
-
 ## Platform Requirements
 
 - **Minimum iOS**: iOS 18.0
@@ -631,8 +630,6 @@ AppName/
 **Recommended:** Add ABOUTME comments to complex files for easy grepping:
 
 ```swift
-// ABOUTME: Handles user authentication and token management
-// ABOUTME: Coordinates with Keychain for secure token storage
 
 import Foundation
 

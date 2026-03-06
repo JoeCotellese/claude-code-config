@@ -1,8 +1,5 @@
-# ABOUTME: Memory safety reference for C++/Qt code reviews.
-# ABOUTME: Covers RAII, smart pointers, ownership models, Qt parent-child, and Rule of Zero/Five.
 
 # Memory Safety
-
 The #1 source of bugs in C++. Every code review should scrutinize ownership and lifetime.
 
 ## RAII (Resource Acquisition Is Initialization)

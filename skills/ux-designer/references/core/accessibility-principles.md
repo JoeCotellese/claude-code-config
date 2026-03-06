@@ -1,8 +1,5 @@
-# ABOUTME: Platform-agnostic accessibility principles covering POUR framework.
-# ABOUTME: Includes screen reader basics, color independence, touch targets, and motion preferences.
 
 # Accessibility Principles
-
 This reference covers platform-agnostic accessibility principles that apply to both Apple and Web platforms. For platform-specific implementation details, see the respective platform references.
 
 ---

@@ -1,8 +1,5 @@
-# ABOUTME: RICE prioritization framework reference for product managers.
-# ABOUTME: Includes formula, scoring scales, examples, and facilitation tips.
 
 # RICE Scoring Framework
-
 ## Overview
 
 RICE is a prioritization framework developed by Intercom that scores initiatives based on four factors:

@@ -1,8 +1,5 @@
-# ABOUTME: Data flow architecture patterns for React Native applications
-# ABOUTME: Covers where logic lives, separation of concerns, and hook patterns
 
 # Data Flow Patterns
-
 ## Layered Architecture
 
 ```

@@ -1,8 +1,5 @@
-# ABOUTME: Generic feature brief template for medium-complexity features.
-# ABOUTME: Platform-agnostic structure; load platform-specific templates for examples.
 
 # [Feature Name] - Feature Brief
-
 **Quick reference for lightweight feature planning. Use PRD template for complex features.**
 
 ---

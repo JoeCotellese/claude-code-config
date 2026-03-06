@@ -1,8 +1,5 @@
-# ABOUTME: Value/Effort Matrix (2x2) prioritization framework reference.
-# ABOUTME: Includes quadrant definitions, workshop format, and common pitfalls.
 
 # Value/Effort Matrix
-
 ## Overview
 
 The Value/Effort Matrix (also called Impact/Effort, Value/Complexity, or Priority Matrix) is a simple 2x2 grid for prioritizing features based on two dimensions:

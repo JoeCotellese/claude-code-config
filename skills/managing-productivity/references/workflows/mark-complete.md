@@ -1,8 +1,5 @@
 # Workflow 5: Mark Task Complete (with Pull Next Action)
 
-<!-- ABOUTME: Defines the workflow for completing tasks and pulling next actions from Obsidian backlog. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "Done with [task]"
 - "I completed [task]"

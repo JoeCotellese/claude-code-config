@@ -1,8 +1,5 @@
-# ABOUTME: React Native architecture patterns for component hierarchy and screen structure
-# ABOUTME: Covers composition strategies, smart/dumb components, and feature organization
 
 # Architecture Patterns
-
 ## Component Hierarchy
 
 ### Screen → Container → Presentational Pattern

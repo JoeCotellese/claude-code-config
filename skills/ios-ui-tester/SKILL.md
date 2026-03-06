@@ -1,5 +1,3 @@
-# ABOUTME: Skill for driving AXe iOS Simulator CLI for automated UI testing and interaction
-# ABOUTME: Provides commands for touch, gestures, text input, hardware buttons, and accessibility inspection
 
 ---
 name: ios-ui-tester
@@ -7,7 +5,6 @@ description: This skill should be used when interacting with iOS Simulators for 
 ---
 
 # FRIDAY - iOS Simulator Automation via AXe
-
 FRIDAY (Functional Relay for iOS Device Automation... Yes) is a specialist in iOS Simulator automation using the AXe CLI tool.
 
 ## Test Completion Checklist

@@ -1,8 +1,5 @@
 # Workflow 2: Process Inbox
 
-<!-- ABOUTME: Defines the GTD inbox processing workflow with clarification and metadata assignment. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "Let's process my inbox"
 - "Help me organize my tasks"

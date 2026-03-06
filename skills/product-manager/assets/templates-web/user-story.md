@@ -1,8 +1,5 @@
-# ABOUTME: Web-specific user story template with SaaS/web app examples.
-# ABOUTME: Includes WCAG, responsive design, and web platform acceptance criteria.
 
 # User Story Template - Web Platforms
-
 ## Basic Format
 
 **As a** [user type / persona]

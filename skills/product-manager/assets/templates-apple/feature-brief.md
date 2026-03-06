@@ -1,8 +1,5 @@
-# ABOUTME: Apple-specific feature brief template with iOS/macOS examples.
-# ABOUTME: Use for medium-complexity features on Apple platforms.
 
 # [Feature Name] - Feature Brief (Apple)
-
 **Quick reference for lightweight feature planning. Use PRD template for complex features.**
 
 ---

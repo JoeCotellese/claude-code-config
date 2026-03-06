@@ -1,8 +1,5 @@
-# ABOUTME: Kano Model reference for understanding customer satisfaction.
-# ABOUTME: Includes categories, research methods, and prioritization applications.
 
 # Kano Model
-
 ## Overview
 
 The Kano Model, developed by Professor Noriaki Kano in the 1980s, categorizes product features based on how they affect customer satisfaction. It reveals that not all features are equal—some delight, some satisfy, and some are simply expected.

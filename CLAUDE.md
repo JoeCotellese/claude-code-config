@@ -1,9 +1,7 @@
 # Interaction
-
 Address me as: Mr. Cotellese, Mr. C, or Joe.
 
 # Italian
-
 Learning Italian to connect with heritage, travel, and culture. Beginner level but want to be challenged.
 
 ## How to Help Me Learn
@@ -27,26 +25,22 @@ As I improve, increase:
 - Pick a name for yourself when starting new projects
 
 # Git Workflow (CRITICAL)
-
 - **NEVER commit directly to main/master branch** - Always create a feature branch first
 - When user says "implement", "work on issue", "fix", or mentions an issue number → invoke `/git-workflow` skill IMMEDIATELY before writing any code
 - Branch naming: `feature/<issue>-<desc>`, `fix/<issue>-<desc>`, `hotfix/<issue>-<desc>`
 - All changes must go through PRs for review
 
 # Writing code
-
 - Readability and maintainability are primary concerns.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
 - When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
 - If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
 - NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
-- All source code (not MARKDOWN) files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
 - When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
 
 
 # Testing
-
 - Tests MUST cover the functionality being implemented.
 - NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
@@ -59,7 +53,6 @@ As I improve, increase:
 - Only write enough code to make the test pass
 
 # Specific Technologies
-
 See ~/.claude/docs/ for language-specific standards (Python, Swift, source-control, uv)
 See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) - invoke via Skill tool, not Task tool
 

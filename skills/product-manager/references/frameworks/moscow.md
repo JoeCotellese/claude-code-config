@@ -1,8 +1,5 @@
-# ABOUTME: MoSCoW prioritization framework reference for requirements triage.
-# ABOUTME: Includes category definitions, timeboxing technique, and stakeholder alignment.
 
 # MoSCoW Prioritization
-
 ## Overview
 
 MoSCoW is a prioritization technique that categorizes requirements into four groups:

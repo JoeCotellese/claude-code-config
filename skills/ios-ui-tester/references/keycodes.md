@@ -1,8 +1,5 @@
-# ABOUTME: HID keycode reference for AXe CLI keyboard input commands
-# ABOUTME: Maps keyboard keys to their numeric HID keycodes for axe key and key-sequence commands
 
 # HID Keycodes Reference
-
 This reference provides HID keycodes for use with `axe key` and `axe key-sequence` commands.
 
 ## Letters

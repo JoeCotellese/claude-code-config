@@ -1,8 +1,5 @@
-# ABOUTME: Web-specific feature brief template with SaaS/web app examples.
-# ABOUTME: Use for medium-complexity features on web platforms.
 
 # [Feature Name] - Feature Brief (Web)
-
 **Quick reference for lightweight feature planning. Use PRD template for complex features.**
 
 ---

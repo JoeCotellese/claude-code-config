@@ -1,8 +1,5 @@
-# ABOUTME: API integration patterns for React Native applications
-# ABOUTME: Covers data fetching, caching, error handling, and optimistic updates
 
 # API Integration Patterns
-
 ## Fetching Strategies
 
 ### Strategy Comparison

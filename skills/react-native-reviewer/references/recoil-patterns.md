@@ -1,8 +1,5 @@
-# ABOUTME: Recoil state management patterns and best practices reference
-# ABOUTME: Covers atom design, selectors, performance, and common anti-patterns
 
 # Recoil State Management Patterns
-
 ## Atom Design
 
 ### Naming Conventions

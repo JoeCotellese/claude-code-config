@@ -1,8 +1,5 @@
-# ABOUTME: Template for recording prioritization scores across features.
-# ABOUTME: Supports RICE, Weighted Scoring, and custom frameworks.
 
 # Prioritization Scoring Worksheet
-
 **Session Date:** [Date]
 **Participants:** [Names]
 **Framework:** [RICE / Weighted Scoring / Custom]

@@ -1,8 +1,5 @@
-# ABOUTME: React Native component design patterns and best practices reference
-# ABOUTME: Covers composition, props design, render optimization, and common anti-patterns
 
 # React Native Component Patterns
-
 ## Component Structure
 
 ### File Organization

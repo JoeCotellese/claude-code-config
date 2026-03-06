@@ -1,8 +1,5 @@
-# ABOUTME: Web-specific quick spec template with SaaS/web app examples.
-# ABOUTME: Use for micro features on web platforms.
 
 # Quick Spec Template - Web Platforms
-
 **Use for**: Single-interaction features, obvious UX, low risk. If you're debating whether
 this needs a full brief, it probably doesn't.
 

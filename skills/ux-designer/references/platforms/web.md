@@ -1,8 +1,5 @@
-# ABOUTME: Web platform UX reference covering WCAG 2.1, responsive design, and component patterns.
-# ABOUTME: Includes accessibility requirements, breakpoints, focus management, and common UI patterns.
 
 # Web Platform UX Reference
-
 This reference covers web-specific UX patterns including WCAG 2.1 accessibility, responsive design, component guidelines, and interaction patterns for modern web applications.
 
 ---

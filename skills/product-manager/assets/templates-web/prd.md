@@ -1,8 +1,5 @@
-# ABOUTME: Web-specific PRD template for complex SaaS/web app features.
-# ABOUTME: Includes WCAG, responsive design, SEO, and SaaS business model sections.
 
 # [Feature Name] - Product Requirements Document (Web)
-
 ## Executive Summary
 
 **Feature**: [One-sentence description]

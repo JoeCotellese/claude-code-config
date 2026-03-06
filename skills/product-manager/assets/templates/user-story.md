@@ -1,8 +1,5 @@
-# ABOUTME: Generic user story template with acceptance criteria patterns.
-# ABOUTME: Platform-agnostic structure; load platform-specific templates for examples.
 
 # User Story Template
-
 ## Basic Format
 
 **As a** [user type / persona]

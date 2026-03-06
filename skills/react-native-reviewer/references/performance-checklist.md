@@ -1,8 +1,5 @@
-# ABOUTME: React Native performance optimization checklist and patterns
-# ABOUTME: Covers re-render prevention, list optimization, images, and profiling
 
 # React Native Performance Checklist
-
 ## Re-render Prevention
 
 ### Identify Unnecessary Re-renders

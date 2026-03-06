@@ -1,8 +1,5 @@
-# ABOUTME: Generic quick spec template for micro features.
-# ABOUTME: Platform-agnostic structure; load platform-specific templates for examples.
 
 # Quick Spec Template
-
 **Use for**: Single-interaction features, obvious UX, low risk. If you're debating whether
 this needs a full brief, it probably doesn't.
 

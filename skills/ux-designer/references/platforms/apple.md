@@ -1,8 +1,5 @@
-# ABOUTME: Apple platform UX reference for iOS, iPadOS, macOS, watchOS, and tvOS.
-# ABOUTME: Covers HIG principles, SF Symbols, device patterns, Dark Mode, and review severity guidance.
 
 # Apple Platform UX Reference
-
 This reference covers Apple Human Interface Guidelines (HIG) for designing native iOS, iPadOS, macOS, watchOS, and tvOS experiences.
 
 ---

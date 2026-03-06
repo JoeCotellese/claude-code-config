@@ -1,8 +1,5 @@
 # Workflow 4: Project Check-in
 
-<!-- ABOUTME: Defines the workflow for reviewing project status and detecting stalled projects. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "What's the status of [project]?"
 - "Show me my projects"

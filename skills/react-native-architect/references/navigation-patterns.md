@@ -1,8 +1,5 @@
-# ABOUTME: React Navigation architecture patterns and best practices
-# ABOUTME: Covers stack/tab design, deep linking, params, and modal patterns
 
 # Navigation Patterns
-
 ## Navigator Structure
 
 ### Basic Stack + Tabs

@@ -1,8 +1,5 @@
-# ABOUTME: React Hooks patterns and best practices reference for code review
-# ABOUTME: Covers rules of hooks, dependency arrays, memoization, and common anti-patterns
 
 # React Hooks Patterns
-
 ## Rules of Hooks (Enforced by ESLint)
 
 1. **Only call hooks at the top level** - Never inside loops, conditions, or nested functions

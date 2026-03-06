@@ -1,8 +1,5 @@
-# ABOUTME: React Native accessibility (a11y) best practices reference
-# ABOUTME: Covers screen readers, accessibility props, and testing guidelines
 
 # React Native Accessibility
-
 ## Core Accessibility Props
 
 ### accessibilityLabel

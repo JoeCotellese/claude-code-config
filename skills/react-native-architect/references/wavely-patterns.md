@@ -1,8 +1,5 @@
-# ABOUTME: Wavely-specific patterns and conventions as baseline reference
-# ABOUTME: Documents existing patterns to maintain consistency or consciously deviate
 
 # Wavely Existing Patterns
-
 This reference documents the established patterns in the Wavely codebase. When architecting new features, these serve as the baseline. Deviate consciously when there's a clear benefit.
 
 ## Directory Structure

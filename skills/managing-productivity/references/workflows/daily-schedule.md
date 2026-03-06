@@ -1,8 +1,5 @@
 # Workflow 8: What's My Day Look Like?
 
-<!-- ABOUTME: Defines the workflow for presenting a user's daily schedule with free blocks and task suggestions. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "What's my schedule today?"
 - "Show me my day"

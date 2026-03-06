@@ -1,8 +1,5 @@
 # Output Components
 
-<!-- ABOUTME: Defines reusable visual components for terminal output formatting. -->
-<!-- ABOUTME: Provides a design system for consistent, scannable productivity skill responses. -->
-
 ## Design Principles
 
 1. **Scannable** — Users should grasp the key information in 2-3 seconds

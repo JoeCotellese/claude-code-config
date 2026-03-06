@@ -1,8 +1,5 @@
-# ABOUTME: Template for documenting prioritization decisions and rationale.
-# ABOUTME: Use to maintain a record of why features were prioritized or deprioritized.
 
 # Prioritization Decision Log
-
 Use this template to document important prioritization decisions and their rationale. This creates a historical record for future reference and helps teams understand why certain decisions were made.
 
 ---

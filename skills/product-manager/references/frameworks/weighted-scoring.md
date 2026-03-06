@@ -1,8 +1,5 @@
-# ABOUTME: Weighted Scoring framework for custom prioritization criteria.
-# ABOUTME: Includes criteria selection, weighting methods, and scoring templates.
 
 # Weighted Scoring Model
-
 ## Overview
 
 Weighted Scoring is a flexible prioritization framework where you:

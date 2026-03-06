@@ -1,8 +1,5 @@
 # Workflow 3: Quick Capture
 
-<!-- ABOUTME: Defines the fast-capture workflow for adding tasks to inbox without clarification. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "Add task: [description]"
 - "Capture: [description]"

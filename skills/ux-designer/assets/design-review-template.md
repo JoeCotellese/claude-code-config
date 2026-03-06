@@ -1,8 +1,5 @@
-# ABOUTME: Structured template for design review output.
-# ABOUTME: Provides consistent format with severity ratings, guideline citations, and actionable fixes.
 
 # Design Review Template
-
 Use this template for structured design review output. Adapt sections as needed based on review scope.
 
 ---
@@ -11,7 +8,6 @@ Use this template for structured design review output. Adapt sections as needed 
 
 ```markdown
 # Design Review: [Screen/Component Name]
-
 **Platform:** [Apple iOS / Apple macOS / Web / Cross-platform]
 **Review Date:** [Date]
 **Reviewer:** Claude (UX Designer Skill)
@@ -235,7 +231,6 @@ For faster reviews, use this condensed format:
 
 ```markdown
 # Quick Review: [Component]
-
 ## Pass
 - [x] Touch targets ≥ 44pt
 - [x] Color contrast ≥ 4.5:1

@@ -1,8 +1,5 @@
 # Workflow 10: Process Reminders Inbox
 
-<!-- ABOUTME: Defines the workflow for processing Apple Reminders as a quick-capture inbox. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "Process my reminders"
 - "Check Reminders inbox"

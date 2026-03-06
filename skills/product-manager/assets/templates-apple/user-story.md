@@ -1,8 +1,5 @@
-# ABOUTME: Apple-specific user story template with iOS/macOS examples.
-# ABOUTME: Includes VoiceOver, Dynamic Type, and Apple platform acceptance criteria.
 
 # User Story Template - Apple Platforms
-
 ## Basic Format
 
 **As a** [user type / persona]

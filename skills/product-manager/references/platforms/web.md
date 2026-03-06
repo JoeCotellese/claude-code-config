@@ -1,8 +1,5 @@
-# ABOUTME: Web platform considerations for product managers.
-# ABOUTME: Covers accessibility (WCAG), responsive design, PWA, SEO, SaaS patterns, and analytics.
 
 # Web Platform Considerations
-
 This reference covers web-specific product considerations including accessibility standards, responsive design, Progressive Web Apps, SEO, SaaS patterns, and analytics implementation.
 
 ---

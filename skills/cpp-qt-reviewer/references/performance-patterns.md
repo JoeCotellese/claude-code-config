@@ -1,8 +1,5 @@
-# ABOUTME: Performance patterns reference for C++/Qt code reviews.
-# ABOUTME: Covers copies, moves, containers, reserves, QString, and hot-path optimization.
 
 # Performance Patterns
-
 C++ gives you the tools for high performance — but also the rope to hang yourself. These patterns catch the most common performance regressions.
 
 ## Pass by Const Reference

@@ -1,8 +1,5 @@
-# ABOUTME: Apple-specific PRD template for complex features on iOS/macOS.
-# ABOUTME: Includes App Store, ecosystem integration, and Apple accessibility sections.
 
 # [Feature Name] - Product Requirements Document (Apple)
-
 ## Executive Summary
 
 **Feature**: [One-sentence description]

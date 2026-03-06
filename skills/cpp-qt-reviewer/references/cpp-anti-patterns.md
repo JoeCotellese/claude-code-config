@@ -1,8 +1,5 @@
-# ABOUTME: Common C++ anti-patterns reference for code reviews.
-# ABOUTME: Covers const correctness, C-style habits, modern C++17/20 idioms, and naming.
 
 # C++ Anti-Patterns
-
 Common mistakes, especially from developers coming from C or older C++ standards.
 
 ## Const Correctness

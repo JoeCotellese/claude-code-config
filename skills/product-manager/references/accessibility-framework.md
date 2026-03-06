@@ -1,8 +1,5 @@
-# ABOUTME: Platform-agnostic accessibility framework for product managers.
-# ABOUTME: Covers accessibility tiers, acceptance criteria patterns, and testing.
 
 # Accessibility Framework
-
 This reference provides a platform-agnostic approach to accessibility requirements for product features.
 
 For platform-specific implementation details:

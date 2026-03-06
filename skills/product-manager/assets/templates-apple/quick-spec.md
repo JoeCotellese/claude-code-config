@@ -1,8 +1,5 @@
-# ABOUTME: Apple-specific quick spec template with iOS/macOS examples.
-# ABOUTME: Use for micro features on Apple platforms.
 
 # Quick Spec Template - Apple Platforms
-
 **Use for**: Single-interaction features, obvious UX, low risk. If you're debating whether
 this needs a full brief, it probably doesn't.
 

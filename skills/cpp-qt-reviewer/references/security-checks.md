@@ -1,8 +1,5 @@
-# ABOUTME: Security vulnerability checklist for C++/Qt code reviews.
-# ABOUTME: Covers buffer overflows, integer overflow, injection, format strings, and input validation.
 
 # Security Checks
-
 C++ security issues are particularly dangerous because they often lead to undefined behavior — crashes, data corruption, or exploitable vulnerabilities that silently compile.
 
 ## Buffer Overflows

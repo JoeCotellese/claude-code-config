@@ -1,8 +1,5 @@
-# ABOUTME: Guide for facilitating prioritization sessions with stakeholders.
-# ABOUTME: Covers setup, probing questions, handling disagreements, and documentation.
 
 # Prioritization Facilitation Guide
-
 This guide helps product managers run effective prioritization sessions with stakeholders, whether using RICE, Kano, Value/Effort, MoSCoW, or Weighted Scoring frameworks.
 
 ---

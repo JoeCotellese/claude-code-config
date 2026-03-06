@@ -4,7 +4,6 @@ description: This skill should be used when consulting on C++/Qt app architectur
 ---
 
 # C++/Qt Architect
-
 ## Overview
 
 Expert architectural consultation for C++ applications using the Qt framework. This skill helps developers think through app architecture before writing code, covering desktop clients, embedded systems (Raspberry Pi), and server components. Provides structured analysis, pattern recommendations, and concrete implementation guidance for both Qt5 and Qt6 projects.
@@ -144,8 +143,6 @@ When consulting on architecture, provide:
 
 **Code Scaffolding**
 ```cpp
-// ABOUTME: Controller for device communication
-// ABOUTME: Handles serial/network I/O in worker thread
 
 #pragma once
 

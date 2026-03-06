@@ -1,8 +1,5 @@
-# ABOUTME: Qt-specific pitfalls reference for C++/Qt code reviews.
-# ABOUTME: Covers Q_OBJECT macro, signal/slot threading, event loop blocking, and QString misuse.
 
 # Qt-Specific Pitfalls
-
 These are issues that compile and run — until they don't. Qt's meta-object system and event loop have specific rules that, when violated, cause subtle and hard-to-debug failures.
 
 ## Missing Q_OBJECT Macro

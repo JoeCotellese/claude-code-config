@@ -1,8 +1,5 @@
-# ABOUTME: Concurrency patterns reference for C++/Qt code reviews.
-# ABOUTME: Covers data races, mutexes, deadlocks, Qt threading, and atomic operations.
 
 # Concurrency
-
 Threading bugs are the hardest to find because they're non-deterministic — the code works 99% of the time, then fails in production. Every piece of shared mutable state must be scrutinized.
 
 ## Data Races

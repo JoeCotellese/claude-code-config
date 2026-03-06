@@ -1,8 +1,5 @@
-# ABOUTME: Platform-agnostic analytics framework for product managers.
-# ABOUTME: Covers event naming, success metrics, A/B testing, and dashboards.
 
 # Analytics Framework
-
 This reference provides a platform-agnostic approach to analytics implementation for product features.
 
 ---

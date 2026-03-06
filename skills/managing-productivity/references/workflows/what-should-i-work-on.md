@@ -1,8 +1,5 @@
 # Workflow 1: What Should I Be Working On?
 
-<!-- ABOUTME: Defines the workflow for suggesting tasks based on context, energy, and calendar availability. -->
-<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
-
 ## Trigger Phrases
 - "What should I be working on?"
 - "What should I do next?"

@@ -1,8 +1,5 @@
-# ABOUTME: Micro-copy best practices and information architecture principles.
-# ABOUTME: Covers button labels, error messages, content hierarchy, empty states, and onboarding copy.
 
 # Micro-copy & Information Architecture
-
 This reference covers the words and structure that make interfaces understandable: micro-copy (small pieces of UI text) and information architecture (how content is organized).
 
 ---

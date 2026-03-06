@@ -1,8 +1,5 @@
-# ABOUTME: Visual design principles covering color, typography, spacing, and iconography.
-# ABOUTME: Platform-agnostic guidance with accessibility considerations.
 
 # Visual Design Principles
-
 This reference covers foundational visual design principles that apply across platforms, with accessibility considerations throughout.
 
 ---

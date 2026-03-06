@@ -1,8 +1,5 @@
-# ABOUTME: Cross-platform interaction patterns for navigation, lists, forms, and modals.
-# ABOUTME: Covers common UI patterns with platform-specific implementation notes.
 
 # Interaction Patterns
-
 This reference covers common UI interaction patterns that apply across platforms. Platform-specific implementation details are noted where relevant.
 
 ---

@@ -1,8 +1,5 @@
-# ABOUTME: jq recipes for parsing iOS accessibility tree output from describe_ui
-# ABOUTME: Provides patterns for extracting elements, coordinates, and screen fingerprints
 
 # jq Recipes for Accessibility Trees
-
 Patterns for parsing `describe_ui` / `axe describe-ui` JSON output.
 
 ## Setup
