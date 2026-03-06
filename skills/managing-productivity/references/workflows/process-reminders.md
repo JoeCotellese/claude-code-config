@@ -1,5 +1,8 @@
 # Workflow 10: Process Reminders Inbox
 
+<!-- ABOUTME: Defines the workflow for processing Apple Reminders as a quick-capture inbox. -->
+<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
+
 ## Trigger Phrases
 - "Process my reminders"
 - "Check Reminders inbox"
@@ -17,20 +20,11 @@
 
    Filter results to only show items with `actionStatus: "PotentialAction"` (incomplete).
 
-   Show count: "Found X items in your Reminders Todo list."
-
-   If empty: "Reminders inbox is at zero!"
+   Show count (see Sample Output below).
 
 2. **Process each reminder one by one:**
 
-   For each item, present it and apply GTD clarification:
-
-   ```
-   Reminder 1 of X:
-   "[reminder name]"
-
-   What would you like to do with this?
-   ```
+   For each item, present it and apply GTD clarification.
 
 3. **Determine destination using GTD clarification:**
 
@@ -57,7 +51,6 @@
        duration: "[estimated time]"
      }]
    ```
-   Then mark reminder complete (user does this manually in Reminders app, or note it for batch completion).
 
    **→ Obsidian Note:**
    - For reference: Write to `2_Literature Notes/[Title].md` or `3_Permanent Notes/[Title].md`
@@ -72,16 +65,79 @@
      }]
    ```
 
-5. **After processing, provide summary:**
-   ```
-   Processed X reminders from Todo List:
-   - Y tasks created in Todoist
-   - Z notes saved to Obsidian
-   - W items marked for completion
+5. **After processing, provide summary with items to mark complete manually.**
 
-   Please mark these reminders as complete in the Reminders app:
-   - [list of processed reminder names]
-   ```
+## Sample Output
+
+**Starting reminders processing:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📱 REMINDERS PROCESSING                                    │
+└─────────────────────────────────────────────────────────────┘
+
+  Found 5 items in your Reminders Todo list.
+```
+
+**Empty inbox:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📱 REMINDERS PROCESSING                                    │
+└─────────────────────────────────────────────────────────────┘
+
+  ✓ Reminders inbox is at zero!
+```
+
+**Processing an item:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  [1/5]
+
+  Reminder: "Call dentist"
+
+  Captured: Today at 2:15 PM
+
+─────────────────────────────────────────────────────────────
+  [k]eep → Todoist  │  [s]omeday  │  [n]ote  │  [d]one  │  [x] trash
+```
+
+**After moving to Todoist:**
+```
+  ✓ Created in Next Actions: "Call dentist to schedule cleaning"
+    └─ ○ low  │  15m  │  @phone
+```
+
+**End of processing:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ✓ REMINDERS COMPLETE                                       │
+└─────────────────────────────────────────────────────────────┘
+
+── Summary ──────────────────────────────────────────────────
+
+  Processed:  5 items
+  ✓ Todoist:   3 tasks created
+  📝 Notes:    1 saved to Obsidian
+  ✕ Trashed:   1
+
+── Action Required ──────────────────────────────────────────
+
+  Please mark these reminders complete in the Reminders app:
+
+  ☐ Call dentist
+  ☐ Research vacation spots
+  ☐ Book flight
+  ☐ Article idea: productivity systems
+  ☐ Old note - delete
+```
+
+## Output Components Used
+
+- **Section Header** — `📱 REMINDERS PROCESSING`
+- **Progress indicator** — `[1/5]` counter
+- **Item card** — Reminder name, capture time, action options
+- **Confirmation messages** — `✓` for created items
+- **Summary statistics** — End-of-workflow totals
+- **Action Required section** — Items needing manual completion
+- **Action footer** — Available commands
 
 ## Marking Reminders Complete
 
@@ -93,10 +149,21 @@
 
 When user says "process inbox" or "check inboxes":
 
-1. First check Todoist Inbox count
-2. Then check Reminders Todo List count
-3. Report: "You have X items in Todoist Inbox and Y items in Reminders Todo List. Which would you like to process first?"
-4. Process the chosen inbox, then offer to process the other
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📥 INBOX STATUS                                            │
+└─────────────────────────────────────────────────────────────┘
+
+  Todoist Inbox:     8 items
+  Reminders Todo:    3 items
+                    ─────────
+  Total:            11 items
+
+─────────────────────────────────────────────────────────────
+  [t]odoist first  │  [r]eminders first  │  [c]ancel
+```
+
+Process the chosen inbox, then offer to process the other.
 
 ## Implementation Notes
 

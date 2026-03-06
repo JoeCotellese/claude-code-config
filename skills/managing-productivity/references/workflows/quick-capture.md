@@ -1,5 +1,8 @@
 # Workflow 3: Quick Capture
 
+<!-- ABOUTME: Defines the fast-capture workflow for adding tasks to inbox without clarification. -->
+<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
+
 ## Trigger Phrases
 - "Add task: [description]"
 - "Capture: [description]"
@@ -18,13 +21,52 @@
      }]
    ```
 
-2. Confirm capture: "Captured: '[task description]' to your inbox. Want to process it now or leave it for later?"
+2. Confirm capture (see Sample Output below)
 
 3. If user says "now" → Enter Workflow 2 for just that item
-4. If user says "later" → "Got it. It'll be there when you process your inbox next."
+4. If user says "later" → End workflow
+
+## Sample Output
+
+**After capture:**
+```
+  ✓ Captured: "Call mom about birthday plans"
+    └─ Added to Inbox
+
+─────────────────────────────────────────────────────────────
+  [p]rocess now  │  [l]ater
+```
+
+**If user chooses "process now":**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Task: "Call mom about birthday plans"
+
+── Metadata ─────────────────────────────────────────────────
+
+  Inferred:  @phone  │  ○ low  │  15m
+
+  Accept these? Or adjust:
+
+─────────────────────────────────────────────────────────────
+  [y]es, accept  │  [c]ontext  │  [e]nergy  │  [t]ime
+```
+
+**If user chooses "later":**
+```
+  Got it. It'll be there when you process your inbox next.
+```
+
+## Output Components Used
+
+- **Confirmation message** — `✓ Captured: "[task]"`
+- **Action footer** — Process now or later options
+- **Metadata section** — When processing immediately (reuses inbox components)
 
 ## Implementation Notes
 
 - Capture should be FAST - don't ask clarifying questions during capture
 - Always capture to Inbox first
 - Clarify and add metadata later during processing
+- One-line confirmation keeps the flow quick

@@ -1,5 +1,8 @@
 # Workflow 1: What Should I Be Working On?
 
+<!-- ABOUTME: Defines the workflow for suggesting tasks based on context, energy, and calendar availability. -->
+<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
+
 ## Trigger Phrases
 - "What should I be working on?"
 - "What should I do next?"
@@ -30,20 +33,73 @@
    ```
    Then filter results by duration field to match available calendar windows.
 
-4. Present the top 3-5 matching options with calendar context:
-   ```
-   You have 45 minutes before your 2pm meeting. Here's what makes sense right now:
-
-   1. Review pull request @computer #energy-low (15m)
-   2. Create project reference file @computer #energy-medium (15m)
-   3. Look up definition @computer #energy-low (5m)
-
-   I'd recommend #1 - it's a good fit for your available time and current energy. Want to tackle it?
-   ```
+4. Present using output components (see Sample Output below)
 
 5. After user completes a task:
    - Mark it complete in Todoist using `mcp__todoist__complete-tasks`
-   - Ask: "Great! Want another suggestion or taking a break?"
+   - Show completion confirmation, offer next suggestion
+
+## Sample Output
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📋 SUGGESTED TASKS                                         │
+└─────────────────────────────────────────────────────────────┘
+
+  You have 45 minutes before your 2pm meeting.
+  Context: @computer  │  Energy: low
+
+  # │ Task                                  Energy  Time   Context
+ ───┼────────────────────────────────────────────────────────────
+  1 │ Review pull request                      ○    15m   @computer
+  2 │ Create project reference file            ◐    15m   @computer
+  3 │ Look up definition                       ○     5m   @computer
+
+  ╭─────────────────────────────────────────────────────────╮
+  │  ▸ Recommendation: #1 — fits your time and energy       │
+  ╰─────────────────────────────────────────────────────────╯
+
+─────────────────────────────────────────────────────────────
+  [1-3] Start task  │  [m]ore options  │  [s]kip
+```
+
+**After task completion:**
+```
+  ✓ Task completed: "Review pull request"
+
+  Want another suggestion, or taking a break?
+
+─────────────────────────────────────────────────────────────
+  [n]ext task  │  [d]one for now
+```
+
+**When no tasks match filters:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📋 SUGGESTED TASKS                                         │
+└─────────────────────────────────────────────────────────────┘
+
+  ⚠ No tasks match your current filters
+    Context: @errands  │  Energy: low  │  Time: 15m
+
+  Suggestions:
+  ▸ Relax energy filter (○ → ◐)
+  ▸ Expand time window
+  ▸ Check a different context
+
+─────────────────────────────────────────────────────────────
+  [r]elax filters  │  [a]ll tasks  │  [c]ancel
+```
+
+## Output Components Used
+
+- **Section Header** — `📋 SUGGESTED TASKS`
+- **Context line** — Shows current filters (context, energy, time)
+- **Task table** — Aligned columns: #, description, energy icon, time, context
+- **Recommendation callout** — Highlighted suggestion with reason
+- **Action footer** — Available commands
+- **Confirmation message** — For task completion
+- **Warning** — When no matches found
 
 ## Implementation Notes
 

@@ -1,5 +1,8 @@
 # Workflow 2: Process Inbox
 
+<!-- ABOUTME: Defines the GTD inbox processing workflow with clarification and metadata assignment. -->
+<!-- ABOUTME: Uses output components for consistent, scannable terminal formatting. -->
+
 ## Trigger Phrases
 - "Let's process my inbox"
 - "Help me organize my tasks"
@@ -15,7 +18,7 @@
      limit: 50
    ```
 
-   Show count: "Found X items in your inbox. Let's process them one by one."
+   Show count and begin processing (see Sample Output below).
 
 2. For each item, follow the GTD clarification workflow:
 
@@ -62,6 +65,107 @@
 
 3. Continue until inbox is empty
 
+## Sample Output
+
+**Starting inbox processing:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📥 INBOX PROCESSING                                        │
+└─────────────────────────────────────────────────────────────┘
+
+  Found 12 items in your inbox. Let's process them.
+```
+
+**Processing an item:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  [1/12]
+
+  Original:  "Kids sketcher socks"
+
+  Rewrite:   "Buy Kids Skechers socks"
+             └─ Added verb, fixed spelling
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [k]eep rewrite  │  [e]dit  │  [d]elete  │  [s]kip
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**After keeping — collect metadata:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  [1/12]
+
+  Task: "Buy Kids Skechers socks"
+
+── Metadata ─────────────────────────────────────────────────
+
+  Inferred:  @errands  │  ○ low  │  15m
+
+  Accept these? Or adjust:
+
+─────────────────────────────────────────────────────────────
+  [y]es, accept  │  [c]ontext  │  [e]nergy  │  [t]ime
+```
+
+**Item moved to Next Actions:**
+```
+  ✓ Added to Next Actions: "Buy Kids Skechers socks"
+    └─ ○ low  │  15m  │  @errands
+```
+
+**Item moved to Someday/Maybe:**
+```
+  → Moved to Someday/Maybe: "Learn to play piano"
+```
+
+**Item deleted:**
+```
+  ✕ Deleted: "Old reminder that no longer applies"
+```
+
+**Creating a project:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  [5/12]
+
+  Task: "Plan kitchen renovation"
+
+  This looks like a multi-step project.
+
+── Project Setup ────────────────────────────────────────────
+
+  ✓ Created project note in Obsidian
+    📄 obsidian://open?vault=obsidian-vault&file=4_Projects%2FKitchen%20Renovation
+
+  What's the first action to take?
+```
+
+**End of processing:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ✓ INBOX COMPLETE                                           │
+└─────────────────────────────────────────────────────────────┘
+
+── Summary ──────────────────────────────────────────────────
+
+  Processed:  12 items
+  ✓ Kept:      5 → Next Actions
+  → Moved:     3 → Someday/Maybe
+  ⏳ Waiting:   1 → Waiting For
+  📁 Projects:  1 created
+  ✕ Deleted:   2
+
+  Inbox: 0 items remaining ✓
+```
+
+## Output Components Used
+
+- **Section Header** — `📥 INBOX PROCESSING`
+- **Progress indicator** — `[1/12]` counter
+- **Inbox Item Card** — Original, rewrite, action options
+- **Subsection header** — `── Metadata ──`
+- **Confirmation messages** — `✓` `→` `✕` for different outcomes
+- **Summary statistics** — End-of-workflow totals
+- **Action footer** — Available commands at each step
+
 ## Metadata Collection for Next Actions
 
 When moving an item to Next Actions, use smart inference + confirmation:
@@ -79,9 +183,9 @@ Analyze the task and infer likely values using these patterns:
 - Unclear or flexible → `@anywhere`
 
 **Energy inference:**
-- Creative work, strategic thinking, writing, coding → `#energy-high`
-- Meetings, planning, research, data entry → `#energy-medium`
-- Admin tasks, booking, simple lookups, errands → `#energy-low`
+- Creative work, strategic thinking, writing, coding → `⚡` high
+- Meetings, planning, research, data entry → `◐` medium
+- Admin tasks, booking, simple lookups, errands → `○` low
 
 **Time inference:**
 - "Quick", "check", "look up" → `5m`
@@ -89,23 +193,9 @@ Analyze the task and infer likely values using these patterns:
 - "Write", "research", "plan" → `30m` to `1h`
 - "Deep work", "analyze", "design" → `1h` to `2h`
 
-### Step 2: Confirm with user via AskUserQuestion
+### Step 2: Confirm with user
 
-Use the AskUserQuestion tool with inferred defaults pre-selected:
-
-```
-AskUserQuestion with 3 questions:
-1. Context (header: "Context", pre-select inferred value)
-   - @computer, @phone, @errands, @home, @work, @anywhere
-
-2. Energy (header: "Energy", pre-select inferred value)
-   - high (deep work), medium (routine), low (admin)
-
-3. Time (header: "Duration", pre-select inferred value)
-   - 5m, 15m, 30m, 1h, 2h
-```
-
-User can quickly accept defaults or adjust as needed.
+Present inferred values and let user accept or adjust.
 
 ### Step 3: Apply metadata and move to Next Actions
 
