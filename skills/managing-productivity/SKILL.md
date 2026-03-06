@@ -391,6 +391,40 @@ Common parameter formats that differ from intuitive naming:
 - When filtering returns no matches, explain why and suggest relaxing criteria
 - When referencing vault documents, use Obsidian URL scheme links (e.g., `obsidian://open?vault=obsidian-vault&file=4_Projects%2FProjectName`)
 
+## Output Formatting
+
+All terminal output should follow the component patterns in [references/output-components.md](references/output-components.md).
+
+**Key principles:**
+
+1. **Use section headers** to separate major blocks of output
+2. **Use aligned tables** for task lists — keep metadata in columns, not inline
+3. **Use icons for energy levels**: `⚡` high, `◐` medium, `○` low
+4. **Use icons for status**: `●` busy, `○` free, `✓` done, `⏳` waiting
+5. **Show progress indicators** during multi-item processing (e.g., `[3/12]`)
+6. **Include action footers** showing available commands
+
+**Quick reference:**
+
+```
+Section header:   ┌─────────────────────────────┐
+                  │  📅 TITLE                   │
+                  └─────────────────────────────┘
+
+Subsection:       ── Title ─────────────────────
+
+Task row:         1 │ Task description    ⚡  30m  @computer
+
+Progress:         ━━━━━━━━━━━━━━━━━━━━━━━  [3/12]
+
+Recommendation:   ▸ Recommendation: #1 — reason
+
+Action footer:    ─────────────────────────────
+                  [k]eep  │  [d]elete  │  [s]kip
+```
+
+See [references/output-components.md](references/output-components.md) for the full component library with examples.
+
 ### Note to Future Self
 
 When processing inbox items, help rewrite vague captures into clear, actionable descriptions. Vague tasks become "orphans" that get deleted weeks later because the user can't remember what they meant.
