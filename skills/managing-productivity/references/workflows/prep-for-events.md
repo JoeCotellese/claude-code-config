@@ -76,3 +76,112 @@
 - **Presentations**: Build slides, practice delivery, prepare Q&A
 - **Interviews**: Review candidate background, prepare questions, coordinate with team
 - **Reviews**: Gather data/metrics, prepare status update, identify blockers
+
+---
+
+## Sample Output
+
+### Events Needing Preparation
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📋 UPCOMING EVENTS NEEDING PREP                            │
+└─────────────────────────────────────────────────────────────┘
+
+  Scanning next 7 days for events that need preparation...
+
+── Wednesday, Mar 6 ─────────────────────────────────────────
+  2:00 PM  │  AI Alliance Meeting (1h)
+           │  ✓ Found project: "Prep For AI Alliance Meeting"
+           │    Next: Review meeting minutes           ◐  15m
+
+── Thursday, Mar 7 ──────────────────────────────────────────
+  10:00 AM │  Client Demo with Acme Corp (1h)
+           │  ⚠ No prep found
+           │  Suggested:
+           │    • Review demo script
+           │    • Test demo environment
+           │    • Prepare Q&A responses
+
+── Friday, Mar 8 ────────────────────────────────────────────
+  3:00 PM  │  1:1 with Sarah (30m)
+           │  ⚠ No prep found
+           │  Suggested:
+           │    • Review previous 1:1 notes
+           │    • Prepare discussion topics
+
+── Summary ──────────────────────────────────────────────────
+
+  Events scanned: 8  │  Need prep: 2  │  Already prepped: 1
+
+─────────────────────────────────────────────────────────────
+  [1] Create prep for Acme Demo  │  [2] Create prep for 1:1
+  [a]ll  │  [s]kip  │  [d]one
+```
+
+### Creating Prep Project
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ✓ PREP PROJECT CREATED                                     │
+└─────────────────────────────────────────────────────────────┘
+
+  Event:    Client Demo with Acme Corp
+  When:     Thursday, Mar 7 at 10:00 AM (2 days away)
+
+  Created:
+    ✓ Project note in Obsidian
+      └─ 4_Projects/Prep for Acme Demo.md
+    ✓ Project task in Todoist
+      └─ "Prep for Acme Demo" with Obsidian link
+
+  What's your first prep action? (or pick a suggestion)
+
+  1 │ Review demo script
+  2 │ Test demo environment
+  3 │ Prepare Q&A responses
+  4 │ [custom] Enter your own
+
+─────────────────────────────────────────────────────────────
+  [1-4] Select  │  [s]kip for now
+```
+
+### Schedule Prep Time Prompt
+
+```
+  ✓ Added to Next Actions: "Review demo script"
+    └─ ◐ medium  │  30m  │  @computer
+
+  ╭─────────────────────────────────────────────────────────╮
+  │  ▸ This event is in 2 days.                             │
+  │    Want to schedule prep time on your calendar?         │
+  ╰─────────────────────────────────────────────────────────╯
+
+─────────────────────────────────────────────────────────────
+  [y]es, schedule  │  [n]o, I'll do it later
+```
+
+### No Events Need Prep
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📋 UPCOMING EVENTS                                         │
+└─────────────────────────────────────────────────────────────┘
+
+  Scanned next 7 days: 5 meetings found.
+
+  ✓ All events have preparation in place or don't need it.
+
+  Nothing to do here — you're on top of things!
+```
+
+## Output Components Used
+
+- **Section Header** — `📋 UPCOMING EVENTS NEEDING PREP`, `✓ PREP PROJECT CREATED`
+- **Subsection headers** — Day headers, `── Summary ──`
+- **Event cards** — Time, title, duration, prep status
+- **Status indicators** — `✓` found prep, `⚠` no prep
+- **Suggested actions** — Bulleted list under events
+- **Confirmation messages** — Created items with details
+- **Recommendation callout** — Boxed prompt for scheduling
+- **Action footer** — Available commands

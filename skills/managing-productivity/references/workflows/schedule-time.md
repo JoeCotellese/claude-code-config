@@ -225,3 +225,85 @@ mcp__reclaim__list_personal_events with:
   start: "2026-01-05T00:00:00Z",
   end: "2026-01-12T23:59:59Z"
 ```
+
+---
+
+## Sample Output
+
+### Initial Prompt
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📅 SCHEDULE TASK                                           │
+└─────────────────────────────────────────────────────────────┘
+
+  Task: "Write API documentation"
+        ⚡ high  │  2h  │  @computer  │  Due: Jan 10
+
+─────────────────────────────────────────────────────────────
+  [a]uto-schedule (Reclaim)  │  [m]anual (pick time)
+─────────────────────────────────────────────────────────────
+```
+
+### Path A: Auto-Schedule Confirmation
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ✓ SENT TO RECLAIM                                          │
+└─────────────────────────────────────────────────────────────┘
+
+  Task:      Write API documentation
+  Duration:  2 hours
+  Priority:  High (P1)
+  Due:       Friday, Jan 10
+
+  Reclaim will find the optimal time slot based on your
+  calendar. The task will appear once scheduled.
+
+─────────────────────────────────────────────────────────────
+  [v]iew Reclaim tasks  │  [d]one
+```
+
+### Path B: Manual Slot Selection
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📅 AVAILABLE SLOTS                                         │
+└─────────────────────────────────────────────────────────────┘
+
+  Task: "Write API documentation" (needs 2h)
+
+── Today ────────────────────────────────────────────────────
+  1 │  9:00 - 11:00  ○ FREE (2h)
+  2 │  2:30 -  5:00  ○ FREE (2.5h)
+
+── Tomorrow ─────────────────────────────────────────────────
+  3 │  8:00 - 10:00  ○ FREE (2h)              ★ Prime time
+
+  ╭─────────────────────────────────────────────────────────╮
+  │  ▸ Recommendation: #3 — morning slot for ⚡ high energy  │
+  ╰─────────────────────────────────────────────────────────╯
+
+─────────────────────────────────────────────────────────────
+  [1-3] Select slot  │  [n]ext week  │  [c]ancel
+```
+
+### Manual Schedule Confirmation
+
+```
+  ✓ Scheduled: "Write API documentation"
+    └─ Tomorrow (Mon) 8:00 - 10:00 AM
+
+  Added to your calendar and marked in Todoist.
+```
+
+## Output Components Used
+
+- **Section Header** — `📅 SCHEDULE TASK`, `✓ SENT TO RECLAIM`, `📅 AVAILABLE SLOTS`
+- **Task metadata line** — Energy, duration, context, due date
+- **Subsection headers** — `── Today ──`, `── Tomorrow ──`
+- **Slot list** — Numbered free blocks with duration
+- **Prime time marker** — `★` for morning deep work slots
+- **Recommendation callout** — Boxed suggestion with reasoning
+- **Confirmation message** — `✓` with task details
+- **Action footer** — Available commands
