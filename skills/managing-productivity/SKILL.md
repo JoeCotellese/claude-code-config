@@ -53,7 +53,8 @@ This single query loads `complete-tasks`, `add-tasks`, and `update-tasks` so the
 |-----------|---------|
 | **Todoist** (via MCP) | Task execution - inbox, next actions, waiting for, someday/maybe |
 | **Reminders** (via iMCP) | Quick capture inbox, processed into Todoist |
-| **Calendar** (via iMCP) | Availability checking, manual time blocking, meeting prep |
+| **Calendar** (via iMCP) | Availability checking, structured time blocking, meeting prep |
+| **Fantastical** (via AppleScript) | Quick natural-language event creation |
 | **Reclaim.ai** (via MCP) | Auto-scheduling tasks, habits, focus time protection |
 | **Email** (via zerolib-email MCP) | Email search, reading, sending, and management |
 | **Obsidian** | Project documentation and next action backlogs |
@@ -82,68 +83,22 @@ When user asks to "process inbox" or "check inboxes", check ALL tracked inboxes 
 - **Waiting For** (ID: `6fGQg8Mp7g5g8J9C`) - Tasks blocked on others
 - **Someday/Maybe** (ID: `6fHPx2qjgv2CGjpP`) - Future possibilities
 
-**Todoist MCP Tools:**
-- `mcp__todoist__add-tasks` - Create tasks with metadata
-- `mcp__todoist__find-tasks` - Search/filter tasks
-- `mcp__todoist__update-tasks` - Modify existing tasks
-- `mcp__todoist__complete-tasks` - Mark tasks complete
-- `mcp__todoist__find-projects` - List projects
-- `mcp__todoist__get-overview` - Get account overview
-
 ### Calendar Integration
 
-Integrates with primary calendar via iMCP for:
-- Automatic availability checking when suggesting tasks
-- Calculating free blocks between meetings
-- Blocking time on calendar for specific tasks
-- Finding optimal time slots for deep work
-- Prioritizing morning/early morning (before noon, especially before 9am) for high-energy tasks
+Three tools handle calendar operations, each with a distinct role:
 
-**iMCP Calendar Capabilities:**
-- `events_fetch` — List events (returns summary: title, times, hasNotes, hasUrl, attendeeCount)
-- `events_get` — Get full event details (includes notes content, createdAt, modifiedAt)
-- `events_create` — Create new events
-- `events_update` — Modify existing events (title, times, location, notes, availability)
-- `events_delete` — Delete events (single occurrence or future events for recurring)
+| Scenario | Tool | Why |
+|----------|------|-----|
+| Read/query calendar events | **iMCP** | Full event details, availability checking |
+| Create event at specific time | **iMCP** | Full control over fields (notes, availability) |
+| Quick event from natural language | **Fantastical** (AppleScript) | Fastest for fuzzy input |
+| Auto-schedule (flexible timing) | **Reclaim** | AI finds best slot |
+| Recurring GTD routines / habits | **Reclaim** | Auto-protects time |
+| Focus time protection | **Reclaim** | Manages focus blocks |
+| Time tracking | **Reclaim** | Start/stop task timers |
+| Navigate calendar UI | **Fantastical** (URL scheme) | Opens to specific date |
 
-**iMCP Calendar Limitations:**
-- Cannot create recurring events (must be set manually in Calendar app)
-- Cannot add attendees/invitees (must be added manually)
-- When these features are needed, create the event and inform user of required manual follow-up
-
-**Important:** Use `events_fetch` for listing/filtering, then `events_get` with the identifier when you need full details like notes content.
-
-### Reclaim.ai Integration
-
-Integrates with Reclaim.ai via MCP for intelligent auto-scheduling:
-
-**Task Scheduling:**
-- `mcp__reclaim__create_task` - Auto-schedule a task into available time
-- `mcp__reclaim__list_tasks` - View scheduled/active tasks
-- `mcp__reclaim__mark_task_complete` - Complete a task
-- `mcp__reclaim__start_task` / `mcp__reclaim__stop_task` - Time tracking
-
-**Habits (Recurring Blocks):**
-- `mcp__reclaim__create_habit` - Create recurring time blocks (e.g., Weekly Review)
-- `mcp__reclaim__list_habits` - View configured habits
-
-**Calendar Reading:**
-- `mcp__reclaim__list_events` - Get calendar events
-- `mcp__reclaim__list_personal_events` - Get Reclaim-managed events
-
-**Focus Time:**
-- `mcp__reclaim__get_focus_settings` - Check focus time configuration
-- `mcp__reclaim__update_focus_settings` - Adjust focus time protection
-
-**When to use Reclaim vs iMCP:**
-
-| Scenario | Use |
-|----------|-----|
-| "Schedule this task sometime" | Reclaim (auto-finds best slot) |
-| "Block 9am tomorrow" | iMCP (specific time) |
-| Recurring GTD routines | Reclaim habits |
-| One-time calendar event | iMCP |
-| Check calendar availability | Either |
+**Details:** See [references/calendar-integration.md](references/calendar-integration.md) for tool parameters, examples, and limitations.
 
 ### Email Integration
 
