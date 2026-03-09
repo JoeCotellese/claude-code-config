@@ -14,14 +14,24 @@ Draft casual, friendly social media posts optimized for each platform.
 3. **Check for links**: If URL provided, shorten with `scripts/shorten_url.sh`
 4. **Draft post**: Write platform-appropriate draft (see references/platforms.md)
 5. **Show character count**: Display `[X/limit]` after each draft
-6. **Iterate**: Refine based on feedback
+6. **Show voice notes**: After each draft, include a brief "Voice check" section listing which style guide elements you applied (e.g., "Everyday-life bridge opener", "Single-sentence knockout closing", "Tag question for engagement"). Call out any deliberate departures from the guide.
+7. **Iterate**: Refine based on feedback
 
 ## Voice
 
-- Casual, friendly, conversational
-- No corporate speak or buzzwords
-- Contractions are fine
-- Light humor when appropriate
+Before drafting, read the personal writing style guide for tone, vocabulary, and anti-patterns:
+
+```
+/Users/joec/obsidian-vault/3_Permanent Notes/Writing Style Guide.md
+```
+
+**For social media, prioritize these elements from the guide:**
+- Warm, direct, opinionated — never hedging or corporate
+- Single-sentence punch lines and deliberate fragments
+- Tag questions ("right?", "you know?") for engagement
+- Self-deprecating humor over performance humor
+- Name real products/brands, not hypotheticals
+- No emojis in body text — voice comes from words
 
 ## Link Handling
 
