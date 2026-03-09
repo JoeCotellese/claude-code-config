@@ -23,18 +23,15 @@ The calendar represents **actual available time**, not estimated availability. A
 
 Before making any time-based comparisons (determining if events are "upcoming", "in progress", or "past"), you **must** first obtain the current time.
 
-**Tool**: `mcp__todoist__user-info`
+**Tool**: `date` (bash)
 
-**Returns** (among other fields):
-- `currentLocalTime`: Current time in user's timezone (e.g., `"01/06/2026, 10:13:18"`)
-- `timezone`: User's configured timezone (e.g., `"US/Eastern"`)
-
-**Usage**:
-```
-mcp__todoist__user-info()
+```bash
+date "+%A, %B %d, %Y at %I:%M %p"
 ```
 
-**Why this matters**: The system only provides the current date, not the current time. Without calling `user-info` first, you cannot accurately determine:
+**Returns**: Day of week, full date, and current local time (e.g., `"Friday, March 07, 2026 at 02:15 PM"`)
+
+**Why this matters**: Without checking the current time first, you cannot accurately determine:
 - Whether a meeting is "coming up" vs "already over"
 - Which free block the user is currently in
 - Whether to show "← You are here" annotations
@@ -387,14 +384,14 @@ Want me to schedule either of these?
 ### Format for "What's My Day Look Like?"
 
 **Prerequisites**:
-1. Call `mcp__todoist__user-info` to get `currentLocalTime`
+1. Run `date "+%A, %B %d, %Y at %I:%M %p"` to get the current time
 2. Parse the time to compare against event start/end times
 
 **Structure**:
-1. Get current time from `user-info`
+1. Get current time from `date`
 2. Show all events chronologically
 3. Calculate free blocks between events
-4. Mark current time position ("← You are here") by comparing `currentLocalTime` against event times
+4. Mark current time position ("← You are here") by comparing current time against event times
 5. Suggest appropriate tasks for each free block
 6. Highlight deep work opportunities
 7. Summarize total free time
@@ -403,9 +400,9 @@ Want me to schedule either of these?
 - ⭐ for 2+ hour blocks (deep work potential)
 - → for task suggestions
 - **Bold** for current/next block
-- "← You are here" for blocks containing the current time (determined by comparing `currentLocalTime` to block start/end)
+- "← You are here" for blocks containing the current time (determined by comparing `date` output to block start/end)
 
-**Example** (assuming `currentLocalTime` returned `"11/12/2025, 08:15:00"`):
+**Example** (assuming `date` returned `"Tuesday, November 12, 2025 at 08:15 AM"`):
 ```
 Here's your day (Tuesday, Nov 12):
 
@@ -610,10 +607,82 @@ Here are your upcoming events that might need preparation:
 - Consider event timing when suggesting prep work schedule
 - Block prep time before the event, leaving buffer
 
+## Fantastical Integration
+
+### Overview
+
+Fantastical provides fast, natural-language event creation via AppleScript and URL schemes. Use it for quick calendar blocks where structured metadata (notes, availability, Obsidian links) isn't needed.
+
+### Creating Events via AppleScript
+
+**Basic syntax (opens editor for review):**
+```bash
+osascript -e 'tell application "Fantastical" to parse sentence "Team lunch Friday at noon at Pizzeria Vetri"'
+```
+
+**Immediate creation (skips UI):**
+```bash
+osascript -e 'tell application "Fantastical" to parse sentence "Block: Deep work 8am to 11am tomorrow" with add immediately'
+```
+
+Fantastical's natural language parser handles:
+- Dates and times: "tomorrow at 2pm", "next Monday 9am to 11am", "March 15 all day"
+- Locations: "at Comcast Center", "at 1800 Arch St"
+- Duration: "for 2 hours", "from 9am to 7pm"
+- Recurrence: "every Tuesday at 3pm" (parsed by Fantastical, not scriptable via iMCP)
+
+### Creating Events via URL Scheme
+
+```
+x-fantastical3://parse?s=EVENT_TEXT&n=NOTES&calendarName=CALENDAR&add=1
+```
+
+| Parameter | Purpose | Required |
+|-----------|---------|----------|
+| `s` | Natural-language event description | Yes |
+| `n` | Notes to attach | No |
+| `calendarName` | Target calendar | No (uses default) |
+| `add` | `1` to create immediately | No (opens editor if omitted) |
+
+**Example:**
+```
+x-fantastical3://parse?s=Dentist%20appointment%20Thursday%20at%203pm&calendarName=Personal&add=1
+```
+
+### Navigating the Calendar
+
+Open Fantastical to a specific date (useful after presenting daily schedule):
+```bash
+open "x-fantastical3://show/mini/2026-03-10"
+```
+
+Open full calendar view:
+```bash
+open "x-fantastical3://show/calendar"
+```
+
+### When to Use Fantastical vs iMCP vs Reclaim
+
+| Scenario | Tool | Rationale |
+|----------|------|-----------|
+| Quick block from natural language | **Fantastical** | Simplest, no parameter formatting needed |
+| Event with notes/metadata/Obsidian links | **iMCP** | Full field control |
+| Event needing availability flag (busy/free) | **iMCP** | Fantastical can't set this programmatically |
+| Auto-schedule flexible task | **Reclaim** | AI finds optimal slot |
+| Read/update/delete existing events | **iMCP** | Fantastical is write-only via script |
+| Navigate user to calendar date | **Fantastical** URL scheme | Opens native UI |
+
+### Fantastical Limitations
+
+- **Write-only**: Cannot read, update, or delete events via AppleScript or URL scheme
+- **No structured fields**: Cannot programmatically set availability, add attendees, or attach rich notes
+- **Calendar selection**: Uses default calendar unless `calendarName` parameter is provided
+- **No return value**: AppleScript call doesn't return the created event's identifier
+
 ## Best Practices
 
 ### Do's
-✓ Always call `user-info` first to get current time before any time comparisons
+✓ Always run `date` first to get current time before any time comparisons
 ✓ Always check calendar before suggesting tasks
 ✓ Respect user's energy level self-assessment
 ✓ Prioritize morning for #energy-high tasks
@@ -624,7 +693,7 @@ Here are your upcoming events that might need preparation:
 ✓ Create prep projects 2-7 days before events
 
 ### Don'ts
-✗ Don't assume you know the current time - always call `user-info` first
+✗ Don't assume you know the current time - always run `date` first
 ✗ Don't override calendar appointments to fit tasks
 ✗ Don't suggest tasks that don't fit available time
 ✗ Don't schedule deep work in afternoon if morning available
@@ -796,37 +865,19 @@ All reminders marked complete in Apple Reminders.
 
 ### Overview
 
-Reclaim.ai provides AI-powered auto-scheduling as an alternative to manual calendar blocking. While iMCP is used for reading calendar events and creating specific time blocks, Reclaim handles intelligent task scheduling.
+Reclaim.ai provides AI-powered auto-scheduling, habits, focus time protection, and time tracking. Use iMCP for all calendar reading and specific-time event creation; use Reclaim only for its unique scheduling capabilities.
 
 ### When to Use Each Tool
 
 | Task | iMCP | Reclaim |
 |------|------|---------|
-| Read calendar events | ✓ | ✓ |
+| Read calendar events | ✓ | |
 | Create event at specific time | ✓ | |
+| Find deep work blocks | ✓ | |
 | Auto-schedule task (flexible timing) | | ✓ |
-| Find deep work blocks | ✓ | ✓ |
 | Recurring time blocks (habits) | | ✓ |
 | Focus time protection | | ✓ |
 | Time tracking | | ✓ |
-
-### Reading Calendar with Reclaim
-
-Use Reclaim's calendar tools as an alternative to iMCP for viewing events:
-
-```
-mcp__reclaim__list_events with:
-  start: "2026-01-05",
-  end: "2026-01-12"
-```
-
-For Reclaim-managed events (tasks, habits, focus time):
-```
-mcp__reclaim__list_personal_events with:
-  start: "2026-01-05T00:00:00Z",
-  end: "2026-01-12T23:59:59Z",
-  limit: 50
-```
 
 ### Auto-Scheduling Tasks
 

@@ -179,6 +179,49 @@ It's on your calendar and marked in Todoist. Good luck with it!
 
 ---
 
+## Path C: Quick Create via Fantastical
+
+Use this path when the user gives a natural-language description and doesn't need metadata attached to the event.
+
+### When to Route Here
+
+- User says something conversational: "block off tomorrow morning", "put lunch with Sarah on Friday"
+- Event doesn't need Obsidian links, task metadata, or availability flags
+- Personal/life events vs. structured work task blocks
+
+### C1. Build Natural Language Sentence
+
+Compose a sentence Fantastical can parse. Include:
+- **What**: Event title/description
+- **When**: Date and time (natural language)
+- **Where**: Location if mentioned
+- **Duration**: "from X to Y" or "for N hours"
+
+**Examples:**
+| User Says | Fantastical Sentence |
+|-----------|---------------------|
+| "Block off 9 to 7 tomorrow" | `"Blocked from 9am to 7pm tomorrow"` |
+| "Lunch with Sarah Friday noon" | `"Lunch with Sarah Friday at noon for 1 hour"` |
+| "Dentist Thursday 3pm" | `"Dentist appointment Thursday at 3pm"` |
+| "In the city all day Monday" | `"In the city Monday all day"` |
+
+### C2. Create via AppleScript
+
+```bash
+osascript -e 'tell application "Fantastical" to parse sentence "EVENT SENTENCE" with add immediately'
+```
+
+### C3. Confirm
+
+```
+  ✓ Created: "Lunch with Sarah"
+    └─ Friday at 12:00 PM (via Fantastical)
+```
+
+No Todoist update needed unless this blocks a specific task.
+
+---
+
 ## Implementation Notes
 
 ### When Task Has No Duration
