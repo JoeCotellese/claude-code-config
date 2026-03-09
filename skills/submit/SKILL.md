@@ -55,14 +55,24 @@ Check that:
 
 ### Step 2: Run Code Review
 
-Detect project domain and invoke the appropriate code reviewer:
+Detect project domain using the detection script:
 
-| Domain | Reviewer |
-|--------|----------|
-| Swift | `swift-swiftui-reviewer` agent |
-| Python | `python-code-reviewer` skill |
-| React Native | `react-native-reviewer` skill |
-| C++/Qt | `cpp-qt-reviewer` skill |
+```bash
+DOMAIN=$(bash skills/submit/scripts/detect_project_domain.sh)
+echo "Detected domain: $DOMAIN"
+```
+
+Then invoke the reviewer matching the detected domain:
+
+| Domain | Reviewer | Type |
+|--------|----------|------|
+| `swift` | `swift-swiftui-reviewer` | Agent (subagent_type) |
+| `python` | `python-code-reviewer` | Skill |
+| `react-native` | `react-native-reviewer` | Skill |
+| `cpp-qt` | `cpp-qt-reviewer` | Skill |
+| `unknown` | STOP — ask user which reviewer to use |
+
+**IMPORTANT:** Always run the detection script. Do NOT guess the domain from context.
 
 **If critical issues found, STOP.** Report issues and wait for fixes.
 
@@ -229,6 +239,7 @@ You're now on main with latest changes.
 
 ### scripts/
 - `detect_git_platform.sh` - Detects GitHub vs GitLab
+- `detect_project_domain.sh` - Detects project domain for code reviewer selection
 
 ### references/
 - `pr_template.md` - PR format examples
