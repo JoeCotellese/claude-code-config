@@ -1,0 +1,3 @@
+# ABOUTME: Ignore local config and data files containing PII
+config.json
+payee_mappings.json
