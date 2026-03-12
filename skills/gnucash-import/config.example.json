@@ -1,0 +1,6 @@
+{
+  "gnucash_file": "/path/to/your/Accounting.gnucash",
+  "bank_account": "Assets:Current Assets:Checking Account",
+  "output_directory": "/path/to/your/accounting/output/",
+  "payee_mappings": "~/.claude/skills/gnucash-import/payee_mappings.json"
+}
