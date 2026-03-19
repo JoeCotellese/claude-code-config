@@ -1,0 +1,20 @@
+{
+  "medium": "food-blog",
+  "defaults": {
+    "aspect_ratio": "4:3",
+    "resolution": "2K"
+  },
+  "style": {
+    "description": "Warm, inviting food photography with natural light and rustic surfaces",
+    "lighting": "Soft natural window light, diffused, warm color temperature",
+    "color_grading": "Warm, rich tones, slightly desaturated shadows",
+    "composition": "Overhead flat-lay or 45-degree angle, shallow depth of field",
+    "camera": "Shot on Fujifilm X-T5, 56mm f/1.2",
+    "materiality": "Rustic wood, linen napkins, hand-thrown ceramic plates"
+  },
+  "recurring_elements": [
+    "Fresh herbs as garnish props",
+    "Scattered flour or crumbs for texture",
+    "Soft linen napkin in frame"
+  ]
+}
