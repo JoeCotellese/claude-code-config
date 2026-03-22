@@ -1,6 +1,7 @@
 ---
 name: capisce
 description: "Break down Italian phrases from recent conversation. Invoke with /capisce or when user asks 'what did you say?', 'explain the Italian', 'non capisco', or wants help understanding Italian used in conversation."
+effort: low
 ---
 
 # Capisce - Italian Learning Helper

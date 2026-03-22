@@ -1,6 +1,7 @@
 ---
 name: atlassian-companion
 description: "Companion skill for the mcp-atlassian MCP server. Provides correct parameter patterns, JQL quirks, and workflow recipes for Jira and Confluence tools. Load this skill before performing Atlassian operations to avoid common parameter errors."
+effort: low
 ---
 
 # Atlassian MCP Companion

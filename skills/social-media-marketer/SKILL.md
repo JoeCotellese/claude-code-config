@@ -1,6 +1,7 @@
 ---
 name: social-media-marketer
 description: Draft social media posts for Mastodon, Bluesky, and LinkedIn. Use when user says "post on social media", "draft a bluesky post", "help me with a linkedin post", or invokes /social. Handles character limits, link shortening, hashtags, content warnings, and platform-specific conventions. Supports drafting from scratch, from bullets, or replying to existing posts.
+effort: low
 ---
 
 # Social Media Marketer

@@ -1,6 +1,7 @@
 ---
 name: log
 description: "Capture debugging and problem-solving progress to Obsidian vault. Use when user invokes /log, says 'log this', 'capture progress', or 'write that down'. Scans recent conversation for relevant context and appends timestamped notebook-style entries to a per-project dev log note."
+effort: low
 ---
 
 # Development Log Skill
