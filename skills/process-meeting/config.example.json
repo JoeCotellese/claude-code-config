@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {
+      "name": "My Org",
+      "remote": "OrgName://Meet Recordings/",
+      "flags": []
+    },
+    {
+      "name": "Shared Drive",
+      "remote": "DriveName://",
+      "flags": ["--drive-shared-with-me"]
+    }
+  ]
+}

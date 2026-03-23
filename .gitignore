@@ -7,3 +7,6 @@
 # Machine-local settings (if ever added to repo root)
 settings.json
 settings.local.json
+
+# Skill-specific local config (contains rclone remotes, paths, etc.)
+skills/*/config.json
