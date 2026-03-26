@@ -90,9 +90,6 @@ Start simple. Add complexity only when the current approach is proven insufficie
 
 - Start with public attributes — they can become properties later
 - Raise errors early rather than silently passing bad data downstream
-- Avoid premature abstraction — three similar lines are better than a premature helper
-- Don't design for hypothetical future requirements
-- Only validate at system boundaries (user input, external APIs)
 
 ## 10. Communicate Intent Through Conventions
 

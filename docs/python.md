@@ -116,8 +116,5 @@ project_name/
 - Implement caching where appropriate
 
 ## Security
-- Never hardcode secrets or API keys
 - Use environment variables for configuration
-- Validate all user inputs
-- Use parameterized queries to prevent SQL injection
 - Keep dependencies updated
