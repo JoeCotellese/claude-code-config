@@ -1,6 +1,6 @@
 ---
 name: python-code-reviewer
-description: Perform comprehensive Python code reviews before commits or PRs. Reviews code quality (PEP 8, idioms, DRY, separation of concerns), performance patterns, security vulnerabilities, and best practices for web apps and CLI tools. Uses ruff and black for automated checks.
+description: Perform comprehensive Python code reviews before commits or PRs. Reviews code quality (PEP 8, idioms, DRY, separation of concerns), performance patterns, security vulnerabilities, and best practices for web apps and CLI tools. Uses ruff for linting and formatting checks.
 ---
 
 # Python Code Reviewer
@@ -38,7 +38,7 @@ git diff --name-only HEAD~1 HEAD --diff-filter=ACMR "*.py"
 
 ### 2. Run Automated Checks
 
-Use the bundled script to run ruff and black:
+Use the bundled script to run ruff lint and format checks:
 
 ```bash
 python scripts/run_checks.py <files or directories>
@@ -57,19 +57,19 @@ python scripts/run_checks.py src/
 ```
 
 The script will:
-- Run `ruff` linter to check for code quality issues
-- Run `black --check` to verify formatting
+- Run `ruff check` to lint for code quality issues
+- Run `ruff format --check` to verify formatting
 - Report all issues in a structured format
 
 **If the script reports issues**, inform the user about:
 - Number of issues found
 - Which files have problems
-- Specific error codes and messages from ruff
-- Which files need formatting by black
+- Specific error codes and messages from ruff lint
+- Which files need formatting by ruff format
 
-**If ruff or black aren't installed**, suggest:
+**If ruff isn't installed**, suggest:
 ```bash
-pip install ruff black
+pip install ruff
 ```
 
 ### 3. Load Django Design Principles (if applicable)
@@ -162,9 +162,9 @@ Structure your code review report as follows:
 ## Code Review Results
 
 ### Automated Checks
-[Summary of ruff and black results]
-- Ruff: X issues found
-- Black: Y files need formatting
+[Summary of ruff results]
+- Ruff lint: X issues found
+- Ruff format: Y files need formatting
 
 ### Manual Review Findings
 
@@ -231,7 +231,7 @@ Identify changed Python files (git diff)
     ↓
 Run automated checks (scripts/run_checks.py)
     ↓
-Ruff/black issues found?
+Ruff issues found?
     ↓ YES → Report automated issues
     ↓ NO → Continue
     ↓
@@ -345,17 +345,17 @@ Assistant:
 ### Automated Tools
 
 ```bash
-# Run both ruff and black
+# Run ruff lint + format checks
 python scripts/run_checks.py <path>
 
-# Just ruff
+# Just lint
 ruff check <path>
 
-# Just black (check mode)
-black --check <path>
+# Just format check
+ruff format --check <path>
 
-# Black (format mode)
-black <path>
+# Auto-format
+ruff format <path>
 ```
 
 ### Review Checklist
@@ -408,7 +408,7 @@ Use this mental checklist during review:
 ## Resources
 
 ### scripts/
-- `run_checks.py` - Runs ruff and black checks, reports issues in structured format
+- `run_checks.py` - Runs ruff lint and format checks, reports issues in structured format
 
 ### references/
 - `python-anti-patterns.md` - Common anti-patterns with examples and fixes

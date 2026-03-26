@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ABOUTME: Runs ruff and black checks on Python files and reports findings
+# ABOUTME: Runs ruff linter and ruff formatter checks on Python files and reports findings
 # ABOUTME: Returns structured output with issues found for code review
 
 import subprocess
@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 
-def run_ruff(paths: List[str]) -> Dict[str, Any]:
+def run_ruff_lint(paths: List[str]) -> Dict[str, Any]:
     """Run ruff linter on specified paths.
 
     Args:
@@ -70,22 +70,18 @@ def run_ruff(paths: List[str]) -> Dict[str, Any]:
         }
 
 
-def run_black(paths: List[str], check_only: bool = True) -> Dict[str, Any]:
-    """Run black formatter on specified paths.
+def run_ruff_format(paths: List[str]) -> Dict[str, Any]:
+    """Run ruff formatter check on specified paths.
 
     Args:
         paths: List of file or directory paths to check
-        check_only: If True, only check formatting without modifying files
 
     Returns:
         Dict with 'success' bool and 'files_to_format' list
     """
     try:
-        cmd = ["black", "--check", "--diff"] if check_only else ["black"]
-        cmd.extend(paths)
-
         result = subprocess.run(
-            cmd,
+            ["ruff", "format", "--check", "--diff", *paths],
             capture_output=True,
             text=True,
             check=False,
@@ -94,11 +90,10 @@ def run_black(paths: List[str], check_only: bool = True) -> Dict[str, Any]:
         if result.returncode == 0:
             return {"success": True, "files_to_format": []}
 
-        # Parse output for files that would be reformatted
+        # Parse stderr for files that would be reformatted
         files_to_format = []
         for line in result.stderr.split("\n"):
-            if "would reformat" in line:
-                # Extract filename from "would reformat /path/to/file.py"
+            if "would reformat" in line.lower():
                 parts = line.split()
                 if len(parts) >= 3:
                     files_to_format.append(parts[2])
@@ -112,40 +107,40 @@ def run_black(paths: List[str], check_only: bool = True) -> Dict[str, Any]:
     except FileNotFoundError:
         return {
             "success": False,
-            "error": "black not found. Install with: pip install black",
+            "error": "ruff not found. Install with: pip install ruff",
         }
     except Exception as e:
         return {
             "success": False,
-            "error": f"Unexpected error running black: {e}",
+            "error": f"Unexpected error running ruff format: {e}",
         }
 
 
-def format_output(ruff_result: Dict[str, Any], black_result: Dict[str, Any]) -> str:
+def format_output(lint_result: Dict[str, Any], fmt_result: Dict[str, Any]) -> str:
     """Format results as human-readable text.
 
     Args:
-        ruff_result: Result from run_ruff()
-        black_result: Result from run_black()
+        lint_result: Result from run_ruff_lint()
+        fmt_result: Result from run_ruff_format()
 
     Returns:
         Formatted string with all findings
     """
     output = []
 
-    # Ruff results
+    # Lint results
     output.append("=" * 80)
     output.append("RUFF LINTER RESULTS")
     output.append("=" * 80)
 
-    if "error" in ruff_result:
-        output.append(f"ERROR: {ruff_result['error']}")
-    elif ruff_result["success"]:
+    if "error" in lint_result:
+        output.append(f"ERROR: {lint_result['error']}")
+    elif lint_result["success"]:
         output.append("✓ No issues found")
     else:
-        output.append(f"✗ Found {ruff_result['total_count']} issues\n")
+        output.append(f"✗ Found {lint_result['total_count']} issues\n")
 
-        for file_path, issues in ruff_result["issues"].items():
+        for file_path, issues in lint_result["issues"].items():
             output.append(f"\n{file_path}:")
             for issue in issues:
                 location = f"{issue['line']}:{issue['column']}"
@@ -154,24 +149,24 @@ def format_output(ruff_result: Dict[str, Any], black_result: Dict[str, Any]) -> 
                     f"  {location:10} [{severity}] {issue['code']}: {issue['message']}"
                 )
 
-    # Black results
+    # Format results
     output.append("\n")
     output.append("=" * 80)
-    output.append("BLACK FORMATTER RESULTS")
+    output.append("RUFF FORMATTER RESULTS")
     output.append("=" * 80)
 
-    if "error" in black_result:
-        output.append(f"ERROR: {black_result['error']}")
-    elif black_result["success"]:
+    if "error" in fmt_result:
+        output.append(f"ERROR: {fmt_result['error']}")
+    elif fmt_result["success"]:
         output.append("✓ All files properly formatted")
     else:
-        output.append(f"✗ {len(black_result['files_to_format'])} files need formatting:\n")
-        for file_path in black_result["files_to_format"]:
+        output.append(f"✗ {len(fmt_result['files_to_format'])} files need formatting:\n")
+        for file_path in fmt_result["files_to_format"]:
             output.append(f"  - {file_path}")
 
-        if black_result.get("diff"):
+        if fmt_result.get("diff"):
             output.append("\nFormatting diff:")
-            output.append(black_result["diff"])
+            output.append(fmt_result["diff"])
 
     return "\n".join(output)
 
@@ -194,18 +189,18 @@ def main():
             print(f"Error: Path does not exist: {path}", file=sys.stderr)
             sys.exit(1)
 
-    print("Running ruff and black checks...\n")
+    print("Running ruff lint and format checks...\n")
 
-    ruff_result = run_ruff(paths)
-    black_result = run_black(paths)
+    lint_result = run_ruff_lint(paths)
+    fmt_result = run_ruff_format(paths)
 
-    output = format_output(ruff_result, black_result)
+    output = format_output(lint_result, fmt_result)
     print(output)
 
     # Exit with non-zero if any issues found
     has_issues = (
-        not ruff_result.get("success", False) or
-        not black_result.get("success", False)
+        not lint_result.get("success", False) or
+        not fmt_result.get("success", False)
     )
     sys.exit(1 if has_issues else 0)
 
