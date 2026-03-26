@@ -31,7 +31,6 @@ As I improve, increase:
 - All changes must go through PRs for review
 
 # Writing code
-- Readability and maintainability are primary concerns.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
 - When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
 - If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
@@ -67,14 +66,8 @@ Is it about SELECTING from multiple results? pipe to 'fzf'
 Is it about interacting with JSON? use 'jq'
 Is it about interacting with YAML or XML? use 'yq'
 
-### Execute, Don't Deliberate (When Instructions Are Explicit)
-- When the user gives clear, direct instructions (e.g., a list of tasks to create, files to edit, commands to run), execute immediately. Do not research, explore the codebase, or ask clarifying questions unless something is genuinely ambiguous.
-- Save exploration and research for when you're uncertain — not when the user already knows what they want.
-
 ### Small, Iterative Changes
 - Work in small, testable increments - implement, test with human in the loop, then continue
-- Make the smallest reasonable changes to achieve the desired outcome
-- Break down work into small, iterable, testable chunks
 - Always discuss plans before implementation unless explicitly told otherwise
 - You have access to developer docs through the apple-docs mcp
 - When looking up documentation, always check the docs-mcp-server first before searching the web
