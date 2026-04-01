@@ -22,6 +22,8 @@ Run stages sequentially. Each stage is a checkpoint — if a later stage fails, 
 Fetch → Parse → Write → Link → Action → Calendar
 ```
 
+**Time awareness:** Before starting, check the current date and time (run `date`). Sessions can span date boundaries — do not rely on the date provided at session start. Use the freshly checked date for all references to "today", relative dates, and temporal language in output.
+
 ## Stage 1: Fetch
 
 **Configured sources:** Read from `config.json` in this skill's directory. Each source has a `name`, `remote` (rclone path), and `flags` array. See `config.example.json` for the schema.
@@ -34,10 +36,15 @@ rclone copy --drive-export-formats txt "<remote>" /tmp/meet-staging/ --include "
 Filter files to only those containing "Notes by" (Gemini meeting notes with embedded transcripts).
 
 **Argument handling:**
-- No argument or `all`: process all unprocessed meetings from all sources
+- No argument: default to `today` (current date only)
+- `all`: process all unprocessed meetings from all sources (warn user about volume first)
 - `latest`: most recent file only (across all sources)
 - `today`: resolve to current date, then match
 - `YYYY-MM-DD`: files matching that date
+- `week`: last 7 days
+- `month`: last 30 days
+
+**When no argument is provided and no meetings are found for today**, ask the user: "No meetings found for today. How far back should I look?" and offer options: `latest`, `week`, `month`, or a specific date.
 
 **Deduplication:** Scan `2_Literature Notes/` for existing meeting notes. Match by date AND participant names to avoid collisions (multiple meetings on the same day across sources). Skip any meeting that already has a corresponding note.
 
@@ -85,9 +92,17 @@ After writing the note:
 
 ## Stage 5: Action Items → Todoist
 
-Use Todoist MCP `add-tasks`. **Only create tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed to Todoist.
+**Only consider tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed to Todoist.
 
-For each of Joe's action items:
+1. **Present proposed tasks** using `AskUserQuestion` with `multiSelect: true`. Each option should be:
+   - **label**: The task title (concise, actionable)
+   - **description**: Standalone context so the user can judge whether it's a real action item
+
+2. **Create only selected tasks** via Todoist MCP `add-tasks`. If the user selects none, skip task creation entirely.
+
+3. **If no Joe action items were extracted**, skip this stage entirely — do not prompt.
+
+For each selected task:
 - **content**: Clear, actionable task title
 - **description**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<filename>.md`
 - **dueString**: From transcript context if date/timeframe mentioned, otherwise omit
