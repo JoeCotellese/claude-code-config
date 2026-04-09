@@ -121,6 +121,38 @@ Add to your `~/.claude/settings.json`:
 
 The `make install` command symlinks the script to `~/.claude/`, so this configuration will work after installation.
 
+## Hooks
+
+Claude Code hooks live in `~/.claude/settings.json`, which this repo deliberately does **not** manage (Claude Code rewrites `permissions.allow` on every permission grant, so symlinking the whole file would churn constantly). Instead, hook *behavior* is versioned here as standalone scripts under `scripts/`, and `settings.json` calls them via their symlinked paths.
+
+### Atlassian companion reminder
+
+`scripts/atlassian-companion-reminder.sh` is a `PreToolUse` hook body that prints a reminder to load the `atlassian-companion` skill before any `mcp-atlassian` tool call. It exists because Jira/Confluence MCP calls silently return wrong results when parameters are shaped incorrectly (e.g. reporter by email instead of display name), and the skill documents those quirks.
+
+After `make install`, add this block to `~/.claude/settings.json` (once, per machine):
+
+```json
+"hooks": {
+  "PreToolUse": [
+    {
+      "matcher": "mcp__mcp-atlassian__.*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ~/.claude/scripts/atlassian-companion-reminder.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Verify it works:
+
+```bash
+bash ~/.claude/scripts/atlassian-companion-reminder.sh | jq .
+```
+
 ## Benefits of This Approach
 
 1. **Clean separation**: Your skills are symlinks, third-party skills are real directories
