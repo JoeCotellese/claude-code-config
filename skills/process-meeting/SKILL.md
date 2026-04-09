@@ -22,26 +22,42 @@ Run stages sequentially. Each stage is a checkpoint — if a later stage fails, 
 Fetch → Parse → Write → Link → Action → Calendar
 ```
 
+**Time awareness:** Before starting, check the current date and time (run `date`). Sessions can span date boundaries — do not rely on the date provided at session start. Use the freshly checked date for all references to "today", relative dates, and temporal language in output.
+
 ## Stage 1: Fetch
 
 **Configured sources:** Read from `config.json` in this skill's directory. Each source has a `name`, `remote` (rclone path), and `flags` array. See `config.example.json` for the schema.
 
-Iterate over all sources from config. For each, list and pull files as plain text:
+Iterate over all sources from config. First list files with `rclone lsf`, then copy matches as plain text.
+
+**CRITICAL — Date format in filenames:** Google Drive filenames use fullwidth slashes (`／`, Unicode U+FF0F) as date separators, NOT regular slashes or hyphens. A file dated April 2, 2026 appears as `2026／04／02` in the filename. You MUST use fullwidth slashes in all `--include` patterns and grep filters. Standard hyphens (`-`) or regular slashes (`/`) will silently match nothing.
+
+To list files for a given date:
 ```bash
-rclone copy --drive-export-formats txt "<remote>" /tmp/meet-staging/ --include "<filter>" [flags]
+rclone lsf "<remote>" [flags] | grep "2026／04／02"
+```
+
+To fetch files for a given date:
+```bash
+rclone copy --drive-export-formats txt "<remote>" /tmp/meet-staging/ --include "*2026／04／02*" [flags]
 ```
 
 Filter files to only those containing "Notes by" (Gemini meeting notes with embedded transcripts).
 
 **Argument handling:**
-- No argument or `all`: process all unprocessed meetings from all sources
+- No argument: default to `today` (current date only)
+- `all`: process all unprocessed meetings from all sources (warn user about volume first)
 - `latest`: most recent file only (across all sources)
-- `today`: resolve to current date, then match
-- `YYYY-MM-DD`: files matching that date
+- `today`: resolve to current date, then use fullwidth slash format `YYYY／MM／DD` for matching
+- `YYYY-MM-DD`: convert to fullwidth slash format `YYYY／MM／DD` for matching
+- `week`: last 7 days
+- `month`: last 30 days
+
+**When no argument is provided and no meetings are found for today**, ask the user: "No meetings found for today. How far back should I look?" and offer options: `latest`, `week`, `month`, or a specific date.
 
 **Deduplication:** Scan `2_Literature Notes/` for existing meeting notes. Match by date AND participant names to avoid collisions (multiple meetings on the same day across sources). Skip any meeting that already has a corresponding note.
 
-**Important:** Fullwidth slashes (`／`) in Google Drive filenames break `rclone cat`. Always use `rclone copy` with `--include` glob patterns.
+**Important:** Fullwidth slashes (`／`) in Google Drive filenames break `rclone cat`. Always use `rclone copy` with `--include` glob patterns, never `rclone cat` with fullwidth-slash filenames.
 
 ## Stage 2: Parse
 
@@ -85,9 +101,17 @@ After writing the note:
 
 ## Stage 5: Action Items → Todoist
 
-Use Todoist MCP `add-tasks`. **Only create tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed to Todoist.
+**Only consider tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed to Todoist.
 
-For each of Joe's action items:
+1. **Present proposed tasks** using `AskUserQuestion` with `multiSelect: true`. Each option should be:
+   - **label**: The task title (concise, actionable)
+   - **description**: Standalone context so the user can judge whether it's a real action item
+
+2. **Create only selected tasks** via Todoist MCP `add-tasks`. If the user selects none, skip task creation entirely.
+
+3. **If no Joe action items were extracted**, skip this stage entirely — do not prompt.
+
+For each selected task:
 - **content**: Clear, actionable task title
 - **description**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<filename>.md`
 - **dueString**: From transcript context if date/timeframe mentioned, otherwise omit

@@ -13,7 +13,7 @@ Draft casual, friendly social media posts optimized for each platform.
 1. **Gather context**: Ask what they want to post about, or accept bullets/link/post they provide
 2. **Identify platform(s)**: Which platform(s) do they want? If unspecified, ask
 3. **Check for links**: If URL provided, shorten with `scripts/shorten_url.sh`
-4. **Draft post**: Write platform-appropriate draft (see references/platforms.md)
+4. **Draft post**: Write platform-appropriate draft (see references/platforms.md). NEVER use markdown blockquotes (`>`) when presenting drafts — they render poorly in terminal. Present post text as plain unindented text.
 5. **Show character count**: Display `[X/limit]` after each draft
 6. **Show voice notes**: After each draft, include a brief "Voice check" section listing which style guide elements you applied (e.g., "Everyday-life bridge opener", "Single-sentence knockout closing", "Tag question for engagement"). Call out any deliberate departures from the guide.
 7. **Iterate**: Refine based on feedback
