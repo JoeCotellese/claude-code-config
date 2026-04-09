@@ -21,8 +21,9 @@ These are the most frequent errors. For full details, load from `references/`.
 
 ### jira_create_issue
 - Use `project_key`, NOT `project`
-- `priority` is NOT a top-level parameter (defaults to Medium)
-- Set priority via `jira_update_issue` after creation
+- `priority`, `labels`, `assignee` go in `additional_fields`, not as top-level params
+- Descriptions are interpreted as **markdown**, not Jira wiki markup — use `1.` for numbered lists, `*` for bullets, `#` for headings ONLY if you want h1
+- ⚠️ `# item` will render as h1 heading, NOT a numbered list (use `1. item` instead)
 
 ### jira_update_issue
 - `fields` must be a JSON **object**, not a string

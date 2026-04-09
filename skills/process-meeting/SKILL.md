@@ -28,9 +28,18 @@ Fetch → Parse → Write → Link → Action → Calendar
 
 **Configured sources:** Read from `config.json` in this skill's directory. Each source has a `name`, `remote` (rclone path), and `flags` array. See `config.example.json` for the schema.
 
-Iterate over all sources from config. For each, list and pull files as plain text:
+Iterate over all sources from config. First list files with `rclone lsf`, then copy matches as plain text.
+
+**CRITICAL — Date format in filenames:** Google Drive filenames use fullwidth slashes (`／`, Unicode U+FF0F) as date separators, NOT regular slashes or hyphens. A file dated April 2, 2026 appears as `2026／04／02` in the filename. You MUST use fullwidth slashes in all `--include` patterns and grep filters. Standard hyphens (`-`) or regular slashes (`/`) will silently match nothing.
+
+To list files for a given date:
 ```bash
-rclone copy --drive-export-formats txt "<remote>" /tmp/meet-staging/ --include "<filter>" [flags]
+rclone lsf "<remote>" [flags] | grep "2026／04／02"
+```
+
+To fetch files for a given date:
+```bash
+rclone copy --drive-export-formats txt "<remote>" /tmp/meet-staging/ --include "*2026／04／02*" [flags]
 ```
 
 Filter files to only those containing "Notes by" (Gemini meeting notes with embedded transcripts).
@@ -39,8 +48,8 @@ Filter files to only those containing "Notes by" (Gemini meeting notes with embe
 - No argument: default to `today` (current date only)
 - `all`: process all unprocessed meetings from all sources (warn user about volume first)
 - `latest`: most recent file only (across all sources)
-- `today`: resolve to current date, then match
-- `YYYY-MM-DD`: files matching that date
+- `today`: resolve to current date, then use fullwidth slash format `YYYY／MM／DD` for matching
+- `YYYY-MM-DD`: convert to fullwidth slash format `YYYY／MM／DD` for matching
 - `week`: last 7 days
 - `month`: last 30 days
 
@@ -48,7 +57,7 @@ Filter files to only those containing "Notes by" (Gemini meeting notes with embe
 
 **Deduplication:** Scan `2_Literature Notes/` for existing meeting notes. Match by date AND participant names to avoid collisions (multiple meetings on the same day across sources). Skip any meeting that already has a corresponding note.
 
-**Important:** Fullwidth slashes (`／`) in Google Drive filenames break `rclone cat`. Always use `rclone copy` with `--include` glob patterns.
+**Important:** Fullwidth slashes (`／`) in Google Drive filenames break `rclone cat`. Always use `rclone copy` with `--include` glob patterns, never `rclone cat` with fullwidth-slash filenames.
 
 ## Stage 2: Parse
 
