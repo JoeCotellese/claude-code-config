@@ -69,6 +69,5 @@ Is it about interacting with YAML or XML? use 'yq'
 ### Small, Iterative Changes
 - Work in small, testable increments - implement, test with human in the loop, then continue
 - Always discuss plans before implementation unless explicitly told otherwise
-- You have access to developer docs through the apple-docs mcp
 - When looking up documentation, always check the docs-mcp-server first before searching the web
 - When you are attempting to lookup docs, if what you need is missing from MCP docs server suggest to the human to add it.
