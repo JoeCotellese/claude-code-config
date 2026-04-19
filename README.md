@@ -69,6 +69,7 @@ Custom skills extend Claude's capabilities with specialized knowledge, workflows
 | **git-workflow** | Enforce branch-first git workflow - prevents direct commits to main branch |
 | **git-submit** | Submit changes through proper PR workflow |
 | **kaizen** | Continuous improvement practices |
+| **learnings** | Curate durable project learnings into a shared, opt-in `LEARNINGS.md` |
 | **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
 | **product-manager** | Unified PM skill for prioritization (RICE, Kano, MoSCoW) and specifications (PRDs, user stories) across platforms |
 | **react-native-reviewer** | React Native code review |
