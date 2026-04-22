@@ -56,7 +56,7 @@ This single query loads `complete-tasks`, `add-tasks`, and `update-tasks` so the
 | **Calendar** (via iMCP) | Availability checking, structured time blocking, meeting prep |
 | **Fantastical** (via AppleScript) | Quick natural-language event creation |
 | **Reclaim.ai** (via MCP) | Auto-scheduling tasks, habits, focus time protection |
-| **Email** (via zerolib-email MCP) | Email search, reading, sending, and management |
+| **Email** (via rusty-apple-mail MCP) | Read-only Apple Mail search and reading across all accounts |
 | **Obsidian** | Project documentation and next action backlogs |
 
 **Key Design Principle:** Todoist is the *execution layer* (1-2 active tasks), Obsidian is the *planning layer* (full project backlogs).
@@ -102,29 +102,21 @@ Three tools handle calendar operations, each with a distinct role:
 
 ### Email Integration
 
-Integrates with email via zerolib-email MCP for:
-- Searching emails by sender, recipient, subject, or date range
-- Reading email content and metadata
-- Sending emails and replies with proper threading
-- Managing attachments
+Integrates with email via **rusty-apple-mail MCP** (read-only access to Apple Mail) for:
+- Searching emails by sender, recipient, subject, mailbox, or date range
+- Reading email content, recipients, and attachments
+- Triaging across multiple accounts (personal, business, sales)
 
-**Default Account:** Use `"Home"` as the `account_name` for all email operations.
+**Account selection:** rusty-apple-mail returns opaque UUID `account_id` values. The static UUID → email-address mapping lives in [references/email-accounts.md](references/email-accounts.md) — load it before calling `search_messages` so you can pass the right `account` filter without re-discovering it. Default is the primary Gmail account for joe@cotellese.net.
 
 **Email MCP Tools:**
-- `mcp__zerolib-email__list_available_accounts` - List configured email accounts
-- `mcp__zerolib-email__list_emails_metadata` - Search/filter emails (returns email_id, subject, sender, recipients, date)
-- `mcp__zerolib-email__get_emails_content` - Get full email body content by email_id
-- `mcp__zerolib-email__send_email` - Send new emails or replies (supports threading via `in_reply_to`)
-- `mcp__zerolib-email__delete_emails` - Delete emails by email_id
-- `mcp__zerolib-email__download_attachment` - Download email attachments (requires explicit enable)
+- `mcp__rusty-apple-mail__list_accounts` - List Apple Mail accounts (UUIDs only — see reference for mapping)
+- `mcp__rusty-apple-mail__list_mailboxes` - List mailboxes (optionally per account)
+- `mcp__rusty-apple-mail__search_messages` - Search by `account`, `mailbox`, `sender`, `participant`, `subject_query`, `date_from`/`date_to`
+- `mcp__rusty-apple-mail__get_message` - Get full message by `message_id` (set `include_recipients=true` for To/CC)
+- `mcp__rusty-apple-mail__get_attachment_content` - Read attachment text
 
-**Key Parameters for `list_emails_metadata`:**
-- `account_name` - Email account name (e.g., "Home")
-- `from_address` - Filter by sender (partial match)
-- `to_address` - Filter by recipient
-- `subject` - Filter by subject line
-- `since` / `before` - Date range filtering (UTC datetime)
-- `page` / `page_size` - Pagination
+**Note:** rusty-apple-mail is **read-only**. Sending email is not currently supported — use the Mail app or Drafts for composition.
 
 ### Obsidian Vault
 
@@ -309,10 +301,10 @@ Use AskUserQuestion to confirm inferred values.
 - `mcp__iMCP__reminders_fetch` - Get reminders (filter by list, completed status)
 - `mcp__iMCP__reminders_create` - Create new reminders
 
-**Email (via zerolib-email MCP):**
-- `mcp__zerolib-email__list_emails_metadata` - Search/filter emails
-- `mcp__zerolib-email__get_emails_content` - Read full email content
-- `mcp__zerolib-email__send_email` - Send emails or replies
+**Email (via rusty-apple-mail MCP — read-only):**
+- `mcp__rusty-apple-mail__search_messages` - Search/filter emails (account UUIDs in [references/email-accounts.md](references/email-accounts.md))
+- `mcp__rusty-apple-mail__get_message` - Read full email content
+- `mcp__rusty-apple-mail__list_accounts` / `list_mailboxes` - Discovery
 
 ## MCP Parameter Reference
 
