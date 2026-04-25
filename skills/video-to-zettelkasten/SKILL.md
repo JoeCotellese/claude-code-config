@@ -13,30 +13,22 @@ Read [references/vault-standards.md](references/vault-standards.md) for Obsidian
 
 ### Phase 1: Fetch Transcript and Metadata
 
-1. **Download metadata** — Run:
+1. **Download metadata** — Pipe through `jq` to keep only what you need (the raw JSON includes ~1MB of format/storyboard noise):
    ```bash
-   yt-dlp --dump-json --no-download "<url>"
-   ```
-   Extract: `title`, `uploader` (channel name), `upload_date`, `duration`, `description`, `webpage_url`, `id`
-
-2. **Download transcript** — Try manual subtitles first, fall back to auto-generated:
-   ```bash
-   # Try manual English subs first
-   yt-dlp --write-subs --sub-langs "en" --skip-download --sub-format vtt -o "/tmp/yt-zk-%(id)s" "<url>"
-   ```
-   If no manual subs found:
-   ```bash
-   # Fall back to auto-generated subs
-   yt-dlp --write-auto-subs --sub-langs "en" --skip-download --sub-format vtt -o "/tmp/yt-zk-%(id)s" "<url>"
+   yt-dlp --dump-json --no-download "<url>" | jq '{title, uploader, channel, upload_date, duration, webpage_url, id, description: (.description | .[0:500])}'
    ```
 
-3. **Read and clean the transcript** — Read the `.vtt` file from `/tmp/` and clean it:
-   - Strip VTT headers and timestamp lines
-   - Remove duplicate consecutive lines (auto-subs repeat fragments)
-   - Merge sentence fragments across line breaks
-   - Add punctuation where clearly missing (end-of-sentence detection)
-   - Collapse excessive whitespace
-   - Present the cleaned transcript length to the user (e.g., "~3,200 words")
+2. **Download transcript** — Fetch manual and auto-generated subs in one call; yt-dlp writes whichever exist:
+   ```bash
+   yt-dlp --write-subs --write-auto-subs --sub-langs "en" --skip-download --sub-format vtt -o "/tmp/yt-zk-%(id)s" "<url>"
+   ```
+   Most channels (especially tech/educational) only have auto-subs. Manual subs are rare.
+
+3. **Clean the transcript with the bundled script** — Run:
+   ```bash
+   python3 /Users/joec/.claude/skills/video-to-zettelkasten/scripts/clean-vtt.py /tmp/yt-zk-<id>.en.vtt
+   ```
+   This writes a cleaned `.txt` next to the `.vtt` and prints the word count. Then **use the Read tool** on the cleaned `.txt` file — do not pipe it through `cat`/`sed`/`head`.
 
 4. **Check for existing notes** — Search the vault:
    - `Grep` for the video title across `**/*.md`
@@ -72,6 +64,8 @@ For long-form content (lectures, deep dives over 30 minutes), also consider:
 - Estimated total note count
 
 Wait for user approval before proceeding.
+
+**Auto-mode exception:** If auto mode is active (a `## Auto Mode Active` system reminder is present), skip the approval gate. Present the proposed structure inline and proceed with the writes in the same turn.
 
 ### Phase 3: Create Permanent Notes
 
