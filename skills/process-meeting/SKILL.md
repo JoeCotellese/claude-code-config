@@ -1,20 +1,31 @@
 ---
 name: process-meeting
 description: >
-  Process Google Meet transcripts from Google Drive into structured Obsidian vault meeting notes
-  with topic extraction, vault linking, Todoist action items, and calendar deadlines. Invoke with
-  `/process-meeting`, `/process-meeting latest`, or `/process-meeting YYYY-MM-DD`. Also trigger
-  when user says "process meetings", "pull in transcripts", "process today's meeting", or asks
-  to import meeting notes from Google Drive.
+  Process Google Meet transcripts from Google Drive OR Apple Voice Memos into structured
+  Obsidian vault notes with topic extraction, vault linking, Todoist action items, and
+  calendar deadlines. Invoke with `/process-meeting`, `/process-meeting latest`,
+  `/process-meeting YYYY-MM-DD`, or `/process-meeting voice [latest|today|YYYY-MM-DD]`
+  for Apple Voice Memo recordings transcribed locally via mlx-whisper. Also trigger when
+  user says "process meetings", "pull in transcripts", "process today's meeting", "process
+  voice memo", "transcribe my memo", or asks to import meeting notes from Google Drive or
+  voice memos.
 ---
 
 # Process Meeting
 
-Transform Google Meet recordings (Gemini notes with embedded transcripts) into structured
-Obsidian vault notes. Extracts topics with what/why/context narratives, links to existing
-vault knowledge, creates Todoist action items, and adds calendar deadlines.
+Transform Google Meet recordings (Gemini notes with embedded transcripts) OR Apple Voice
+Memo recordings (transcribed locally via mlx-whisper) into structured Obsidian vault notes.
+Extracts topics with what/why/context narratives, links to existing vault knowledge, creates
+Todoist action items, and adds calendar deadlines.
 
-## Pipeline
+## Source modes
+
+Two pipelines, picked by subcommand:
+
+- **Default (Google Meet)**: pulls Gemini notes from Google Drive via rclone. See [Google Meet Pipeline](#google-meet-pipeline) below.
+- **`voice` subcommand (Apple Voice Memos)**: reads .m4a files from the iCloud-synced Voice Memos folder, transcribes with mlx-whisper, then routes to a solo or multi-person template. See [Voice Memo Pipeline](#voice-memo-pipeline) below.
+
+## Google Meet Pipeline
 
 Run stages sequentially. Each stage is a checkpoint — if a later stage fails, earlier work is preserved.
 
@@ -139,4 +150,102 @@ Only for **hard deadlines** — conferences, launches, contractual dates.
 
 **Suggested Permanent Notes:**
 - <topic> — <rationale>
+```
+
+---
+
+## Voice Memo Pipeline
+
+Triggered by `/process-meeting voice [latest|today|YYYY-MM-DD]`. Two paths inside this pipeline: solo (notes-to-self) and multi-person (recorded conversation). See [references/voice-memo-template.md](references/voice-memo-template.md) for the templates and classification heuristic.
+
+```
+Fetch → Transcribe → Classify → Parse → Write → Link → Action → Calendar
+```
+
+### Stage 1: Fetch
+
+**Source folder:** `~/Library/Group Containers/group.com.apple.VoiceMemos.shared/Recordings/`
+
+**Filename format:** `YYYYMMDD HHMMSS[-HEXID].m4a` (Apple-assigned). User-renamed memos may use arbitrary names — accept both. Date is parsed from the leading `YYYYMMDD` token when present; otherwise fall back to the file's `mtime`.
+
+List recordings:
+```bash
+ls "$HOME/Library/Group Containers/group.com.apple.VoiceMemos.shared/Recordings/"*.m4a
+```
+
+**Argument handling:**
+- `voice` (no further arg): default to `today`
+- `voice latest`: most recent .m4a by mtime
+- `voice today`: today's date in `YYYYMMDD` prefix match
+- `voice YYYY-MM-DD`: specific date — convert to `YYYYMMDD` prefix match
+- `voice all`: all unprocessed (warn about volume first)
+
+**Deduplication:** Scan `1_inbox/` (solo path) and `2_Literature Notes/` (multi-person path) for any note whose frontmatter `source_file` matches the .m4a basename. Skip already-processed.
+
+### Stage 2: Transcribe
+
+Run mlx-whisper via the helper script:
+
+```bash
+~/.claude/skills/process-meeting/scripts/transcribe-voice.sh \
+  "<input.m4a>" \
+  /tmp/voice-staging/
+```
+
+The script outputs `/tmp/voice-staging/<basename>.txt`. Default model is `mlx-community/whisper-large-v3-mlx` (override via `MLX_WHISPER_MODEL` env var). The script exits with code 69 if `mlx_whisper` is not on PATH — install with `uv tool install mlx-whisper`.
+
+**Long recordings:** Run transcription in the background (`run_in_background: true`) for files >5 minutes; the model takes roughly real-time on Apple Silicon. Don't poll — wait for completion notification.
+
+### Stage 3: Classify
+
+Apply the heuristic in [references/voice-memo-template.md](references/voice-memo-template.md):
+
+- Single first-person narrator throughout → **solo path**
+- Question/answer turns or proper-name addressing ("Hey Jonah") → **multi-person path**
+- Ambiguous / short (<60s) → default solo, but ask if uncertain
+
+When uncertain, ask the user with `AskUserQuestion` showing a 2-3 sentence transcript excerpt for context.
+
+### Stage 4: Parse
+
+**Solo path:**
+- Identify the through-line (the dominant subject the user is thinking about)
+- Extract: 2-4 sentence summary, key thoughts (bullets), decisions, action items, open questions
+- Title: under 60 characters, derived from the dominant subject
+
+**Multi-person path:**
+- Same as Google Meet Stage 2 (topics + narrative + decisions + open questions + action items)
+- Speaker attribution: mlx-whisper does NOT diarize. Infer participants from name mentions ("hey Jonah", "Joe asked"). If unclear, prompt user.
+- Replace timestamp lines with `*Approx: <ordinal>*` (e.g., "Approx: opening third") or omit.
+
+### Stage 5: Write
+
+**Solo path:** `1_inbox/YYYYMMDDHHMMSS - Voice Memo - <Title>.md` — see solo template in [references/voice-memo-template.md](references/voice-memo-template.md). Tag includes `voice-memo`.
+
+**Multi-person path:** `2_Literature Notes/YYYYMMDD - <Participants> Meeting - <Brief Description>.md` — same as Google Meet path but with `source: "Apple Voice Memo - mlx-whisper transcript"` and added `source_file`/`duration` frontmatter fields.
+
+### Stage 6: Link
+
+Same as Google Meet Stage 4 — search vault, add `[[wiki-links]]`, append "Suggested Permanent Notes" section. Solo memos may yield fewer links because they're more fleeting; that's fine.
+
+### Stage 7: Action Items → Todoist
+
+Same Joe-only rule as Google Meet Stage 5. Solo memos often surface latent todos ("I should call X") — capture those as actionable Todoist tasks with the Obsidian deep link in the description.
+
+### Stage 8: Calendar (iMCP)
+
+Same as Google Meet Stage 6. Voice memos rarely contain hard deadlines, but if one is dictated, treat identically.
+
+### Voice Memo Completion Output
+
+```
+## Voice Memo Processing Complete
+
+**Processed:** <count> recording(s)
+**Path:** <solo|multi-person|mixed>
+**Notes created:**
+- [Title](obsidian://open?vault=...) — <path>
+
+**Todoist tasks created:** <count>
+**Calendar events:** <count>
 ```
