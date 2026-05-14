@@ -1,5 +1,6 @@
 ---
 name: swift-architect
+effort: xhigh
 description: This skill should be used when consulting on Swift/SwiftUI app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. Provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding. Integrates with Apple-Docs MCP for documentation lookups.
 ---
 

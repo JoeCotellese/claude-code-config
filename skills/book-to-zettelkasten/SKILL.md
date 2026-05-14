@@ -1,5 +1,6 @@
 ---
 name: book-to-zettelkasten
+effort: high
 description: Decompose books into atomic Zettelkasten permanent notes in the Obsidian vault. Invoke with `/book-to-zettelkasten` or when user says "ZK this book", "atomize this book", "extract permanent notes from this book", "decompose book into notes", "break this book into ZK notes", or wants to turn a book summary or full book text into linked atomic concept notes. Also use when user has an existing literature note they want to enrich with permanent notes, or when they paste book content and want it structured for their second brain.
 ---
 

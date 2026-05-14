@@ -1,5 +1,6 @@
 ---
 name: react-native-reviewer
+effort: high
 description: This skill should be used to review React Native and TypeScript code for quality, best practices, and idiomatic patterns. Use this skill on-demand when the user requests a code review, or proactively before commits when React Native code has been written or modified. The skill provides educational feedback explaining WHY patterns are recommended and suggests alternatives.
 ---
 

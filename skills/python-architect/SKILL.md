@@ -1,5 +1,6 @@
 ---
 name: python-architect
+effort: xhigh
 description: Architectural consultation for Python/Django applications. Use when planning new Django features, designing data models, making architectural decisions, planning API structure, or reviewing design before implementation. Provides component hierarchies, model design, API patterns, and deployment guidance with ASCII diagrams, decision matrices, and code scaffolding. Uses docs-server-mcp for Django documentation. Emphasizes idiomatic modern Python (3.11+), pytest, Ruff, UV, PostgreSQL, HTMX, and function-based views.
 ---
 

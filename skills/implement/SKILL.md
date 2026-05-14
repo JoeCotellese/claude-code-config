@@ -1,5 +1,6 @@
 ---
 name: implement
+effort: xhigh
 description: "Feature implementation phase. Invoke with `/implement #<issue>` or when user says 'implement', 'work on issue #', 'start coding'. Clears context, fetches issue, enters plan mode, then implements with TDD. Gates to /submit when complete."
 ---
 

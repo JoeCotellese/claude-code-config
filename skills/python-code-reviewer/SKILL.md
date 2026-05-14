@@ -1,5 +1,6 @@
 ---
 name: python-code-reviewer
+effort: high
 description: Perform comprehensive Python code reviews before commits or PRs. Reviews code quality (PEP 8, idioms, DRY, separation of concerns), performance patterns, security vulnerabilities, and best practices for web apps and CLI tools. Uses ruff for linting and formatting checks.
 ---
 

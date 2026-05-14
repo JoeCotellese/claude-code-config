@@ -1,5 +1,6 @@
 ---
 name: cpp-qt-architect
+effort: xhigh
 description: This skill should be used when consulting on C++/Qt app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors for Qt-based firmware, client, or server applications. Provides component hierarchies, signal/slot patterns, Qt5↔Qt6 migration guidance, and cross-compilation strategies with ASCII diagrams, decision matrices, and code scaffolding.
 ---
 

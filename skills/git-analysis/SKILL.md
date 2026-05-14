@@ -1,5 +1,6 @@
 ---
 name: git-analysis
+effort: medium
 description: This skill should be used when the user wants to analyze a git repository's health, team practices, and development patterns. Use this when users ask to "analyze this repo", want to understand team velocity, commit patterns, branching strategies, contributor distribution, or assess git best practices compliance. Also use for questions like "how healthy is this codebase" or "what are the development patterns here".
 ---
 

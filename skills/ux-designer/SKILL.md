@@ -1,5 +1,6 @@
 ---
 name: ux-designer
+effort: high
 description: This skill should be used when you need expert guidance on interface design, design system compliance, or creating user experiences that feel native to the target platform. Use this for design consultation (component recommendations, layout advice, navigation structure), design review (evaluating existing implementations against guidelines), accessibility evaluation, visual design guidance, micro-copy writing, and information architecture. Supports Apple platforms (iOS/macOS following HIG) and Web (WCAG 2.1, responsive patterns). Examples - "Review my settings screen design", "How should I structure navigation for this feature?", "Is this accessible?", "What's the best pattern for this list?"
 ---
 

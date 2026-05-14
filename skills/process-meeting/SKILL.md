@@ -1,5 +1,6 @@
 ---
 name: process-meeting
+effort: medium
 description: >
   Process Google Meet transcripts from Google Drive OR Apple Voice Memos into structured
   Obsidian vault notes with topic extraction, vault linking, Todoist action items, and
