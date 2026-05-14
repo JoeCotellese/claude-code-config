@@ -50,6 +50,33 @@ The MCP layer interprets the `description` string as **markdown** and converts i
 
 This affects both `description` on `jira_create_issue` and `comment` on `jira_add_comment`, since both flow through the same markdown→wiki layer.
 
+### ⚠️ Code-identifier hazards in prose (the underscore/star trap)
+
+Identifiers written as **bare prose** (no backticks) get mangled by the markdown→wiki layer because markdown reserves `_` and `*` for emphasis. The MCP escapes them on the way to wiki, producing ugly `\_` and `\*` sequences in the rendered output.
+
+| You write (bare) | What happens | Renders as |
+|---|---|---|
+| `audio_files` | `_files` parsed as italic span | `audio\_files` (visible backslash) |
+| `complex_short_chirp` | underscores escaped or italicized | `complex\*short\*chirp` |
+| `*` between words (e.g. "6 * 3 modes") | parsed as bold/italic | escaped or eats surrounding text |
+| `i++` in prose or fenced block | second `+` consumed somewhere in the pipeline | renders as `i+` |
+
+**Fix (partial):** wrap code identifiers in backticks for inline code. This helps visual styling in some renderers, but **the MCP currently escapes `_` and `+` chars BEFORE backtick scoping is applied**, so even `` `audio_files` `` arrives in Jira as `audio\_files` with a visible backslash. Backticks are NOT a reliable shield.
+
+**Practical workarounds (in order of preference):**
+1. Rephrase to avoid the hazardous identifier: "the audio files array" instead of `audio_files`. Lose precision; gain readability.
+2. Replace `_` with hyphens or camelCase when the audience will tolerate it: `audioFiles`.
+3. For pseudocode, prefer `i = i + 1` over `i++` (the `+` characters survive in arithmetic context most of the time, but not always — verify in a low-stakes ticket first).
+4. Accept the cosmetic backslashes. They are ugly but readable. Substance survives.
+5. If correctness matters more than cosmetics (e.g., for an auditor), put the exact code in the repo and **link** from the Jira comment instead of inlining.
+
+**Fenced code blocks (`\`\`\``) are NOT a safe haven.** Some characters (`++`, `<`, `>`, occasional `_`) still get processed even inside triple-backtick fences depending on the MCP version. For critical pseudocode, prefer:
+- Rephrase to avoid hazardous characters (`for (let i = 1; i <= n; i = i + 1)` instead of `i++`)
+- Use the wiki `{noformat}` block sent **without** surrounding markdown formatting — but be aware the markdown layer may still pre-process it
+- Accept that pseudocode in Jira comments may render imperfectly; put exact code in the repo, link from the comment
+
+**Rule of thumb:** if it would compile, wrap it in backticks. Treat bare prose as prose only.
+
 ### Example
 ```
 project_key: "<PROJECT_KEY>"       # Resolve from local CLAUDE.md (Step 0)
