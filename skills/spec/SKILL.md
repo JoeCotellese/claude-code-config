@@ -1,5 +1,6 @@
 ---
 name: spec
+effort: xhigh
 description: "Feature specification phase. Invoke with `/spec <feature description>` or when user says 'new feature', 'plan feature', 'create spec'. Orchestrates product management, UX design, and architecture planning into a single GitHub/GitLab issue. Gates to /implement when complete."
 ---
 

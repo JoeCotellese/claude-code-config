@@ -1,5 +1,6 @@
 ---
 name: product-manager
+effort: high
 description: This skill should be used when defining product requirements, writing user stories, prioritizing features, or analyzing product decisions. Use this when users request feature planning, business analysis of technical decisions (like monetization strategies), breaking down high-level ideas into actionable tasks, creating measurable success criteria, defining analytics requirements, or prioritizing a backlog. The skill provides structured frameworks for turning ideas into engineering-ready specifications and for making data-driven prioritization decisions. Supports both Apple and Web platforms with on-demand knowledge loading.
 ---
 

@@ -1,6 +1,7 @@
 
 ---
 name: ios-ui-tester
+effort: low
 description: This skill should be used when interacting with iOS Simulators for UI testing, automation, or accessibility inspection. Invoke when users ask to tap, swipe, type text, press buttons, scroll, navigate, describe UI elements, record video, or automate iOS app testing in the Simulator. This skill wraps the AXe CLI tool.
 ---
 

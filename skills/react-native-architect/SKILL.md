@@ -1,5 +1,6 @@
 ---
 name: react-native-architect
+effort: xhigh
 description: This skill should be used when consulting on React Native feature architecture and design decisions. Use this skill before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. The skill provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding.
 ---
 

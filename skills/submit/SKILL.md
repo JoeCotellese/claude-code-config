@@ -1,5 +1,6 @@
 ---
 name: submit
+effort: medium
 description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Pushes branch, creates PR/MR, handles review iteration, and gates to merge/deploy when approved."
 ---
 

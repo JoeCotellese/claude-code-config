@@ -1,5 +1,6 @@
 ---
 name: product-analytics
+effort: medium
 description: Product analytics skill for analyzing codebases, suggesting analytics events, interviewing product managers about key questions, and building PostHog insights and dashboards. Use this skill when the user wants to (1) analyze a codebase for analytics opportunities, (2) discover what questions a PM wants to answer with data, (3) create or modify PostHog insights/dashboards, (4) add new analytics events to a codebase, or (5) understand analytics architecture patterns. Primary users are product managers and frontend developers seeking visibility into product usage. (user)
 ---
 

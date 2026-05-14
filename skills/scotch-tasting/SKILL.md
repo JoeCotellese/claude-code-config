@@ -1,5 +1,6 @@
 ---
 name: scotch-tasting
+effort: medium
 description: Guide Mr. Cotellese through a blind-first scotch tasting session and log the results to his Scotch Tasting Journal in the Obsidian vault. Use this skill whenever the user says "let's do a scotch tasting", "tasting [some bottle]", "pour a dram", "tasting a whisky/whiskey", "help me taste this scotch", invokes /scotch-tasting, or is otherwise sitting down with a dram and wants a guided sensory experience. Also trigger when the user names a specific single malt or blended scotch and indicates they're about to drink it (e.g., "I've got a Glenfiddich 14 open"). The skill enforces blind-first note capture (user describes what they perceive before any expert priming), then offers a "treasure map" reveal from distillery/reviewer consensus on request, then logs the session to the existing journal.
 ---
 

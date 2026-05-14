@@ -1,5 +1,6 @@
 ---
 name: managing-productivity
+effort: medium
 description: Help manage productivity using a hybrid GTD + Energy/Time filtering system in Todoist with calendar integration. This skill should be used when the user asks "what should I be working on?", wants to process their inbox, needs to capture tasks, asks about project status, wants to view their schedule, needs to block time for tasks, wants to check upcoming meetings for preparation needs, or requests help with task management and productivity. The skill guides GTD-style task clarification, adds context/energy/time metadata to tasks, filters suggestions based on current context and actual calendar availability, can schedule tasks on the calendar, and proactively identifies upcoming calendar events that need preparation.
 ---
 

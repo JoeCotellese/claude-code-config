@@ -1,5 +1,6 @@
 ---
 name: nano-banana
+effort: low
 description: "Generate images using Google's Nano Banana 2 model. Invoke with /nano-banana followed by a prompt description, or when the user asks to generate, create, or make an image."
 ---
 

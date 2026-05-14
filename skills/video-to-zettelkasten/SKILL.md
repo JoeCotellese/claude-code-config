@@ -1,5 +1,6 @@
 ---
 name: video-to-zettelkasten
+effort: high
 description: Decompose YouTube videos into atomic Zettelkasten permanent notes in the Obsidian vault. Invoke with `/video-to-zettelkasten <youtube-url>` or when user says "ZK this video", "atomize this video", "extract notes from this video". Downloads transcript via yt-dlp, extracts concepts, and creates interlinked permanent notes plus a literature note.
 ---
 

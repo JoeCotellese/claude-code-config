@@ -1,5 +1,6 @@
 ---
 name: cpp-qt-reviewer
+effort: high
 description: "Perform comprehensive C++/Qt code reviews before commits or PRs. Reviews memory safety (RAII, ownership, smart pointers), Qt-specific pitfalls (parent-child ownership, signal/slot thread safety), modern C++ idioms (C++17/20), concurrency, security, and performance. Uses clang-format, clang-tidy, and clazy for automated checks."
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: receipt-filing
+effort: low
 description: Process scanned business and personal documents by reading PDF content, analyzing to determine date and description, then renaming and organizing files into appropriate folders. Use this skill when the user asks to organize, file, or process scanned receipts, documents, or business/personal expense documents.
 ---
 

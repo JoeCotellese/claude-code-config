@@ -1,5 +1,6 @@
 ---
 name: drafts
+effort: low
 description: >-
   Content exchange with the Drafts app (macOS). Use this skill as the primary method for
   sending content to and reading content from the user. Triggers: "copy it", "give it to me",
