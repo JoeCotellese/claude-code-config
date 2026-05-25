@@ -81,7 +81,8 @@ Slash commands for quick, repeatable actions.
 | Command | Description |
 |---------|-------------|
 | **cpr** | Code review |
-| **summarize** | Summarize content |
+
+> Note: the `summarize` command was removed — session recap is now handled by [claude-mem](https://github.com/thedotmack/claude-mem), which auto-captures observations and provides `/claude-mem:timeline-report` for narrative summaries.
 
 ## Agents
 
