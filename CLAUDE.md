@@ -24,13 +24,17 @@ As I improve, increase:
 - REQUIRED PUSHBACK: When something seems wrong, I MUST push back with technical reasons or gut feelings. Code phrase: "GURU MEDITATION ERROR"
 - Pick a name for yourself when starting new projects
 
+# Output channel
+- Use the `drafts` skill proactively for delivering substantive content (long answers, drafts, code snippets meant to leave the terminal). Inline terminal text is fine for short answers and status updates. The skill handles destination routing (Drafts by default, clipboard on explicit override).
+
 # Git Workflow (CRITICAL)
 - **NEVER commit directly to main/master branch** - Always create a feature branch first
-- When user says "implement", "work on issue", "fix", or mentions an issue number → invoke `/git-workflow` skill IMMEDIATELY before writing any code
+- When the user says "implement", "work on issue", "fix", or mentions an issue number → invoke `/implement` IMMEDIATELY before writing any code. For new features starting from a description, use `/spec` first; submit work with `/submit`.
 - Branch naming: `feature/<issue>-<desc>`, `fix/<issue>-<desc>`, `hotfix/<issue>-<desc>`
 - All changes must go through PRs for review
 
 # Writing code
+- YOU MUST look for "success conditions" when writing code so you can check if it works yourself. If Joe does not provide you with a success condition, suggest one and prompt for confirmation.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
 - When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
 - If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
@@ -44,7 +48,7 @@ As I improve, increase:
 - NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
-- NO EXCEPTIONS POLICY: Under no circumstances should you mark any test type as "not applicable". Every project, regardless of size or complexity, MUST have unit tests, integration tests, AND end-to-end tests. If you believe a test type doesn't apply, you need the human to say exactly "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME"
+- NO EXCEPTIONS POLICY (application code): For shipping application code, every project MUST have unit tests, integration tests, AND end-to-end tests. Do not mark a test type "not applicable" without the exact phrase "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME". This policy does not apply to config repos, markdown/docs work, or one-off scripts — use judgment and ask if unsure.
 
 ## TDD Practice
 
@@ -53,7 +57,7 @@ As I improve, increase:
 
 # Specific Technologies
 See ~/.claude/docs/ for language-specific standards (Python, Swift, source-control, uv)
-See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) - invoke via Skill tool, not Task tool
+See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) — invoke via the Skill tool, not the Agent tool.
 
 ## Codebase Exploration
 - When Serena MCP tools are available, prefer them over Explore agents for large codebases — Explore agents can thrash on context limits with iOS projects
@@ -71,7 +75,7 @@ Is it about interacting with JSON? use 'jq'
 Is it about interacting with YAML or XML? use 'yq'
 
 ### Small, Iterative Changes
-- Work in small, testable increments - implement, test with human in the loop, then continue
+- Work in small, testable increments, you should always know the definition of done before beginning. When in doubt, ask.
 - Always discuss plans before implementation unless explicitly told otherwise
 - When looking up documentation, always check the docs-mcp-server first before searching the web
 - When you are attempting to lookup docs, if what you need is missing from MCP docs server suggest to the human to add it.
@@ -125,3 +129,8 @@ Do not preface with "I'm capturing this..." — just save it and continue.
 ## When in doubt
 Ask: "would future-Mr.-Cotellese, on a different project with a different AI,
 benefit from this surfacing in semantic search?" If yes, capture. If no, skip.
+
+## Which memory store
+- **claude-mem** (`mem-search`, `get_observations`): session-to-session continuity within a single project. Auto-captured. Use to answer "what did we do last time on this repo?"
+- **Open Brain** (`search_thoughts`): durable, cross-AI, cross-project. Manually captured. Use for decisions, people, recurring topics, anything that should outlive a project.
+- Search claude-mem for project history; search Open Brain for knowledge.
