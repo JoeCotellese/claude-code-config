@@ -2,38 +2,68 @@
 name: drafts
 effort: low
 description: >-
-  Content exchange with the Drafts app (macOS). Use this skill as the primary method for
-  sending content to and reading content from the user. Triggers: "copy it", "give it to me",
-  "send it to me", "give me a draft", "clipboard that", "send to drafts", "read it back",
-  "what does it say", "pull from drafts", "get the draft", or /drafts. Replaces pbcopy —
-  always prefer Drafts app over clipboard.
+  Content exchange with the user via the Drafts app (macOS) using the `drafts` CLI.
+  Default destination is Drafts; override to clipboard only when the user explicitly
+  says "pbcopy", "clipboard", or "to clipboard". Drafts triggers: "copy it",
+  "give it to me", "send it to me", "give me a draft", "send to drafts", "read it
+  back", "what does it say", "pull from drafts", "get the draft", or /drafts.
+  Primary method for delivering substantive content to the user.
 ---
 
 # Drafts
 
-Content exchange between Claude and the user via the macOS Drafts app.
+Content exchange between Claude and the user via the `drafts` CLI on macOS.
 
-## Write to Drafts
+## Write to Drafts (default)
 
-Pipe content to the helper script:
+Create a new draft, tagged so the user can filter Claude-generated content:
 
 ```bash
-printf '%s' "CONTENT HERE" | python3 ~/.claude/skills/drafts/scripts/send_to_drafts.py
+drafts create "CONTENT HERE" --tag claude
 ```
 
-Confirm to the user: "Sent to Drafts."
+Confirm: "Sent to Drafts."
 
 ## Read from Drafts
 
+Read the currently open draft on the user's Mac:
+
 ```bash
-osascript -e 'tell application "Drafts" to return content of current draft'
+drafts current
 ```
 
-Requires Drafts to be open on the Mac with the target draft active. If empty, ask the user to open the draft on their Mac.
+If the user references a draft by description rather than what's open, search:
+
+```bash
+drafts --json search "QUERY"
+```
+
+If `drafts current` returns empty, ask the user to open the draft on their Mac.
+
+## Iterating on a draft
+
+When the user wants to refine an existing draft, capture the UUID from the read
+and update in place rather than creating a new one:
+
+```bash
+drafts update <uuid> "REVISED CONTENT"
+```
+
+## Write to clipboard (explicit override only)
+
+Only when the user explicitly says "pbcopy", "clipboard", or "to clipboard":
+
+```bash
+printf '%s' "CONTENT HERE" | pbcopy
+```
+
+Confirm: "Copied to clipboard."
 
 ## Behavior
 
-- When the user asks to send/copy/give content, identify the most recent draft or content from conversation and write it
-- When the user asks to read back or check edits, read from Drafts and display the content
-- During iterative editing sessions, read back automatically when the user indicates they made changes
-- Never use pbcopy — always send to Drafts
+- When the user asks to send/copy/give content, identify the most recent draft or
+  content from the conversation and write it.
+- When the user asks to read back or check edits, read from Drafts and display the content.
+- During iterative editing sessions, read back automatically when the user indicates they made changes.
+- Default to Drafts. Only use pbcopy when the user explicitly names "clipboard" or "pbcopy".
+- Always tag Claude-created drafts with `claude`.
