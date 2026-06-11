@@ -43,12 +43,24 @@ The MCP layer interprets the `description` string as **markdown** and converts i
 
 **Headings** (`h3. *Steps to Reproduce:*`) appear to pass through verbatim if you write them in raw wiki markup — but for consistency, prefer markdown `### Steps to Reproduce` and let the MCP convert.
 
-**⚠️ Angle brackets in code blocks get stripped.** When posting TypeScript generics or JSX inside a fenced code block, the MCP layer strips `<` and `>`. Example: a `\`\`\`ts` block containing `Array<{ id: number }>` arrives in Jira as `Array[{ id: number }]`. Workarounds:
-- Replace generics with prose comments: `Array /* of */ { id: number } /* */`
-- Describe the type signature in prose instead of a code block
-- Or accept the cosmetic loss for one-off comments — confirmed harmless to the rest of the wiki conversion
+**⚠️ Angle brackets get stripped EVERYWHERE — prose, inline code, and fenced blocks.** The markdown→wiki layer treats `<...>` as an HTML tag and deletes it, content and all. This is not limited to code blocks.
 
-This affects both `description` on `jira_create_issue` and `comment` on `jira_add_comment`, since both flow through the same markdown→wiki layer.
+| You write | Arrives in Jira as |
+|---|---|
+| `Array<{ id: number }>` (fenced block) | `Array[{ id: number }]` |
+| `` `amend/<version>/<DOC>` `` (inline code) | `` `amend//` `` — `<version>` and `<DOC>` vanish |
+| `git diff <vtag>..HEAD` (prose) | `git diff ..HEAD` — placeholder gone |
+
+The most insidious case is **angle-bracket placeholders** (`<version>`, `<name>`, `<DOC>`): they disappear silently, leaving meaningless `//` or `..` and garbling the sentence. Workarounds:
+- Use bracket-free placeholder notation: `VERSION`, `DOC-rREV`, `vN.N.N..HEAD` instead of `<version>`, `<DOC>`, `<vtag>`.
+- Replace generics with prose comments: `Array /* of */ { id: number } /* */`.
+- Describe the type signature in prose instead of a code block.
+
+This affects both `description` on `jira_create_issue` and `comment` on `jira_add_comment`/`jira_edit_comment`, since all flow through the same markdown→wiki layer.
+
+**⚠️ Emphasis at the START of a list item collides with the bullet marker.** A bullet whose content begins with `**bold**` (or `*italic*`) merges the list `*` with the emphasis `*`, producing `****text***` — visible stray asterisks, and it can even nest the *following* bullet as a sub-item. Likewise a bare `*` mid-item (e.g. `` `amend/*` ``) gets doubled to `amend/**` and may break the list structure.
+
+Rule: **keep list items plain text.** Do not lead a bullet with bold/italic, and avoid bare `*` anywhere in a bullet (reword `amend/*` → "per-doc amend tags"). If you need a lead-in label, write it as plain prose ("First use: ...") rather than "**First use:** ...". Bold is safe in paragraph prose; it is not safe at the head of a list item.
 
 ### ⚠️ Code-identifier hazards in prose (the underscore/star trap)
 
