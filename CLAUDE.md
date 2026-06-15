@@ -55,10 +55,10 @@ As I improve, increase:
 # Writing code
 - YOU MUST look for "success conditions" when writing code so you can check if it works yourself. If Joe does not provide you with a success condition, suggest one and prompt for confirmation.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
-- When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
 - If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
-- NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
-- When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed.
+- Every code file MUST start with a two-line `ABOUTME:` comment describing what the file does, so files stay greppable by purpose (e.g. `# ABOUTME: Parses the GTD inbox export.` / `# ABOUTME: Emits one task per actionable line.`).
+- Beyond the ABOUTME header, default to minimal comments — write one only when the WHY is non-obvious (a constraint, a workaround, surprising behavior). Don't comment what well-named code already says.
+- NEVER remove an existing comment (ABOUTME headers included) unless you can prove it is actively false.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
 
 
