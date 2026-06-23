@@ -52,6 +52,11 @@ As I improve, increase:
 - Branch naming: `feature/<issue>-<desc>`, `fix/<issue>-<desc>`, `hotfix/<issue>-<desc>`
 - All changes must go through PRs for review
 
+## SSH / 1Password agent
+- 1Password is the SSH agent. `~/.ssh/config` deliberately points each `IdentityFile` at the matching PUBLIC key in `~/.ssh/pub/` with `IdentitiesOnly yes` — the agent uses it to offer exactly one key. This is correct, NOT broken.
+- When git push/pull/fetch over SSH fails auth (`Permission denied (publickey)`, `sign_and_send_pubkey`, hangs at auth), the cause is almost always 1Password locked/quit, not the config. Tell Joe to unlock 1Password and retry.
+- DO NOT "fix" it by editing `~/.ssh/config` (e.g. repointing `IdentityFile` at a private key) or by adding a `GIT_SSH_COMMAND` override. Those break the intended 1P-agent setup. Ask before touching SSH config.
+
 # Writing code
 - YOU MUST look for "success conditions" when writing code so you can check if it works yourself. If Joe does not provide you with a success condition, suggest one and prompt for confirmation.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
