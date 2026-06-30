@@ -14,6 +14,8 @@ Read [references/vault-standards.md](references/vault-standards.md) for Obsidian
 
 ### Phase 1: Fetch Transcript and Metadata
 
+**Skip if already fetched:** If a cleaned `/tmp/yt-zk-<id>.en.txt` already exists for this video (e.g. the user came from `/video-transcript`), Read it and the metadata you already have, then jump to Phase 2. Only run the steps below when no transcript is on disk.
+
 1. **Download metadata** — Pipe through `jq` to keep only what you need (the raw JSON includes ~1MB of format/storyboard noise):
    ```bash
    yt-dlp --dump-json --no-download "<url>" | jq '{title, uploader, channel, upload_date, duration, webpage_url, id, description: (.description | .[0:500])}'
