@@ -10,5 +10,10 @@
       "remote": "DriveName://",
       "flags": ["--drive-shared-with-me"]
     }
-  ]
+  ],
+  "notionRouting": {
+    "dataSourceId": "<notion-kanban-data-source-uuid>",
+    "assigneeUserId": "<your-notion-person-uuid>",
+    "defaultStatus": "Not started"
+  }
 }
