@@ -111,23 +111,37 @@ After writing the note:
 2. **Add `[[wiki-links]]`** inline where matches exist
 3. **Add "Suggested Permanent Notes" section** at the end — topics that might deserve their own evergreen note in `3_Permanent Notes/`. One-line rationale each. Do NOT auto-create.
 
-## Stage 5: Action Items → Todoist
+## Stage 5: Action Items → Routing (Notion / Todoist)
 
-**Only consider tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed to Todoist.
+**Only consider tasks owned by the vault owner (Joe Cotellese).** Other participants' action items should appear in the meeting note but NOT be pushed anywhere.
 
-1. **Present proposed tasks** using `AskUserQuestion` with `multiSelect: true`. Each option should be:
+**Routing rule — classify each task before creating it:**
+- **NEXTGRES-related** → NEXTGRES Notion Kanban Board (see below). A task is NEXTGRES-related if it concerns the NEXTGRES product/company (customers, investors, the Postgres proxy, its roadmap, etc.), or the source note carries the `nextgres` domain tag and the task isn't clearly personal.
+- **Everything else** → Todoist inbox.
+
+When a task is ambiguous, default to Todoist.
+
+1. **Present proposed tasks** using `AskUserQuestion` with `multiSelect: true`. Each option:
    - **label**: The task title (concise, actionable)
-   - **description**: Standalone context so the user can judge whether it's a real action item
+   - **description**: Standalone context + the routing destination in brackets, e.g. `[→ Notion]` or `[→ Todoist]`, so the user can veto a misroute.
 
-2. **Create only selected tasks** via Todoist MCP `add-tasks`. If the user selects none, skip task creation entirely.
+2. **Create only selected tasks.** If the user selects none, skip creation entirely.
 
 3. **If no Joe action items were extracted**, skip this stage entirely — do not prompt.
 
-For each selected task:
-- **content**: Clear, actionable task title
-- **description**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<filename>.md`
-- **dueString**: From transcript context if date/timeframe mentioned, otherwise omit
-- Destination: **inbox** (no projectId)
+Common fields for every task:
+- **title/content**: Clear, actionable task title
+- **description/body**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<filename>.md`
+- **due date**: From transcript context if a date/timeframe is mentioned, otherwise omit
+
+**NEXTGRES tasks → Notion.** Read `notionRouting` from `config.json` (this skill's directory; see `config.example.json` for the schema). If that block is missing, warn and fall back to Todoist for these tasks — do not hardcode IDs here. Create via `notion-create-pages` with `parent: {type: "data_source_id", data_source_id: "<notionRouting.dataSourceId>"}` and properties:
+- `Task name`: the title
+- `Assignee`: `["<notionRouting.assigneeUserId>"]` ("tagged with me")
+- `Status`: `<notionRouting.defaultStatus>`
+- `date:Due date:start`: ISO date if one was mentioned, otherwise omit
+- `content`: the standalone context + Obsidian link (page body)
+
+**Other tasks → Todoist** via Todoist MCP `add-tasks`, destination **inbox** (no projectId), with `dueString` when a timeframe was mentioned.
 
 ## Stage 6: Calendar (iMCP)
 
@@ -229,9 +243,9 @@ When uncertain, ask the user with `AskUserQuestion` showing a 2-3 sentence trans
 
 Same as Google Meet Stage 4 — search vault, add `[[wiki-links]]`, append "Suggested Permanent Notes" section. Solo memos may yield fewer links because they're more fleeting; that's fine.
 
-### Stage 7: Action Items → Todoist
+### Stage 7: Action Items → Routing (Notion / Todoist)
 
-Same Joe-only rule as Google Meet Stage 5. Solo memos often surface latent todos ("I should call X") — capture those as actionable Todoist tasks with the Obsidian deep link in the description.
+Same Joe-only rule and NEXTGRES-vs-Todoist routing as Google Meet Stage 5. Solo memos often surface latent todos ("I should call X") — capture those, routing NEXTGRES items to the Notion Kanban board and everything else to the Todoist inbox, each with the Obsidian deep link in the description.
 
 ### Stage 8: Calendar (iMCP)
 
