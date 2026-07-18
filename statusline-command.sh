@@ -36,6 +36,11 @@ if [ "$usage" != "null" ]; then
     fi
 fi
 
+# Model name
+model=$(echo "$input" | jq -r '.model.display_name // empty')
+model_info=""
+[ -n "$model" ] && model_info=" $(printf '\033[38;2;139;233;253m%s\033[0m' "$model")"
+
 # Build the status line with Starship-inspired colors (simplified)
-printf '\033[38;2;80;250;123m%s\033[0m%s%s' \
-    "$dir" "$git_info" "$context_info"
+printf '\033[38;2;80;250;123m%s\033[0m%s%s%s' \
+    "$dir" "$git_info" "$context_info" "$model_info"
