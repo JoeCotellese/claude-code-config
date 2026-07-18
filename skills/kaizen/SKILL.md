@@ -4,9 +4,12 @@
 
 Kaizen (改善, "change for better") analyzes the current session to identify inefficiencies, tool misuse, missing documentation, and contradictory instructions. It suggests concrete improvements to CLAUDE.md files and skills, then offers to implement the changes.
 
+It also has a **system-prompt redundancy audit** mode (`/kaizen prompts`) that ignores the session and instead diffs the user's durable config against Claude Code's own system prompts, surfacing rules the harness now ships itself.
+
 ## Invocation
 
-User says: `/kaizen` or "review this session for improvements"
+- Session review: `/kaizen` or "review this session for improvements"
+- System-prompt audit: `/kaizen prompts` or "audit my config against the system prompts"
 
 ## Analysis Categories
 
@@ -58,6 +61,34 @@ Identify opportunities for new or enhanced skills:
 - Domain-specific patterns that warrant dedicated skills
 - Existing skills that are missing useful functionality
 - Cross-skill coordination opportunities
+
+## Mode: System-Prompt Redundancy Audit
+
+Separate from the session review above. Triggered by `/kaizen prompts` or "audit my config against the system prompts". This mode does NOT analyze the current session — it diffs the user's durable config against Claude Code's own system prompts to find rules the harness now ships itself.
+
+**Why:** As Claude Code evolves, behavior that once had to live in CLAUDE.md (comment style, action safety, task hygiene) gets baked into the system prompt. Those CLAUDE.md rules become redundant; some (like an ABOUTME-header rule) become conflicts the user is overriding on purpose. This mode surfaces both.
+
+**Source of truth:** `Piebald-AI/claude-code-system-prompts` — system prompts extracted from Claude Code's compiled source, one markdown file per component, each tagged with the `ccVersion` it reflects.
+
+### Steps
+
+1. Shallow-clone the repo to a temp dir (discard when done — no vendored copy to keep in sync):
+   `git clone --depth 1 https://github.com/Piebald-AI/claude-code-system-prompts.git`
+2. Read the version it reflects (README / `ccVersion` headers) and compare to the running Claude Code (`claude --version`). Warn if the repo is behind or ahead — the diff is only as current as the repo.
+3. Diff the user's durable config against the behavioral cluster of `system-prompts/system-prompt-*.md` (tone/style, comments, doing-tasks, action-safety, editing). Targets:
+   - `~/.claude/CLAUDE.md` (resolve the symlink to the real file in this repo before editing)
+   - user skills under `skills/`
+4. Classify every overlapping rule:
+   - **Redundant** — the harness now states it; the CLAUDE.md line can be trimmed or deleted.
+   - **Conflicting** — the config deliberately overrides the harness (e.g. the ABOUTME header vs the harness's "don't explain WHAT the code does"). Keep it, but flag it so the override stays conscious.
+   - **Keep** — personal preference or project workflow with no harness equivalent (anti-sycophancy tone, git routing, tooling choices). Leave untouched.
+5. Report using the Output Format below, then offer to apply the trims.
+
+### Notes
+
+- Only the behavioral system-prompt files overlap durable config. Skip tool descriptions, agent prompts, and mode-specific fragments (plan mode, coordinator, etc.) unless the user asks for a full sweep.
+- Don't strip a rule just because the harness echoes it when the CLAUDE.md version is deliberately stronger (e.g. "NEVER commit to main" vs the harness's softer "branch first"). Note the overlap; leave the stronger rule.
+- Low-frequency chore — run it after a Claude Code upgrade, not every session.
 
 ## Output Format
 
