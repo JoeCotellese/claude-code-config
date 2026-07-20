@@ -99,9 +99,10 @@ fi
 Use the **EnterPlanMode** tool, then:
 1. If implementing a Django feature, read `~/.claude/docs/django.md` for design principles to align against
 2. Explore the codebase based on architecture from the issue
-3. Identify files to create/modify
-4. Map each task to its TDD cycle (failing test → minimal code → refactor)
-5. Write a step-by-step implementation plan
+3. **Check for an inherited prototype.** If `/ui-design` ran, the feature branch already holds the approved target template rendered with a fake context (plus a throwaway `ponytail:` prototype view). Treat that template as the UI starting point — **do not rebuild it**; the plan wires it to real services and removes/repurposes the throwaway route.
+4. Identify files to create/modify
+5. Map each task to its TDD cycle (failing test → minimal code → refactor)
+6. Write a step-by-step implementation plan
 
 **Plan should include:**
 - Files to create/modify (with full paths)
