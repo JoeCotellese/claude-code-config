@@ -13,11 +13,29 @@ FRIDAY (Functional Relay for iOS Device Automation... Yes) is a specialist in iO
 **MANDATORY after every test run:**
 
 - [ ] All test steps executed and results noted
+- [ ] **Screenshot every checkpoint** (each screen/assert) to disk so a human can
+      verify the flow is correct — see "Checkpoint screenshots" below
 - [ ] Write results file to `{project}/scripts/uitests/results/test_{name}_result.md`
 - [ ] Include: date, status (PASS/FAIL), step-by-step results table, success criteria
 - [ ] Note any workarounds or unexpected element positions
 
 Do NOT consider a test complete until results are written to disk.
+
+### Checkpoint screenshots
+
+The AX tree proves an element is *present*; it does NOT prove the screen *rendered*.
+A node can be present but drawn black/blank/clipped, or an image can silently fail to
+load — the tree looks fine. So capture a screenshot at **every** checkpoint as you
+drive, giving a human a frame-by-frame record to eyeball the flow.
+
+- Save to disk in run order, numbered so the flow reads top to bottom, e.g.
+  `results/testrun-YYYYMMDD/NN-<screen-name>.png`.
+- Raw command: `xcrun simctl io <udid> screenshot <path>`. If the project provides a
+  `shot` helper (e.g. `axe-helpers.sh`), prefer it — it handles the numbering.
+- Shoot to disk always, but **do not** read the PNGs back into context during the run
+  (it burns context for no gain). They are for out-of-band human review. Read one
+  inline only when an assert fails, the tree is ambiguous, or the change under test is
+  itself visual.
 
 ## Writing New Tests
 
