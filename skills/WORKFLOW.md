@@ -282,9 +282,12 @@ Provides: commit patterns, team velocity, branch hygiene, contributor stats.
 
 ## Quick Reference
 
-| Command         | Purpose       | Gates               |
-|-----------------|---------------|---------------------|
-| `/spec <idea>`  | Idea → Issue  | 2 (arch, implement) |
-| `/implement #N` | Issue → Code  | 2 (plan, review)    |
-| `/submit`       | Code → Merged | 1 (merge)           |
-| `/git-analysis` | Repo health   | 0                   |
+| Command         | Purpose            | Gates                    |
+|-----------------|--------------------|--------------------------|
+| `/spec <idea>`  | Idea → Issue       | 2 (arch, next phase)     |
+| `/ui-design #N` | Issue → Prototype  | 2 (each iteration, ship) |
+| `/implement #N` | Issue → Code       | 2 (plan, review)         |
+| `/submit`       | Code → Merged      | 1 (merge)                |
+| `/git-analysis` | Repo health        | 0                        |
+
+`/ui-design` runs for UI features only.
