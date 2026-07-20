@@ -83,10 +83,6 @@ As I improve, increase:
 See ~/.claude/docs/ for language-specific standards (Python, Swift, source-control, uv)
 See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) — invoke via the Skill tool, not the Agent tool.
 
-## Codebase Exploration
-- When Serena MCP tools are available, prefer them over Explore agents for large codebases — Explore agents can thrash on context limits with iOS projects
-- Use `find_symbol` and `get_symbols_overview` for targeted code reading instead of full-file reads
-
 ## Development Workflow
 - Use `tldr` tool when you are trying to figure out the syntax of a 3rd party tool
 
