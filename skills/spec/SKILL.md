@@ -246,31 +246,39 @@ Return to user:
 
 **Then IMMEDIATELY proceed to Step 10 (the final gate).**
 
-### Step 10: GATE - Ready to Implement
+### Step 10: GATE - Ready for Next Phase
 
-**CRITICAL**: STOP and ask user before proceeding to implementation phase.
+**CRITICAL**: STOP and ask user before proceeding.
 
-Use the AskUserQuestion tool to prompt:
+**Does this feature have a UI?** If yes, the next phase is `/ui-design` (UI-first: an
+approved static prototype before backend work). If it's backend/CLI-only, the next phase is
+`/implement` directly. When the feature has a UI, mark the issue's UX and acceptance
+sections **provisional — pending design**, since `/ui-design` will finalize them.
+
+Use the AskUserQuestion tool to prompt (UI feature):
 ```
 ✅ Spec complete!
 
 Issue: #<issue_number>
 URL: <issue_url>
 
-Ready to start implementation?
-- Yes → Continue to /implement #<issue_number>
-- Refine spec → Let's adjust before implementing
-- Stop here → I'll implement later
+This feature has a UI — next is the design phase (static prototype before backend).
+- Yes → Continue to /ui-design #<issue_number>
+- Refine spec → Let's adjust before designing
+- Stop here → I'll pick it up later
 ```
 
-**DO NOT invoke /implement until user explicitly confirms "Yes".**
+For a backend/CLI-only feature, swap the handoff to `/implement #<issue_number>` instead.
 
-**When user confirms "Yes":** Invoke the `implement` skill using the Skill tool:
+**DO NOT invoke the next phase until the user explicitly confirms "Yes".**
+
+**When user confirms "Yes":** Invoke the next skill using the Skill tool:
 ```
-Skill tool: skill="implement", args="#<issue_number>"
+Skill tool: skill="ui-design", args="#<issue_number>"      # UI feature
+Skill tool: skill="implement", args="#<issue_number>"      # backend/CLI-only
 ```
 
-This hands off to the implementation phase with the issue context.
+This hands off to the next phase with the issue context.
 
 ## Output Composition
 
@@ -301,4 +309,5 @@ This skill orchestrates:
 
 ## Next Phase
 
-After spec is complete and user confirms, chains to → `/implement`
+After spec is complete and user confirms, chains to → `/ui-design` (UI features) or
+`/implement` (backend/CLI-only).

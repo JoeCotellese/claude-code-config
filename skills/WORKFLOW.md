@@ -8,19 +8,17 @@ This document describes how the phase-based skills work together to guide featur
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        FEATURE DEVELOPMENT LOOP                          │
 │                                                                          │
-│   /spec ──────────► /implement ──────────► /submit ──────────► Done     │
-│     │                    │                     │                         │
-│     ▼                    ▼                     ▼                         │
-│   Issue               Branch                  PR                         │
-│   Created             + Code                  + Merged                   │
+│   /spec ────► /ui-design ────► /implement ────► /submit ────► Done      │
+│      │         (UI only)           │               │                     │
+│      ▼             ▼               ▼               ▼                     │
+│    Issue       Approved         Branch            PR                     │
+│    Created     Prototype        + Code            + Merged               │
 │                                                                          │
-│   Gates: ◆────────────◆────────────◆────────────◆────────────◆         │
-│          Ready for    Ready to     Plan        Ready for    Merge?      │
-│          arch?        implement?   approved?   review?                  │
+│   Every arrow crosses a human gate — see the Gates table below.          │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## The Three Phases
+## The Phases
 
 ### Phase 1: `/spec` — Specification
 
@@ -37,15 +35,45 @@ This document describes how the phase-based skills work together to guide featur
 3. Invokes `ux-designer` skill → design guidance
 4. **GATE:** "Ready for architecture?" ← waits for approval
 5. Invokes domain architect skill → technical design
-6. Creates GitHub/GitLab issue with all outputs
-7. **GATE:** "Ready to implement?" ← waits for approval
-8. If yes → invokes `/implement #<issue>`
+6. Creates GitHub/GitLab issue with all outputs (UX + acceptance marked
+   **provisional — pending design** when the feature has a UI)
+7. **GATE:** "Ready for the next phase?" ← waits for approval
+8. If yes → invokes `/ui-design #<issue>` (UI feature) or `/implement #<issue>`
+   (backend/CLI-only)
 
 **Output:** GitHub issue with requirements, UX, and architecture
 
 ---
 
-### Phase 2: `/implement` — Implementation
+### Phase 2: `/ui-design` — Design (UI features only)
+
+**Purpose:** Get an approved, clickable prototype before any backend work. The prototype is
+the **real target template rendered with a fake context** — not a throwaway mock — so
+`/implement` inherits it and does zero UI rework.
+
+**Invocation:**
+```
+/ui-design #123
+```
+
+**What happens:**
+1. Fetches the spec issue, creates/switches to the feature branch
+2. Builds the real template + a throwaway view rendering it with hardcoded fake data
+   covering empty, typical, and stress states
+3. Iteration loop (max 3): drives the prototype with Playwright → independent review in a
+   fresh context → presents screenshots + critique
+4. **GATE:** "Approve / Iterate / Stop?" ← waits for approval
+5. Amends the issue with the final UX + acceptance criteria, commits the template
+6. **GATE:** "Ready to implement?" ← waits for approval
+7. If yes → invokes `/implement #<issue>`
+
+**Output:** Feature branch with an approved prototype template; issue UX finalized
+
+Backend/CLI-only work skips this phase entirely.
+
+---
+
+### Phase 3: `/implement` — Implementation
 
 **Purpose:** Transform the issue into tested, reviewable code with a plan-first approach.
 
@@ -57,8 +85,10 @@ This document describes how the phase-based skills work together to guide featur
 **What happens:**
 1. Suggests clearing context for fresh start
 2. Fetches issue content (requirements, architecture)
-3. Creates feature branch: `feature/123-description`
-4. Enters **plan mode** → explores codebase, writes implementation plan
+3. Creates feature branch: `feature/123-description` (or continues the one `/ui-design`
+   already started)
+4. Enters **plan mode** → explores codebase, writes implementation plan. If a prototype was
+   inherited, the plan wires it to real services instead of rebuilding the UI
 5. **GATE:** "Plan approved?" ← waits for approval
 6. Executes plan (TDD or tests-after based on project config)
 7. Runs tests + code reviewer
@@ -69,7 +99,7 @@ This document describes how the phase-based skills work together to guide featur
 
 ---
 
-### Phase 3: `/submit` — Submission & Review
+### Phase 4: `/submit` — Submission & Review
 
 **Purpose:** Get code reviewed, iterate on feedback, merge when approved.
 
@@ -97,11 +127,12 @@ This document describes how the phase-based skills work together to guide featur
 
 You don't always start at `/spec`. The workflow has multiple entry points:
 
-| Starting Point        | Command               | Skips            |
-|-----------------------|-----------------------|------------------|
-| Fresh idea            | `/spec <description>` | Nothing          |
-| Issue already exists  | `/implement #123`     | Spec phase       |
-| Code ready for review | `/submit`             | Spec + Implement |
+| Starting Point            | Command               | Skips                     |
+|---------------------------|-----------------------|---------------------------|
+| Fresh idea                | `/spec <description>` | Nothing                   |
+| Spec'd UI feature         | `/ui-design #123`     | Spec phase                |
+| Issue already exists      | `/implement #123`     | Spec + Design             |
+| Code ready for review     | `/submit`             | Spec + Design + Implement |
 
 ### Auto-Detection
 
@@ -123,13 +154,17 @@ Issue #123 exists?
 
 Every gate uses `AskUserQuestion` to pause and wait for explicit approval:
 
-| Gate | Location                | Question                  |
-|------|-------------------------|---------------------------|
-| 1    | `/spec` after UX        | "Ready for architecture?" |
-| 2    | `/spec` after issue     | "Ready to implement?"     |
-| 3    | `/implement` after plan | "Plan approved?"          |
-| 4    | `/implement` after QA   | "Ready for review?"       |
-| 5    | `/submit` after review  | "Merge and deploy?"       |
+| Gate | Location                        | Question                       |
+|------|---------------------------------|--------------------------------|
+| 1    | `/spec` after UX                | "Ready for architecture?"      |
+| 2    | `/spec` after issue             | "Ready for the next phase?"    |
+| 3    | `/ui-design` each iteration     | "Approve / Iterate / Stop?"    |
+| 4    | `/ui-design` after approval     | "Ready to implement?"          |
+| 5    | `/implement` after plan         | "Plan approved?"               |
+| 6    | `/implement` after QA           | "Ready for review?"            |
+| 7    | `/submit` after review          | "Merge and deploy?"            |
+
+Gates 3 and 4 only apply to UI features.
 
 **Nothing proceeds automatically past a gate.** You must explicitly confirm.
 
@@ -144,6 +179,11 @@ Each phase skill invokes specialist skills:
 ├── product-manager      (requirements)
 ├── ux-designer          (design guidance)
 └── swift-architect      (or python-architect, react-native-architect)
+
+/ui-design
+├── Playwright MCP       (drive the prototype in a browser)
+├── Agent tool           (independent review, fresh context)
+└── gh/glab CLI          (read spec, amend issue with final UX)
 
 /implement
 ├── EnterPlanMode        (plan before coding)
@@ -169,7 +209,24 @@ Claude: Ready for architecture? (Yes/Refine/Stop)
 You: Yes
 
 Claude: [Invokes swift-architect] Here's the architecture...
-Claude: [Creates issue #47]
+Claude: [Creates issue #47, UX marked provisional — pending design]
+Claude: This feature has a UI — next is /ui-design. Ready? (Yes/Refine/Stop)
+
+You: Yes
+
+Claude: [Invokes /ui-design #47, creates feature/47-dark-mode]
+Claude: [Builds the real view with a fake context: empty, typical, stress states]
+Claude: [Playwright screenshots desktop + mobile; independent review agent critiques]
+Claude: Here are the screenshots and the critique. Approve / Iterate / Stop?
+
+You: Iterate — the toggle needs a keyboard path
+
+Claude: [Applies changes, re-drives, re-reviews]
+Claude: Approve / Iterate / Stop?
+
+You: Approve
+
+Claude: [Amends issue #47 with final UX + acceptance, commits the template]
 Claude: Ready to implement? (Yes/Refine/Stop)
 
 You: Yes
