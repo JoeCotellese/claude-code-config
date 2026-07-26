@@ -52,7 +52,8 @@ git status
 Check that:
 - Working on a feature branch (not main/master)
 - All changes are committed (clean working directory)
-- Branch name follows convention: `feature/`, `fix/`, or `hotfix/`
+- Branch name uses one of the prefixes in `~/.claude/docs/source-control.md`:
+  `feature/`, `fix/`, `bugfix/`, `hotfix/`, `chore/`, `docs/`, `test/`, `refactor/`
 
 ### Step 2: Run Code Review
 

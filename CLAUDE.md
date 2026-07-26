@@ -54,7 +54,7 @@ broken down.
 # Git Workflow (CRITICAL)
 - **NEVER commit directly to main/master branch** - Always create a feature branch first
 - When the user says "implement", "work on issue", "fix", or mentions an issue number → invoke `/implement` IMMEDIATELY before writing any code. For new features starting from a description, use `/spec` first; submit work with `/submit`.
-- Branch naming: `feature/<issue>-<desc>`, `fix/<issue>-<desc>`, `hotfix/<issue>-<desc>`
+- Branch naming: `<prefix>/<issue>-<desc>`. See `~/.claude/docs/source-control.md` for the full prefix set (feature, fix, hotfix, chore, docs, test, refactor)
 - All changes must go through PRs for review
 
 ## SSH / 1Password agent
