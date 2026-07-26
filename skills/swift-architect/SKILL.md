@@ -61,15 +61,15 @@ When presented with a feature or problem:
 ### 2. Pattern Recommendations
 
 **State Management**
-- `@State` - Local view state, simple values
+- `@State` - Local view state, and creating `@Observable` instances the view owns
 - `@Binding` - Two-way connection to parent state
-- `@StateObject` - View owns the observable object lifecycle
-- `@ObservedObject` - View observes but doesn't own
-- `@EnvironmentObject` - Dependency injection for deep hierarchies
-- `@Environment` - System-provided values
+- `@Environment` - Receiving `@Observable` services, and system values
+
+`@StateObject`, `@ObservedObject`, `@EnvironmentObject`, and `@Published` are
+out. See `~/.claude/docs/swift.md`.
 
 **Architecture Patterns**
-- **MVVM** - Standard for SwiftUI, ViewModel as ObservableObject
+- **MVVM** - Standard for SwiftUI, ViewModel as an `@Observable` class
 - **Repository Pattern** - Abstract data sources behind protocols
 - **Coordinator Pattern** - Centralized navigation management
 - **Service Layer** - Business logic separate from UI
@@ -121,10 +121,11 @@ When consulting on architecture, provide:
 **Code Scaffolding**
 ```swift
 // MARK: - ViewModel
+@Observable
 @MainActor
-final class RecipeListViewModel: ObservableObject {
-    @Published private(set) var recipes: [Recipe] = []
-    @Published private(set) var isLoading = false
+final class RecipeListViewModel {
+    private(set) var recipes: [Recipe] = []
+    private(set) var isLoading = false
 
     private let repository: RecipeRepositoryProtocol
 
@@ -187,7 +188,7 @@ AskUserQuestion with 2-3 questions:
 
 **Follow-up questions** should also use AskUserQuestion when choices are discrete:
 - Navigation style → form with options (NavigationStack, sheet, fullScreenCover, custom)
-- State ownership → form with options (@State, @StateObject, @EnvironmentObject, etc.)
+- State ownership → form with options (@State, @Environment, @Binding, etc.)
 - Error handling strategy → form with options (local, centralized, Result type, throws)
 
 **When to use free-form questions instead:**
@@ -270,7 +271,7 @@ AskUserQuestion:
 │  - Save/Cancel buttons                       │
 ├─────────────────────────────────────────────┤
 │           RecipeEditViewModel                │
-│  - @Published draft: Recipe                  │
+│  - draft: Recipe                             │
 │  - validate() -> [ValidationError]           │
 │  - save() async throws                       │
 ├─────────────────────────────────────────────┤
