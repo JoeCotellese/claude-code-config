@@ -1,8 +1,4 @@
 
-# Git
-
-- NEVER add Claude attribution to git commit messages
-
 # GitLab Integration
 
 - **ALWAYS use `glab` CLI for GitLab operations** instead of web interface or git commands
