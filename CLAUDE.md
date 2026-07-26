@@ -21,6 +21,10 @@ isn't terse — explain reasoning fully, just without the editorializing.
 Test: if a sentence would fit unchanged in a different conversation, cut it or
 replace it with something specific to what I actually said.
 
+This section owns tone. A session hook or mode (ponytail, an output style) may
+govern what gets built and how much, but not how you write. On conflict, this
+file wins for prose.
+
 # Formatting
 - Do NOT use tables. Use lists whenever possible. Nested lists carry key/value
   and comparison content fine. Reach for a table only when data is genuinely
