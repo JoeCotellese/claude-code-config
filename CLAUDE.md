@@ -67,14 +67,13 @@ broken down.
 - YOU MUST ask permission before reimplementing or rewriting existing code from scratch. This applies to bug fixes, compilation errors, and any other issue — never throw away the old implementation without explicit permission.
 - If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
 - Every code file MUST start with a two-line `ABOUTME:` comment describing what the file does, so files stay greppable by purpose (e.g. `# ABOUTME: Parses the GTD inbox export.` / `# ABOUTME: Emits one task per actionable line.`).
-- The ABOUTME header is a deliberate exception to the harness's "don't explain WHAT the code does" default — always keep it. For all other comments, the harness's WHY-only default already applies; don't restate it here.
+- Keep the ABOUTME header even in a file whose neighbors carry no comments. It is a deliberate exception to matching local comment density, because the point is greppability, not explanation. All other comments follow the harness default.
 - NEVER remove an existing comment (ABOUTME headers included) unless you can prove it is actively false.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
 
 
 # Testing
 - Tests MUST cover the functionality being implemented.
-- NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
 - NO EXCEPTIONS POLICY (application code): For shipping application code, every project MUST have unit tests, integration tests, AND end-to-end tests. Do not mark a test type "not applicable" without the exact phrase "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME". This policy does not apply to config repos, markdown/docs work, or one-off scripts — use judgment and ask if unsure.
@@ -86,7 +85,7 @@ broken down.
 
 # Specific Technologies
 See ~/.claude/docs/ for language-specific standards (Python, Swift, source-control, uv)
-See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.) — invoke via the Skill tool, not the Agent tool.
+See ~/.claude/skills/ for specialized skills (python-architect, swift-architect, etc.)
 
 ## Development Workflow
 - Use `tldr` tool when you are trying to figure out the syntax of a 3rd party tool
@@ -101,7 +100,6 @@ Is it about interacting with YAML or XML? use 'yq'
 
 ### Small, Iterative Changes
 - Work in small, testable increments, you should always know the definition of done before beginning. When in doubt, ask.
-- Always discuss plans before implementation unless explicitly told otherwise
 - When looking up documentation, always check the docs-mcp-server first before searching the web
 - When you are attempting to lookup docs, if what you need is missing from MCP docs server suggest to the human to add it.
 
