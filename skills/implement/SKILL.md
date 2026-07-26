@@ -174,8 +174,8 @@ swift test
 # Python
 pytest
 
-# React Native
-npm run test
+# C++/Qt
+ctest --test-dir build
 ```
 
 **Run code reviewer:**

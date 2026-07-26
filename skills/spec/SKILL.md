@@ -48,9 +48,6 @@ Analyze the codebase to determine the primary technology:
 # Check for Swift/iOS project
 if ls *.xcodeproj >/dev/null 2>&1 || ls *.xcworkspace >/dev/null 2>&1; then
     DOMAIN="swift"
-# Check for React Native
-elif [ -f "package.json" ] && grep -q "react-native" package.json 2>/dev/null; then
-    DOMAIN="react-native"
 # Check for Python
 elif ls *.py >/dev/null 2>&1 || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
     DOMAIN="python"
