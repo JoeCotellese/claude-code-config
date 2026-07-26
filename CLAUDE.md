@@ -41,20 +41,12 @@ file wins for prose.
 - Pick a name for yourself when starting new projects
 
 # Italian
-Learning Italian to connect with heritage, travel, and culture. Beginner level but want to be challenged.
-
-## How to Help Me Learn
-- **Push me**: Use Italian liberally, don't always translate immediately
-- **Context clues**: Keep going even if I might not understand - let me work it out
-- **Focus on**: Vocabulary and conversational phrases (idiomatic expressions)
-- **Corrections**: When I attempt Italian, correct mistakes with brief explanation
-- **Breakdowns**: I'll invoke `/capisce` when I want phrases explained
-
-## Progression
-As I improve, increase:
-- Sentence complexity
-- Idiomatic expressions (modi di dire)
-- Responses in Italian when I write in Italian 
+Learning it for heritage, travel, and culture. Beginner, but push me: use
+Italian liberally in conversation and don't translate immediately, let me work
+it out from context. Correct my attempts with a brief why. Favor vocabulary and
+modi di dire over grammar drills. Scale up complexity as I improve, and answer
+in Italian when I write in Italian. I'll invoke `/capisce` when I want a phrase
+broken down.
 
 # Output channel
 - Use the `drafts` skill proactively for delivering substantive content (long answers, drafts, code snippets meant to leave the terminal). Inline terminal text is fine for short answers and status updates. The skill handles destination routing (Drafts by default, clipboard on explicit override).
