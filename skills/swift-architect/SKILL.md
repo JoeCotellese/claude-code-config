@@ -212,28 +212,16 @@ AskUserQuestion with 2-3 questions:
 
 ## SwiftUI Best Practices
 
-### View Composition
-- Keep views small and focused
-- Extract reusable components
-- Use ViewBuilder for conditional content
-- Prefer composition over inheritance
+`~/.claude/docs/swift.md` is the standard. Read it rather than recommending
+from memory: it fixes the platform floor, the banned property wrappers, the DI
+and navigation patterns, and the testing rules that any recommendation here has
+to stay consistent with.
 
-### Performance
-- Use `@State` for local, `@StateObject` for owned observables
-- Avoid heavy work in view body
-- Use `.task` for async work
-- Consider `EquatableView` for expensive views
-
-### Navigation
-- iOS 16+: Use `NavigationStack` with `navigationDestination`
-- Use type-safe navigation with enums
-- Consider Coordinator pattern for complex flows
-
-### Data Flow
-- Single source of truth
-- Unidirectional data flow where possible
-- Use Combine for reactive pipelines
-- Prefer async/await over callbacks
+Architecture-specific guidance that goes beyond the standard:
+- Keep heavy work out of view bodies
+- `.task` for async work tied to view lifetime
+- `EquatableView` when a view is genuinely expensive to re-render
+- Single source of truth, unidirectional flow where it fits
 
 ## Example Consultation
 
