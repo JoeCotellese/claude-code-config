@@ -136,6 +136,11 @@ This reference consolidates Apple-specific product considerations including plat
 
 **Typical support**: Latest 2-3 major iOS versions
 
+**House default**: iOS 18. `~/.claude/docs/swift.md` sets the floor at iOS 18
+because the standards there (Swift 6 strict concurrency, `@Observable`,
+SwiftData, Swift Testing) assume it. Recommending a lower target means
+recommending against the coding standard, so say so explicitly if you do.
+
 ### Device Compatibility Decisions
 
 - **Minimum device**: iPhone 12+ gives modern features (5G, LiDAR)
