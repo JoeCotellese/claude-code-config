@@ -76,7 +76,7 @@ broken down.
 - Tests MUST cover the functionality being implemented.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
-- NO EXCEPTIONS POLICY (application code): For shipping application code, every project MUST have unit tests, integration tests, AND end-to-end tests. Do not mark a test type "not applicable" without the exact phrase "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME". This policy does not apply to config repos, markdown/docs work, or one-off scripts — use judgment and ask if unsure.
+- Shipping application code gets unit tests, integration tests, and end-to-end tests. If you think one of those doesn't apply, say so and get my agreement first, don't decide it alone. Config repos, markdown and docs work, and one-off scripts are exempt.
 
 ## TDD Practice
 
