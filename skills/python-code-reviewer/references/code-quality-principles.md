@@ -564,7 +564,7 @@ def _process_item(item):
 Use tools to measure:
 ```bash
 # radon for complexity
-pip install radon
+uv tool install radon
 radon cc myfile.py -a  # -a shows average
 
 # Flag functions with complexity > 10

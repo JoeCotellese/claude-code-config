@@ -70,7 +70,7 @@ The script will:
 
 **If ruff isn't installed**, suggest:
 ```bash
-pip install ruff
+uv tool install ruff
 ```
 
 ### 3. Load Django Design Principles (if applicable)

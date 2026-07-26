@@ -176,7 +176,7 @@ git ls-files | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -15
 | onefetch | `brew install onefetch` | Quick visual repo summary |
 | git-quick-stats | `brew install git-quick-stats` | Interactive stats menu |
 | git-sizer | `brew install git-sizer` | Repo size/commit metrics |
-| git-fame | `pip install git-fame` | Contributor analysis |
+| git-fame | `uv tool install git-fame` | Contributor analysis |
 | mergestat | `brew install mergestat/tap/mergestat` | SQL queries on git |
 
 To check which tools are available, run:

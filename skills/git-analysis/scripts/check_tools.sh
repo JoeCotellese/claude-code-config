@@ -40,7 +40,7 @@ check_tool "git-sizer" \
     "Repository size metrics and warnings"
 
 check_tool "git-fame" \
-    "pip install git-fame" \
+    "uv tool install git-fame" \
     "Detailed contributor analysis"
 
 check_tool "mergestat" \
@@ -55,12 +55,12 @@ check_tool "gitleaks" \
     "Secret/credential scanning"
 
 check_tool "gitinspector" \
-    "pip install gitinspector" \
+    "uv tool install gitinspector" \
     "Statistical analysis with blame"
 
 echo "============================"
 echo ""
 echo "💡 Tip: Install all recommended tools with:"
 echo "   brew install onefetch git-quick-stats git-sizer mergestat/tap/mergestat"
-echo "   pip install git-fame"
+echo "   uv tool install git-fame"
 echo ""
