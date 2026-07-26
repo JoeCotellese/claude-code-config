@@ -70,7 +70,6 @@ Then invoke the reviewer matching the detected domain:
 |--------|----------|------|
 | `swift` | `swift-swiftui-reviewer` | Agent (subagent_type) |
 | `python` | `python-code-reviewer` | Skill |
-| `react-native` | `react-native-reviewer` | Skill |
 | `cpp-qt` | `cpp-qt-reviewer` | Skill |
 | `unknown` | STOP — ask user which reviewer to use |
 
@@ -137,8 +136,6 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 
 ## Related Issues
 Fixes #<issue>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```

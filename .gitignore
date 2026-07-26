@@ -14,3 +14,6 @@ skills/*/config.json
 # Python bytecode caches
 __pycache__/
 *.pyc
+
+# Bonnie Ravina / Full Circle 360 Marketing proprietary framework — not ours to publish
+skills/positioning/

@@ -129,7 +129,6 @@ Select architect based on DOMAIN from Step 1 (detected earlier):
 | Domain | Architect |
 |--------|-----------|
 | swift | Invoke `swift-architect` skill |
-| react-native | Invoke `react-native-architect` skill |
 | python | Invoke `python-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
@@ -303,7 +302,7 @@ The issue should be scannable with clear sections:
 This skill orchestrates:
 - `product-manager` skill (for PM phase)
 - `ux-designer` skill (for design phase)
-- `swift-architect`, `react-native-architect`, or `python-architect` skill (for architecture)
+- `swift-architect`, `cpp-qt-architect`, or `python-architect` skill (for architecture)
 - `gh` CLI (for GitHub issues)
 - `glab` CLI (for GitLab issues)
 

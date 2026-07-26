@@ -7,10 +7,6 @@
 
 <Optional detailed explanation of WHY, not WHAT>
 <The code shows WHAT changed>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ## Commit Types
@@ -36,10 +32,6 @@ Fix #70: Use applies_condition field instead of hardcoded string checks
 
 This follows data-driven design principle (ARCHITECTURE.md).
 Any item can now apply conditions via JSON without code changes.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### Good: Feature addition
@@ -52,10 +44,6 @@ Implement /addcharacter and /removecharacter commands for testing:
 - Includes validation and error handling
 
 Useful for testing party-based combat scenarios.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### Bad: Vague, no issue reference
@@ -101,8 +89,4 @@ Tests:
 - Update integration tests to use new structure
 
 This improves separation of concerns and makes conditions easier to extend.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```

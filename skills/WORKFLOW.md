@@ -30,7 +30,7 @@ This document describes how the phase-based skills work together to guide featur
 ```
 
 **What happens:**
-1. Detects project domain (Swift, Python, React Native)
+1. Detects project domain (Swift, Python, C++/Qt)
 2. Invokes `product-manager` skill → requirements & user stories
 3. Invokes `ux-designer` skill → design guidance
 4. **GATE:** "Ready for architecture?" ← waits for approval
@@ -178,7 +178,7 @@ Each phase skill invokes specialist skills:
 /spec
 ├── product-manager      (requirements)
 ├── ux-designer          (design guidance)
-└── swift-architect      (or python-architect, react-native-architect)
+└── swift-architect      (or python-architect, cpp-qt-architect)
 
 /ui-design
 ├── Playwright MCP       (drive the prototype in a browser)
@@ -187,7 +187,7 @@ Each phase skill invokes specialist skills:
 
 /implement
 ├── EnterPlanMode        (plan before coding)
-├── python-code-reviewer (or swift-swiftui-reviewer, react-native-reviewer)
+├── python-code-reviewer (or swift-swiftui-reviewer, cpp-qt-reviewer)
 └── ExitPlanMode         (get plan approval)
 
 /submit

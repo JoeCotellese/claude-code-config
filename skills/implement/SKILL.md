@@ -158,10 +158,6 @@ git commit -m "$(cat <<'EOF'
 <Type> #<issue>: <Brief description>
 
 <Why explanation>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -188,7 +184,6 @@ npm run test
 |--------|----------|
 | Swift | `swift-swiftui-reviewer` agent |
 | Python | `python-code-reviewer` skill |
-| React Native | `react-native-reviewer` skill |
 
 **TDD compliance check:**
 Review the commit history for this branch. Tests should appear in commits *alongside* their implementation code, not lumped together at the end. If all tests were written after all implementation, flag this to the user — TDD was not followed.
