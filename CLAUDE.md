@@ -113,57 +113,21 @@ Is it about interacting with YAML or XML? use 'yq'
 - When looking up documentation, always check the docs-mcp-server first before searching the web
 - When you are attempting to lookup docs, if what you need is missing from MCP docs server suggest to the human to add it.
 
-# Open Brain (Second Brain MCP)
+# Memory
 
-Mr. Cotellese maintains an Open Brain via the `open-brain` MCP server — his
-personal cross-AI knowledge store. Tools: `capture_thought`, `search_thoughts`,
-`get_similar`, `list_thoughts`, `thought_stats`.
+Two stores, different jobs:
+- claude-mem (`mem-search`, `get_observations`): what happened on THIS repo last
+  time. Auto-captured.
+- Open Brain (`search_thoughts`, `capture_thought`): durable, cross-AI,
+  cross-project knowledge. Manually captured.
 
-This is HIS knowledge, not session memory (that's claude-mem). Treat it as a
-durable layer that should be consulted and contributed to as a normal part of
-work, not a ceremony.
+Search Open Brain before non-trivial research, especially on recurring topics:
+NEXTGRES, Comcast LIFT Labs, Wavely, product management, Italian, the Obsidian
+vault. Cite what you find so I can trust the recall.
 
-## Search before you research
-Before any non-trivial research or deep-work task, run `search_thoughts` with
-2-3 query variations. Especially when:
-- He asks "have we figured out X?" / "what did we decide about Y?"
-- The task touches recurring topics (NEXTGRES, Comcast LIFT Labs, Wavely,
-  product management, his Italian study, Obsidian vault structure)
-- He references a person ("Lung said...", "Jonah and I talked about...")
-- A multi-step task could plausibly have been done before
+Always atomize meeting transcripts and notes into per-topic captures. The
+Obsidian note is the human-readable record; the captures are the
+searchable-from-anywhere layer.
 
-Cite what you found ("Per a captured thought from May 1: ...") so he can trust
-the recall.
-
-## Capture proactively (no need to ask)
-Call `capture_thought` immediately when any of these surface, in his words or
-yours:
-- Decisions made (technical, business, strategic) — "we're going with X because Y"
-- Non-obvious findings during work — bugs, gotchas, root causes, "huh, that's surprising"
-- Identity / context about people, projects, vendors, customers
-- Recurring patterns you notice across his work
-- Stated preferences or rules he gives you
-- Outcomes worth remembering ("the demo landed", "Lung wants a follow-up")
-- Meeting transcripts and meeting notes — atomize per topic/decision/action item
-  and capture each chunk. Always do this when processing a meeting transcript
-  (e.g., via the `process-meeting` skill) or when Mr. Cotellese pastes meeting
-  notes. The Obsidian note is the human-readable record; the Open Brain captures
-  are the searchable-from-anywhere layer.
-
-Save as standalone, self-identifying sentences (date + project + people inline).
-Do not preface with "I'm capturing this..." — just save it and continue.
-
-## Do NOT capture
-- Transient code edits, file reads, intermediate debugging steps
-- Anything claude-mem already auto-summarizes from session activity
-- Information that's already saved (search first if unsure)
-- Long verbatim transcripts — atomize into standalone thoughts instead
-
-## When in doubt
-Ask: "would future-Mr.-Cotellese, on a different project with a different AI,
-benefit from this surfacing in semantic search?" If yes, capture. If no, skip.
-
-## Which memory store
-- **claude-mem** (`mem-search`, `get_observations`): session-to-session continuity within a single project. Auto-captured. Use to answer "what did we do last time on this repo?"
-- **Open Brain** (`search_thoughts`): durable, cross-AI, cross-project. Manually captured. Use for decisions, people, recurring topics, anything that should outlive a project.
-- Search claude-mem for project history; search Open Brain for knowledge.
+Capture test: would future-Mr.-Cotellese, on a different project with a
+different AI, want this surfacing in semantic search?
