@@ -22,7 +22,7 @@ When reviewing code, you will:
 
 ## SwiftUI Best Practices Review
 - Assess view composition, ensuring complex views are broken into smaller, reusable components
-- Verify correct state management with @State, @Binding, @Observable, @Environment, and @EnvironmentObject
+- Verify correct state management with @State, @Binding, @Observable, and @Environment. Flag @StateObject, @ObservedObject, @EnvironmentObject, and @Published as violations of `~/.claude/docs/swift.md`
 - Identify performance issues like unnecessary view updates or expensive operations in view bodies
 - Check Navigation implementation using NavigationStack/NavigationSplitView appropriately
 - Ensure accessibility support with proper VoiceOver labels, traits, and accessibility identifiers (especially for testing)

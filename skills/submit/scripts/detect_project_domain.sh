@@ -1,12 +1,11 @@
 #!/bin/bash
 # ABOUTME: Detects project domain to select the correct code reviewer
-# ABOUTME: Returns "swift", "python", "react-native", "cpp-qt", or "unknown"
+# ABOUTME: Returns "swift", "python", "cpp-qt", or "unknown"
 #
 # Detection precedence (first match wins):
-#   1. React Native - checked before general JS/TS since it's a specialization
-#   2. Swift/SwiftUI
-#   3. Python
-#   4. C++/Qt (least common, checked last)
+#   1. Swift/SwiftUI
+#   2. Python
+#   3. C++/Qt (least common, checked last)
 #
 # Usage:
 #   DOMAIN=$(bash scripts/detect_project_domain.sh)
@@ -17,15 +16,6 @@ set -e
 
 # Allow passing a directory argument, default to current directory
 REPO_ROOT="${1:-.}"
-
-# --- React Native (check before general JS/TS) ---
-# Look for react-native in package.json dependencies
-if [ -f "$REPO_ROOT/package.json" ]; then
-    if grep -q '"react-native"' "$REPO_ROOT/package.json" 2>/dev/null; then
-        echo "react-native"
-        exit 0
-    fi
-fi
 
 # --- Swift / SwiftUI ---
 # Package.swift (SPM), *.xcodeproj, *.xcworkspace, or project.pbxproj

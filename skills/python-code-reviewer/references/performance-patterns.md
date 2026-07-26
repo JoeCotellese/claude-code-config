@@ -410,12 +410,12 @@ print(f"Took {elapsed:.3f} seconds")
 # python -m cProfile -s cumulative script.py
 
 # Line-by-line profiling
-# pip install line_profiler
+# uv tool install line_profiler
 # Add @profile decorator to functions
 # kernprof -l -v script.py
 
 # Memory profiling
-# pip install memory_profiler
+# uv tool install memory_profiler
 # Add @profile decorator to functions
 # python -m memory_profiler script.py
 ```

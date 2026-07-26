@@ -21,8 +21,6 @@ Use this structure when creating pull requests with `gh pr create`:
 ## Related Issues
 Fixes #<issue-number>
 Related to #<other-issue> (if applicable)
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ## Example PRs
@@ -54,8 +52,6 @@ Related to #<other-issue> (if applicable)
 
 ## Related Issues
 Fixes #125
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ### Bug Fix Example
@@ -80,8 +76,6 @@ Fixes #125
 
 ## Related Issues
 Fixes #70
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ### Refactor Example
@@ -114,8 +108,6 @@ Fixes #70
 ## Related Issues
 Fixes #89
 Related to #122 (conditions system improvements)
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ## PR Best Practices
@@ -145,8 +137,6 @@ gh pr create --title "Fix #70: Use applies_condition field" --body "$(cat <<'EOF
 
 ## Related Issues
 Fixes #70
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```

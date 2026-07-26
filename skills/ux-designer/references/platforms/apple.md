@@ -286,12 +286,19 @@ Examples:
 
 ## MCP Integration
 
-For authoritative HIG documentation, use the `apple-docs` MCP server:
+For authoritative HIG documentation:
 
 ```
-1. choose_technology("Human Interface Guidelines")
-2. search_symbols("navigation bars")
-3. get_documentation("/documentation/...")
+search_docs(library: "apple-hig", query: "navigation bars")
+```
+
+For framework documentation, use the Xcode MCP server instead:
+
+```
+mcp__xcode__DocumentationSearch(
+  query: "navigation bar appearance",
+  frameworks: ["SwiftUI"]
+)
 ```
 
 This provides the latest HIG guidance directly from Apple's documentation.

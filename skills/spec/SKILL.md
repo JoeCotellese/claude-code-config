@@ -48,9 +48,6 @@ Analyze the codebase to determine the primary technology:
 # Check for Swift/iOS project
 if ls *.xcodeproj >/dev/null 2>&1 || ls *.xcworkspace >/dev/null 2>&1; then
     DOMAIN="swift"
-# Check for React Native
-elif [ -f "package.json" ] && grep -q "react-native" package.json 2>/dev/null; then
-    DOMAIN="react-native"
 # Check for Python
 elif ls *.py >/dev/null 2>&1 || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
     DOMAIN="python"
@@ -129,7 +126,6 @@ Select architect based on DOMAIN from Step 1 (detected earlier):
 | Domain | Architect |
 |--------|-----------|
 | swift | Invoke `swift-architect` skill |
-| react-native | Invoke `react-native-architect` skill |
 | python | Invoke `python-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
@@ -303,7 +299,7 @@ The issue should be scannable with clear sections:
 This skill orchestrates:
 - `product-manager` skill (for PM phase)
 - `ux-designer` skill (for design phase)
-- `swift-architect`, `react-native-architect`, or `python-architect` skill (for architecture)
+- `swift-architect`, `cpp-qt-architect`, or `python-architect` skill (for architecture)
 - `gh` CLI (for GitHub issues)
 - `glab` CLI (for GitLab issues)
 

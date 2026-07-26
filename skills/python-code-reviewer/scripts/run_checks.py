@@ -56,7 +56,7 @@ def run_ruff_lint(paths: List[str]) -> Dict[str, Any]:
     except FileNotFoundError:
         return {
             "success": False,
-            "error": "ruff not found. Install with: pip install ruff",
+            "error": "ruff not found. Install with: uv tool install ruff",
         }
     except json.JSONDecodeError as e:
         return {
@@ -107,7 +107,7 @@ def run_ruff_format(paths: List[str]) -> Dict[str, Any]:
     except FileNotFoundError:
         return {
             "success": False,
-            "error": "ruff not found. Install with: pip install ruff",
+            "error": "ruff not found. Install with: uv tool install ruff",
         }
     except Exception as e:
         return {

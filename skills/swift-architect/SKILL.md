@@ -1,7 +1,7 @@
 ---
 name: swift-architect
 effort: xhigh
-description: This skill should be used when consulting on Swift/SwiftUI app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. Provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding. Integrates with Apple-Docs MCP for documentation lookups.
+description: This skill should be used when consulting on Swift/SwiftUI app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. Provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding. Integrates with the Xcode MCP server for documentation lookups.
 ---
 
 # Swift Architect
@@ -61,32 +61,29 @@ When presented with a feature or problem:
 ### 2. Pattern Recommendations
 
 **State Management**
-- `@State` - Local view state, simple values
+- `@State` - Local view state, and creating `@Observable` instances the view owns
 - `@Binding` - Two-way connection to parent state
-- `@StateObject` - View owns the observable object lifecycle
-- `@ObservedObject` - View observes but doesn't own
-- `@EnvironmentObject` - Dependency injection for deep hierarchies
-- `@Environment` - System-provided values
+- `@Environment` - Receiving `@Observable` services, and system values
+
+`@StateObject`, `@ObservedObject`, `@EnvironmentObject`, and `@Published` are
+out. See `~/.claude/docs/swift.md`.
 
 **Architecture Patterns**
-- **MVVM** - Standard for SwiftUI, ViewModel as ObservableObject
+- **MVVM** - Standard for SwiftUI, ViewModel as an `@Observable` class
 - **Repository Pattern** - Abstract data sources behind protocols
 - **Coordinator Pattern** - Centralized navigation management
 - **Service Layer** - Business logic separate from UI
 
 ### 3. Documentation Lookup
 
-Use the Apple-Docs MCP server to look up official documentation:
+Use the Xcode MCP server's `DocumentationSearch` for official Apple
+documentation. It takes a semantic query and an optional framework filter:
 
 ```
-# Set technology context for searches
-mcp__apple-docs__choose_technology(name: "SwiftUI")
-
-# Search for symbols
-mcp__apple-docs__search_symbols(query: "NavigationStack")
-
-# Get detailed documentation
-mcp__apple-docs__get_documentation(path: "View")
+mcp__xcode__DocumentationSearch(
+  query: "NavigationStack path binding",
+  frameworks: ["SwiftUI"]
+)
 ```
 
 **Always verify recommendations against official Apple documentation** when:
@@ -124,10 +121,11 @@ When consulting on architecture, provide:
 **Code Scaffolding**
 ```swift
 // MARK: - ViewModel
+@Observable
 @MainActor
-final class RecipeListViewModel: ObservableObject {
-    @Published private(set) var recipes: [Recipe] = []
-    @Published private(set) var isLoading = false
+final class RecipeListViewModel {
+    private(set) var recipes: [Recipe] = []
+    private(set) var isLoading = false
 
     private let repository: RecipeRepositoryProtocol
 
@@ -190,7 +188,7 @@ AskUserQuestion with 2-3 questions:
 
 **Follow-up questions** should also use AskUserQuestion when choices are discrete:
 - Navigation style → form with options (NavigationStack, sheet, fullScreenCover, custom)
-- State ownership → form with options (@State, @StateObject, @EnvironmentObject, etc.)
+- State ownership → form with options (@State, @Environment, @Binding, etc.)
 - Error handling strategy → form with options (local, centralized, Result type, throws)
 
 **When to use free-form questions instead:**
@@ -215,28 +213,16 @@ AskUserQuestion with 2-3 questions:
 
 ## SwiftUI Best Practices
 
-### View Composition
-- Keep views small and focused
-- Extract reusable components
-- Use ViewBuilder for conditional content
-- Prefer composition over inheritance
+`~/.claude/docs/swift.md` is the standard. Read it rather than recommending
+from memory: it fixes the platform floor, the banned property wrappers, the DI
+and navigation patterns, and the testing rules that any recommendation here has
+to stay consistent with.
 
-### Performance
-- Use `@State` for local, `@StateObject` for owned observables
-- Avoid heavy work in view body
-- Use `.task` for async work
-- Consider `EquatableView` for expensive views
-
-### Navigation
-- iOS 16+: Use `NavigationStack` with `navigationDestination`
-- Use type-safe navigation with enums
-- Consider Coordinator pattern for complex flows
-
-### Data Flow
-- Single source of truth
-- Unidirectional data flow where possible
-- Use Combine for reactive pipelines
-- Prefer async/await over callbacks
+Architecture-specific guidance that goes beyond the standard:
+- Keep heavy work out of view bodies
+- `.task` for async work tied to view lifetime
+- `EquatableView` when a view is genuinely expensive to re-render
+- Single source of truth, unidirectional flow where it fits
 
 ## Example Consultation
 
@@ -285,7 +271,7 @@ AskUserQuestion:
 │  - Save/Cancel buttons                       │
 ├─────────────────────────────────────────────┤
 │           RecipeEditViewModel                │
-│  - @Published draft: Recipe                  │
+│  - draft: Recipe                             │
 │  - validate() -> [ValidationError]           │
 │  - save() async throws                       │
 ├─────────────────────────────────────────────┤
