@@ -1,7 +1,7 @@
 ---
 name: swift-architect
 effort: xhigh
-description: This skill should be used when consulting on Swift/SwiftUI app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. Provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding. Integrates with Apple-Docs MCP for documentation lookups.
+description: This skill should be used when consulting on Swift/SwiftUI app architecture and design decisions. Use this before starting a new feature, when facing design decisions mid-implementation, or when planning refactors. Provides component hierarchies, state management strategies, navigation flows, and data flow recommendations with ASCII diagrams, decision matrices, and code scaffolding. Integrates with the Xcode MCP server for documentation lookups.
 ---
 
 # Swift Architect
@@ -76,17 +76,14 @@ When presented with a feature or problem:
 
 ### 3. Documentation Lookup
 
-Use the Apple-Docs MCP server to look up official documentation:
+Use the Xcode MCP server's `DocumentationSearch` for official Apple
+documentation. It takes a semantic query and an optional framework filter:
 
 ```
-# Set technology context for searches
-mcp__apple-docs__choose_technology(name: "SwiftUI")
-
-# Search for symbols
-mcp__apple-docs__search_symbols(query: "NavigationStack")
-
-# Get detailed documentation
-mcp__apple-docs__get_documentation(path: "View")
+mcp__xcode__DocumentationSearch(
+  query: "NavigationStack path binding",
+  frameworks: ["SwiftUI"]
+)
 ```
 
 **Always verify recommendations against official Apple documentation** when:

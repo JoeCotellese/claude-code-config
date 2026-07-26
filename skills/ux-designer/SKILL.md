@@ -147,7 +147,8 @@ Before loading platform-specific content, detect or ask:
 
 **Apple Platform:**
 - `references/platforms/apple.md` - HIG patterns, SF Symbols, device considerations
-- MCP: Use `apple-docs` for HIG documentation lookups
+- MCP: `mcp__xcode__DocumentationSearch` for Apple documentation, or the
+  `apple-hig` library on docs-mcp-server for the HIG itself
 
 **Web Platform:**
 - `references/platforms/web.md` - WCAG 2.1, responsive design, web components
@@ -179,12 +180,13 @@ Always state which reference is being loaded so the user understands the context
 ## MCP Integration
 
 ### Apple Platform
-Use the `apple-docs` MCP server for HIG documentation lookups:
-1. `choose_technology` - Select "Human Interface Guidelines"
-2. `search_symbols` - Search for specific HIG sections
-3. `get_documentation` - Retrieve detailed guidance
+Two sources, both live:
+- `mcp__xcode__DocumentationSearch` for framework documentation. Pass a
+  semantic query and an optional `frameworks` filter.
+- `search_docs` on docs-mcp-server with library `apple-hig` for the Human
+  Interface Guidelines themselves.
 
-This provides authoritative, up-to-date HIG information beyond what's in the static reference.
+Both are more current than the static reference, which lags OS releases.
 
 ---
 
