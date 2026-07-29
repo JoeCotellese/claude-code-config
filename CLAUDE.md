@@ -99,10 +99,13 @@ broken down.
 - Tests MUST cover the functionality being implemented.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
-- Shipping application code gets unit tests, integration tests, and end-to-end tests. If you think one of those doesn't apply, say so and get my agreement first, don't decide it alone. Config repos, markdown and docs work, and one-off scripts are exempt.
+- Shipping application code gets test coverage at three levels: end-to-end, integration, and unit. Put the bulk at the highest stable interface (the public or internal system API, not the UI). Add integration and unit tests where the higher-level test is not fine-grained enough to drive or debug the code, not to satisfy a quota. If you think a level genuinely doesn't apply, say so and get my agreement first, don't decide it alone. Config repos, markdown and docs work, and one-off scripts are exempt.
+- Never delete a test or weaken an assertion to make a suite pass. If a test looks wrong, say so and ask before touching it.
+- Before claiming a fix works, check: would this test still pass if the fix were reverted? If yes, the test guards nothing.
 
 ## TDD Practice
 
+- Write the acceptance criteria first: how will we know this is working? The cycle starts after that, not before.
 - Write failing test → write minimal code to pass → refactor → repeat
 - Only write enough code to make the test pass
 
