@@ -1,293 +1,190 @@
-# Feature Development Workflow
+# Feature Development Loop
 
-This document describes how the phase-based skills work together to guide feature development from idea to deployment.
+How the phase skills work together to drive an issue from idea to merged code.
+
+This is a **loop**, not a pipeline: phases can route work backwards, and two phase interiors
+run unattended under `/goal` until a printed condition holds.
 
 ## Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        FEATURE DEVELOPMENT LOOP                          │
-│                                                                          │
-│   /spec ────► /ui-design ────► /implement ────► /submit ────► Done      │
-│      │         (UI only)           │               │                     │
-│      ▼             ▼               ▼               ▼                     │
-│    Issue       Approved         Branch            PR                     │
-│    Created     Prototype        + Code            + Merged               │
-│                                                                          │
-│   Every arrow crosses a human gate — see the Gates table below.          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        FEATURE DEVELOPMENT LOOP                              │
+│                                                                              │
+│   /spec ──► /ready ──► /ui-design ──► /implement ──► /submit ──► merged      │
+│               │  ▲       (UI only)        │  ▲          │                    │
+│               │  │           │  ▲         │  │          │                    │
+│               ▼  │           ▼  │         ▼  │          ▼                    │
+│            back to        design      /verify        review                  │
+│            /spec on       committee   fails ──┘      committee               │
+│            DoR fail       blocks ─────┘                                      │
+│                                                                              │
+│   ═══ unattended under /goal ═══     ─── human gate ───                      │
+│   /ready, /implement                 /spec, /ui-design, /submit              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## The Phases
+## The primitives and what each is for
 
-### Phase 1: `/spec` — Specification
+Four different mechanisms, no overlap. Picking the wrong one is the most common mistake.
 
-**Purpose:** Turn an idea into a well-defined GitHub issue with requirements, UX design, and architecture.
+- **Skills** carry the standards. `/ready` holds the Definition of Ready rubric, `/verify`
+  holds the Definition of Done procedure. They document what good looks like. They do not
+  contain iteration counters.
+- **`/goal`** drives phase interiors. It re-runs a turn until a condition holds, so a phase
+  that needs "keep fixing until tests are green" uses a goal rather than hand-written loop
+  logic. One goal per session, so goals are set per phase, never per feature.
+- **Fresh-context `Agent` calls** are the review committees. The builder never grades its own
+  work.
+- **`/loop`** polls external state that changes without you: CI status and MR comments after
+  `/submit`. Nothing else.
 
-**Invocation:**
-```
-/spec Add a recipe sharing feature
-```
+### The constraint that shapes every exit condition
 
-**What happens:**
-1. Detects project domain (Swift, Python, C++/Qt)
-2. Invokes `product-manager` skill → requirements & user stories
-3. Invokes `ux-designer` skill → design guidance
-4. **GATE:** "Ready for architecture?" ← waits for approval
-5. Invokes domain architect skill → technical design
-6. Creates GitHub/GitLab issue with all outputs (UX + acceptance marked
-   **provisional — pending design** when the feature has a UI)
-7. **GATE:** "Ready for the next phase?" ← waits for approval
-8. If yes → invokes `/ui-design #<issue>` (UI feature) or `/implement #<issue>`
-   (backend/CLI-only)
+The `/goal` evaluator **does not call tools**. It only judges what has been printed into the
+conversation. Therefore every phase exit condition must be provable by a printed artifact:
 
-**Output:** GitHub issue with requirements, UX, and architecture
+- Good: a `DOR VERDICT:` line, a test summary with a failure count, an AXe result file path
+  with `status: PASS`.
+- Useless: "the design is good", "the code is clean", "acceptance criteria are met" with
+  nothing printed that shows how.
 
----
+This is why the Definition of Done is an AXe run. It produces a PASS/FAIL the evaluator can
+read. Prose cannot close a loop.
 
-### Phase 2: `/ui-design` — Design (UI features only)
+## Definition of Ready
 
-**Purpose:** Get an approved, clickable prototype before any backend work. The prototype is
-the **real target template rendered with a fake context** — not a throwaway mock — so
-`/implement` inherits it and does zero UI rework.
+An issue is ready to implement when all of these hold. `/ready` audits them and prints a
+pass/fail line per criterion.
 
-**Invocation:**
-```
-/ui-design #123
-```
+- **R1 User stories** — at least one, in role/action/benefit form, each with acceptance
+  criteria.
+- **R2 Observable acceptance criteria** — every AC names a UI element or an app state a test
+  can assert. "Feels responsive" fails. "Tapping `saveRecipeButton` shows `recipeSavedToast`
+  within 2s" passes.
+- **R3 Identifier contract** — every element an AC references has a named
+  `accessibilityIdentifier`. Without this the DoD test cannot be written.
+- **R4 Design artifact** — user-facing work has approved screens meeting Apple HIG and the
+  app's existing aesthetic. Missing design routes to `/ui-design`, not to `/spec`.
+- **R5 Technical approach** — the types and files to touch, the data flow, and the decisions
+  already made. An implementer can start without re-deriving the architecture.
+- **R6 Bounded scope** — an `effort/` label is present and is not XL. XL routes back to
+  `/spec` to be split.
+- **R7 DoD test exists** — an AXe YAML under `scripts/uitests/` whose `success_criteria` map
+  one-to-one onto the acceptance criteria. Non-UI work names the unit or integration tests
+  instead.
 
-**What happens:**
-1. Fetches the spec issue, creates/switches to the feature branch
-2. Builds the real template + a throwaway view rendering it with hardcoded fake data
-   covering empty, typical, and stress states
-3. Iteration loop (max 3): drives the prototype with Playwright → independent review in a
-   fresh context → presents screenshots + critique
-4. **GATE:** "Approve / Iterate / Stop?" ← waits for approval
-5. Amends the issue with the final UX + acceptance criteria, commits the template
-6. **GATE:** "Ready to implement?" ← waits for approval
-7. If yes → invokes `/implement #<issue>`
+R7 is the load-bearing one. **The acceptance test is authored before any code**, which is
+what makes the Definition of Done objective rather than aspirational.
 
-**Output:** Feature branch with an approved prototype template; issue UX finalized
+## Definition of Done
 
-Backend/CLI-only work skips this phase entirely.
+The AXe test written at `/ready` passes against the built app, and the unit suite is green.
 
----
+`/verify` runs it and writes `scripts/uitests/results/YYYY-MM-DD_HHMM_<name>.md` with a
+status of PASS, FAIL, or PASS (with caveats). A FAIL routes back to `/implement`.
 
-### Phase 3: `/implement` — Implementation
+## The phases
 
-**Purpose:** Transform the issue into tested, reviewable code with a plan-first approach.
+### `/spec <description>` — human gated
 
-**Invocation:**
-```
-/implement #123
-```
+Unchanged in shape: product-manager, then ux-designer, then a gate, then the architect,
+sizing, and issue creation. Two additions:
 
-**What happens:**
-1. Suggests clearing context for fresh start
-2. Fetches issue content (requirements, architecture)
-3. Creates feature branch: `feature/123-description` (or continues the one `/ui-design`
-   already started)
-4. Enters **plan mode** → explores codebase, writes implementation plan. If a prototype was
-   inherited, the plan wires it to real services instead of rebuilding the UI
-5. **GATE:** "Plan approved?" ← waits for approval
-6. Executes plan (TDD or tests-after based on project config)
-7. Runs tests + code reviewer
-8. **GATE:** "Ready for review?" ← waits for approval
-9. If yes → invokes `/submit`
+- Acceptance criteria must be written in the observable form R2 requires.
+- The UX section names the `accessibilityIdentifier` for every element an AC references.
 
-**Output:** Feature branch with committed, tested code
+Ends by printing the `/goal` command for `/ready`.
 
----
+### `/ready #N` — unattended under `/goal`
 
-### Phase 4: `/submit` — Submission & Review
+Audits the issue against the Definition of Ready, **repairs what it can**, and routes what it
+cannot. It rewrites vague ACs into observable form, names missing identifiers, derives the
+AXe DoD test, creates the feature branch, and commits the test.
 
-**Purpose:** Get code reviewed, iterate on feedback, merge when approved.
-
-**Invocation:**
-```
-/submit
-```
-
-**What happens:**
-1. Verifies on feature branch, all committed
-2. Runs linter + unit tests (quick check)
-3. Pushes branch to remote
-4. Creates PR/MR (or finds existing one)
-5. Reports PR URL, enters **review loop**
-6. When feedback received → makes changes, pushes
-7. **GATE:** "Review approved. Merge?" ← waits for approval
-8. If yes → merges PR, cleans up branches
-9. Returns to main branch
-
-**Output:** Merged PR, clean main branch
-
----
-
-## Entry Points
-
-You don't always start at `/spec`. The workflow has multiple entry points:
-
-| Starting Point            | Command               | Skips                     |
-|---------------------------|-----------------------|---------------------------|
-| Fresh idea                | `/spec <description>` | Nothing                   |
-| Spec'd UI feature         | `/ui-design #123`     | Spec phase                |
-| Issue already exists      | `/implement #123`     | Spec + Design             |
-| Code ready for review     | `/submit`             | Spec + Design + Implement |
-
-### Auto-Detection
-
-When you say "work on issue #123", the system detects state:
+Prints a fixed verdict line the goal evaluator reads:
 
 ```
-Issue #123 exists?
-├── No  → Start /spec
-└── Yes → Branch exists?
-          ├── No  → Start /implement (create branch)
-          └── Yes → PR exists?
-                    ├── No  → Continue /implement or /submit
-                    └── Yes → Continue /submit (review loop)
+DOR VERDICT: #347  status=PASS  passed=7/7  blocking=none  route=/ui-design
 ```
 
----
+Routes: `/spec` when the problem is scope or missing requirements, `/ui-design` when only the
+design is missing, `/implement` when ready and no UI work is needed.
 
-## Gates (Human Checkpoints)
+### `/ui-design #N` — human gated
 
-Every gate uses `AskUserQuestion` to pause and wait for explicit approval:
+Three design passes. Each pass renders the **real SwiftUI view** through
+`mcp__xcode__RenderPreview` for the empty, typical, and stress states, then a committee of
+fresh-context agents reviews the renders on fixed non-overlapping lenses:
 
-| Gate | Location                        | Question                       |
-|------|---------------------------------|--------------------------------|
-| 1    | `/spec` after UX                | "Ready for architecture?"      |
-| 2    | `/spec` after issue             | "Ready for the next phase?"    |
-| 3    | `/ui-design` each iteration     | "Approve / Iterate / Stop?"    |
-| 4    | `/ui-design` after approval     | "Ready to implement?"          |
-| 5    | `/implement` after plan         | "Plan approved?"               |
-| 6    | `/implement` after QA           | "Ready for review?"            |
-| 7    | `/submit` after review          | "Merge and deploy?"            |
+- Apple HIG conformance and fit with the app's existing aesthetic
+- Accessibility: VoiceOver order, Dynamic Type, contrast, tap target size
+- Acceptance criteria coverage across all three states
 
-Gates 3 and 4 only apply to UI features.
+Each reviewer returns a **blocking finding count**. Only blocking findings force another
+pass; non-blocking findings are logged to the issue and dropped. Without that rule three
+passes always runs three passes.
 
-**Nothing proceeds automatically past a gate.** You must explicitly confirm.
+The final pass builds and drives the view in the simulator with AXe, so the design is
+confirmed interactively using the same harness that will run the DoD test.
 
----
+You approve each pass. Taste is not delegated.
 
-## Skill Dependencies
+### `/implement #N` — unattended under `/goal`
 
-Each phase skill invokes specialist skills:
+Plan mode and plan approval are still a human gate. After the plan is approved, the
+implementation runs under a goal whose condition is the Definition of Done: unit tests green
+and the AXe test PASSing. `/verify` runs inside that loop.
 
-```
-/spec
-├── product-manager      (requirements)
-├── ux-designer          (design guidance)
-└── swift-architect      (or python-architect, cpp-qt-architect)
+### `/submit` — human gated
 
-/ui-design
-├── Playwright MCP       (drive the prototype in a browser)
-├── Agent tool           (independent review, fresh context)
-└── gh/glab CLI          (read spec, amend issue with final UX)
+Adds a code review committee before the MR is opened, on fixed lenses:
 
-/implement
-├── EnterPlanMode        (plan before coding)
-├── python-code-reviewer (or swift-swiftui-reviewer, cpp-qt-reviewer)
-└── ExitPlanMode         (get plan approval)
+- Correctness against the acceptance criteria
+- Swift concurrency and main-actor safety
+- Test adequacy: would each test still fail if the fix were reverted
 
-/submit
-├── Code reviewers       (pre-push check)
-└── gh/glab CLI          (PR management)
-```
+Blocking findings stop the submission. After the MR exists, `/loop` handles polling for CI
+and review comments.
 
----
+### `/retro` — after any failure
 
-## Example Full Flow
+When DoR fails, a committee blocks, or the DoD test fails, record the cause and amend the
+upstream template that let it through. Without this the loop is a longer straight line.
 
-```
-You: /spec Add dark mode support
+## Size gating
 
-Claude: [Invokes product-manager] Here are the requirements...
-Claude: [Invokes ux-designer] Here's the UX guidance...
-Claude: Ready for architecture? (Yes/Refine/Stop)
+Committee cost scales with the `effort/` label. `/ready` records the gate in the issue so
+later phases do not re-derive it.
 
-You: Yes
+- **effort/S** — one design pass, one reviewer, one code reviewer.
+- **effort/M** — up to two design passes, two lenses, two code lenses.
+- **effort/L** — full three passes, three lenses, three code lenses.
+- **effort/XL** — does not pass DoR. Split it first.
 
-Claude: [Invokes swift-architect] Here's the architecture...
-Claude: [Creates issue #47, UX marked provisional — pending design]
-Claude: This feature has a UI — next is /ui-design. Ready? (Yes/Refine/Stop)
+## Gates
 
-You: Yes
+Nothing crosses these without you.
 
-Claude: [Invokes /ui-design #47, creates feature/47-dark-mode]
-Claude: [Builds the real view with a fake context: empty, typical, stress states]
-Claude: [Playwright screenshots desktop + mobile; independent review agent critiques]
-Claude: Here are the screenshots and the critique. Approve / Iterate / Stop?
+- `/spec` after UX: ready for architecture?
+- `/spec` after issue: ready for the next phase?
+- `/ui-design` each pass: approve, iterate, or stop?
+- `/implement` after plan: plan approved?
+- `/submit` after review: merge?
 
-You: Iterate — the toggle needs a keyboard path
+`/ready` has no gate. It either passes, repairs, or routes, and every outcome is printed.
 
-Claude: [Applies changes, re-drives, re-reviews]
-Claude: Approve / Iterate / Stop?
+## Entry points
 
-You: Approve
+- Fresh idea: `/spec <description>`
+- Existing issue of unknown quality: `/ready #N`
+- Ready issue with a UI: `/ui-design #N`
+- Ready issue, no UI: `/implement #N`
+- Code already written: `/submit`
 
-Claude: [Amends issue #47 with final UX + acceptance, commits the template]
-Claude: Ready to implement? (Yes/Refine/Stop)
+Start at `/ready` when you did not write the issue yourself or it has been sitting a while.
 
-You: Yes
+## Standalone utilities
 
-Claude: [Invokes /implement #47]
-Claude: Recommend clearing context. Run /clear then /implement #47?
-
-You: /clear
-You: /implement #47
-
-Claude: [Fetches issue, creates branch]
-Claude: [Enters plan mode, writes implementation plan]
-Claude: Plan approved? (Yes/Refine)
-
-You: Yes
-
-Claude: [Implements feature with TDD]
-Claude: [Runs tests, code review]
-Claude: Ready for code review? (Yes/No)
-
-You: Yes
-
-Claude: [Invokes /submit]
-Claude: [Pushes, creates PR]
-Claude: PR created: https://github.com/...
-Claude: Awaiting review feedback...
-
-You: Review approved, let's merge
-
-Claude: Merge and deploy? (Yes/No)
-
-You: Yes
-
-Claude: [Merges PR, cleans up]
-Claude: ✅ Merged! You're on main with latest changes.
-```
-
----
-
-## Standalone Utility
-
-### `/git-analysis`
-
-Not part of the phase workflow. Use anytime to analyze repository health:
-
-```
-/git-analysis
-```
-
-Provides: commit patterns, team velocity, branch hygiene, contributor stats.
-
----
-
-## Quick Reference
-
-| Command         | Purpose            | Gates                    |
-|-----------------|--------------------|--------------------------|
-| `/spec <idea>`  | Idea → Issue       | 2 (arch, next phase)     |
-| `/ui-design #N` | Issue → Prototype  | 2 (each iteration, ship) |
-| `/implement #N` | Issue → Code       | 2 (plan, review)         |
-| `/submit`       | Code → Merged      | 1 (merge)                |
-| `/git-analysis` | Repo health        | 0                        |
-
-`/ui-design` runs for UI features only.
+- `/git-analysis` — repository health, not part of the loop.
+- `/verify #N` — run the DoD test on demand, outside `/implement`.
