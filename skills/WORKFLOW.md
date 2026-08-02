@@ -7,22 +7,104 @@ run unattended under `/goal` until a printed condition holds.
 
 ## Overview
 
+```mermaid
+flowchart TD
+    spec["/spec<br/>gate"]
+    ready["/ready<br/>goal"]
+    design["/ui-design<br/>gate"]
+    impl["/implement<br/>goal"]
+    verify["/verify"]
+    submit["/submit<br/>gate"]
+    merged(["merged"])
+    retro["/retro<br/>gate"]
+
+    spec --> ready
+    ready -->|UI| design
+    ready -->|no UI| impl
+    design --> impl
+    impl --> verify
+    verify -->|PASS| submit
+    submit --> merged
+    verify -.->|"gate wrong"| retro
+
+    ready -.->|L1| spec
+    design -.->|L2| design
+    impl -.->|L3| impl
+    verify -.->|L4| impl
+    submit -.->|L5| impl
+    submit -.->|L6| submit
+    retro -.->|L7| ready
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                        FEATURE DEVELOPMENT LOOP                              │
-│                                                                              │
-│   /spec ──► /ready ──► /ui-design ──► /implement ──► /submit ──► merged      │
-│               │  ▲       (UI only)        │  ▲          │                    │
-│               │  │           │  ▲         │  │          │                    │
-│               ▼  │           ▼  │         ▼  │          ▼                    │
-│            back to        design      /verify        review                  │
-│            /spec on       committee   fails ──┘      committee               │
-│            DoR fail       blocks ─────┘                                      │
-│                                                                              │
-│   ═══ unattended under /goal ═══     ─── human gate ───                      │
-│   /ready, /implement                 /spec, /ui-design, /submit              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+
+Reading it:
+
+- **Solid** is the forward path. **Dotted** is a reverse edge, and the reverse edges are the
+  point — a pipeline without them fails later and more expensively.
+- **gate** means a human decides before the phase advances. **goal** means the phase interior
+  runs unattended under `/goal` until a printed condition holds.
+- **L1** through **L7** are the seven loops, described next.
+
+## The seven loops
+
+Each one has a trigger, an exit condition, and something that caps it. A loop with no cap is
+how a phase runs forever; a loop with no printed exit condition is how it stops too early.
+
+### Level 1 — inside a phase
+
+**L2 · Design iteration** — `/ui-design`
+- Trigger: a committee reviewer returns a blocking finding.
+- Exit: no blocking findings left **and** you approve the pass. Both, not either.
+- Cap: the `effort/` tier. S gets one pass, M two, L three. After the last pass, present the
+  best version and let the user approve, take over, or defer.
+
+**L3 · TDD cycle** — `/implement`
+- Trigger: the next task in the approved plan.
+- Exit: the failing test passes and the refactor is clean.
+- Cap: none, and it needs none. It is per task, and the plan bounds the task list.
+
+**L5 · Review committee** — `/submit`
+- Trigger: a lens returns a blocking finding.
+- Exit: zero blocking findings across the lenses the size gate turned on.
+- Cap: the `effort/` tier again. Non-blocking findings are logged to the issue and dropped, so
+  the loop cannot be kept alive by style preferences.
+
+### Level 2 — between phases
+
+**L1 · Spec repair** — `/ready` → `/spec` → `/ready`
+- Trigger: `DOR VERDICT` with `route=/spec`. Scope is XL, requirements are missing, or an AC
+  cannot be made observable without inventing what the author meant.
+- Exit: a later `/ready` run prints `status=PASS`.
+- Cap: human. `/spec` is gated, so this loop cannot spin unattended.
+
+**L4 · Definition of Done** — `/implement` → `/verify` → `/implement`
+- Trigger: `DOD VERDICT` with `route=/implement`.
+- Exit: `status=PASS` or `status=PASS-with-caveats`.
+- Cap: the goal's turn limit, plus a circuit breaker — if the same criterion fails three runs
+  in a row, stop and report. The problem is not the implementation at that point.
+- This is the only loop that runs fully unattended, which is why `/verify` is forbidden from
+  editing code or the acceptance test. Both would close the loop by removing the signal.
+
+**L6 · Human review** — after the MR exists
+- Trigger: review comments or a CI failure.
+- Exit: approval.
+- Cap: human. `/loop` polls for the comments because they arrive on someone else's schedule;
+  this is the only place `/loop` belongs.
+
+### Level 3 — across issues
+
+**L7 · Process repair** — `/retro`
+- Trigger: any failure anywhere above. A DoR fail, a blocking finding, a failed DoD, a defect
+  that reached production.
+- Exit: an amendment open for review in the config repo, or a recorded one-off.
+- Cap: the recurrence test. Amend only what would happen again; everything else gets a
+  `LEARNINGS.md` line and stops.
+- **This loop does not help the issue in front of you.** It changes the gate so the next issue
+  does not repeat it. Skipping it is what turns the whole thing back into a straight line.
+
+### Where each loop is closed
+
+`/goal` closes L4 and the `/ready` interior. Human gates close L1, L2, L5, L6, and L7. Nothing
+closes L3 but the code.
 
 ## The primitives and what each is for
 

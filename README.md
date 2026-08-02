@@ -2,6 +2,24 @@
 
 A collection of custom extensions for Claude Code including skills, slash commands, and hooks.
 
+The centerpiece is the **feature development loop** — seven phase skills that drive an issue
+from idea to merged code, with reverse edges so a problem routes back to the phase that owns
+it instead of getting patched downstream.
+
+```
+/spec → /ready → /ui-design → /implement → /verify → /submit → merged
+                                                  ↘ /retro ↗
+```
+
+Two gates make it work. The **Definition of Ready** (`/ready`) refuses to let an issue into
+implementation until its acceptance criteria are observable and an acceptance test exists. The
+**Definition of Done** (`/verify`) refuses to call it finished until that test passes and every
+criterion has something reporting on it.
+
+**→ [`skills/WORKFLOW.md`](skills/WORKFLOW.md)** documents the whole thing: a diagram, the
+seven loops with their exit conditions and caps, both definitions in full, and what each phase
+does.
+
 ## Installation
 
 This repository uses a Makefile to manage symlinks to `~/.claude`. Unlike directory-level symlinks, this approach creates individual symlinks for each skill/agent/etc., allowing third-party additions to coexist without polluting the repo.
