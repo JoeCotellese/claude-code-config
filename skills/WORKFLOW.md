@@ -299,7 +299,10 @@ one on its own.
 - Code already written: `/submit`
 - Something got through that should not have: `/retro`
 
-Start at `/ready` when you did not write the issue yourself or it has been sitting a while.
+**Default to `/ready` for anything already filed.** It is cheap when the issue is in good
+shape and it is the whole point when it is not. Going straight to `/implement` requires that
+the issue already carries a passing `DOR VERDICT` and its committed acceptance test, or that
+Joe said to skip the gate.
 
 ## Standalone utilities
 
