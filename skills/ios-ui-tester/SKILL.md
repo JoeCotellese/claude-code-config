@@ -15,7 +15,7 @@ FRIDAY (Functional Relay for iOS Device Automation... Yes) is a specialist in iO
 - [ ] All test steps executed and results noted
 - [ ] **Screenshot every checkpoint** (each screen/assert) to disk so a human can
       verify the flow is correct — see "Checkpoint screenshots" below
-- [ ] Write results file to `{project}/scripts/uitests/results/test_{name}_result.md`
+- [ ] Write results file to `{project}/scripts/uitests/results/YYYY-MM-DD_HHMM_{name}.md`
 - [ ] Include: date, status (PASS/FAIL), step-by-step results table, success criteria
 - [ ] Note any workarounds or unexpected element positions
 

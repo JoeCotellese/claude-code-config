@@ -1,31 +1,44 @@
 ---
 name: spec
 effort: xhigh
-description: "Feature specification phase. Invoke with `/spec <feature description>` or when user says 'new feature', 'plan feature', 'create spec'. Orchestrates product management, UX design, and architecture planning into a single GitHub/GitLab issue. Gates to /implement when complete."
+description: "Feature specification phase. Invoke with `/spec <feature description>` to create an issue, or `/spec #<issue>` to repair one that failed the /ready Definition of Ready gate. Also triggers on 'new feature', 'plan feature', 'create spec', 'split this issue', 'fix issue #N'. Orchestrates product management, UX design, and architecture planning. Hands off to /ready."
 ---
 
 # Feature Specification Phase
 
-Orchestrate a complete feature planning pipeline that produces a comprehensive issue ready for implementation.
+Two modes, one skill.
+
+- **Create** — turn an idea into a well-formed issue.
+- **Repair** — take an issue that failed the Definition of Ready and fix what `/ready` could
+  not fix itself.
+
+Repair mode is the loop's reverse edge. Without it a `DOR VERDICT` of `route=/spec` is a dead
+end that a human has to clear by hand.
 
 ## Usage
 
 ```
-/spec <brief feature description>
+/spec <brief feature description>    # create
+/spec #<issue_number>                # repair
 ```
 
-**Example:**
+**Examples:**
 ```
 /spec Add a recipe sharing feature with social integration
+/spec #347
 ```
 
+**Mode detection:** an argument that is a bare number or starts with `#` is repair mode.
+Anything else is create mode. When it is ambiguous, ask rather than guess: creating a
+duplicate issue for something that already exists is a mess to unwind.
+
 **Also triggers on:**
-- "new feature X"
-- "plan feature X"
-- "create spec for X"
-- "I have an idea for X"
+- Create: "new feature X", "plan feature X", "create spec for X", "I have an idea for X"
+- Repair: "split issue #N", "fix the spec for #N", "#N failed DoR"
 
 ## Workflow Overview
+
+Create mode:
 
 ```
 Step 1-3:  PM → UX           (automatic)
@@ -33,8 +46,10 @@ Step 4:    GATE              ← "Ready for architecture?"
 Step 5:    Arch              (automatic)
 Step 6:    Sizing            (automatic)
 Step 7-9:  Issue creation    (automatic)
-Step 10:   GATE              ← "Ready to implement?"
+Step 10:   GATE              ← "Ready for /ready?"
 ```
+
+Repair mode: see [Repair Mode](#repair-mode) below.
 
 ## Workflow Steps
 
@@ -76,6 +91,20 @@ Focus on:
 Output format: Feature brief (not full PRD unless complex)
 ```
 
+**Every acceptance criterion must be observable.** It names a UI element or an app state that
+a test can assert against. This is criterion R2 of the Definition of Ready, and an issue that
+fails it cannot have an acceptance test written for it, which means it can never be Done.
+
+- Observable: "Tapping `saveRecipeButton` on an already-saved recipe shows
+  `recipeAlreadySavedToast` and does not create a duplicate."
+- Not observable: "Saving feels fast." "The flow is intuitive." "Errors are handled
+  gracefully."
+
+Keep acceptance criteria separate from implementation tasks. "Conforms to `AppEntity`" and
+"change `static var` to `static let`" are tasks: they can all be completed while the feature
+does not work. Put them under their own heading so nobody mistakes checking them off for
+being done.
+
 **Collect output as:** `PM_OUTPUT`
 
 ### Step 3: UX Design (Designer Phase)
@@ -97,6 +126,20 @@ Provide:
 - Accessibility UX requirements
 - Visual hierarchy recommendations
 ```
+
+**Name the accessibility identifier for every element an acceptance criterion references.**
+This is criterion R3 of the Definition of Ready. Without it the acceptance test has nothing to
+address, and `/ready` has to invent names later with less context than you have now.
+
+Check what already exists before inventing:
+
+```bash
+rg -o 'accessibilityIdentifier\("([^"]+)"\)' -r '$1' --no-filename --glob '*.swift' | sort -u
+```
+
+Reuse an identifier when the element already ships. Name new ones in the local style
+(lowerCamelCase in this codebase: `settingsNavigationLink`, `recipeList`,
+`spotlightSearchToggle`). Output them as a list of identifier and element pairs.
 
 **Collect output as:** `UX_OUTPUT`
 
@@ -246,35 +289,145 @@ Return to user:
 
 **CRITICAL**: STOP and ask user before proceeding.
 
-**Does this feature have a UI?** If yes, the next phase is `/ui-design` (UI-first: an
-approved static prototype before backend work). If it's backend/CLI-only, the next phase is
-`/implement` directly. When the feature has a UI, mark the issue's UX and acceptance
-sections **provisional — pending design**, since `/ui-design` will finalize them.
+**The next phase is always `/ready`**, whether or not the feature has a UI. `/ready` audits the
+issue against the Definition of Ready, derives the acceptance test, and routes to `/ui-design`
+or `/implement` from there. Do not route around the gate: a spec you just wrote is exactly the
+kind that looks ready to the person who wrote it.
 
-Use the AskUserQuestion tool to prompt (UI feature):
+When the feature has a UI, mark the issue's UX and acceptance sections **provisional — pending
+design**, since `/ui-design` will finalize them. `/ready` reads that marker and routes
+accordingly.
+
+Use the AskUserQuestion tool to prompt:
 ```
 ✅ Spec complete!
 
 Issue: #<issue_number>
 URL: <issue_url>
 
-This feature has a UI — next is the design phase (static prototype before backend).
-- Yes → Continue to /ui-design #<issue_number>
-- Refine spec → Let's adjust before designing
+Next is the Definition of Ready gate, which will derive the acceptance test.
+- Yes → Continue to /ready #<issue_number>
+- Refine spec → Let's adjust first
 - Stop here → I'll pick it up later
 ```
 
-For a backend/CLI-only feature, swap the handoff to `/implement #<issue_number>` instead.
-
 **DO NOT invoke the next phase until the user explicitly confirms "Yes".**
 
-**When user confirms "Yes":** Invoke the next skill using the Skill tool:
+**When user confirms "Yes":** print the `/goal` command for the user to paste, rather than
+invoking the skill directly. `/ready` is designed to run unattended and the goal is what makes
+that work:
+
 ```
-Skill tool: skill="ui-design", args="#<issue_number>"      # UI feature
-Skill tool: skill="implement", args="#<issue_number>"      # backend/CLI-only
+/goal Issue #<N> has been audited by /ready and the transcript contains a line beginning
+"DOR VERDICT: #<N>" whose status is PASS, or whose route is /spec or /ui-design with the
+blocking criteria named. Report the route and stop. Stop after 6 turns.
 ```
 
-This hands off to the next phase with the issue context.
+## Repair Mode
+
+Invoked as `/spec #<issue>`, normally because `/ready` printed a verdict routing here.
+
+### Step R1: Read the verdict
+
+Find the most recent `DOR VERDICT:` line for this issue, in the conversation or in the issue's
+comments. It names the blocking criteria, which determines the repair.
+
+If no verdict exists, run `/ready #<issue>` first. Do not guess at what is wrong with an issue
+someone asked you to repair; the audit is cheap and the guess is expensive.
+
+### Step R2: Pick the repair
+
+| Blocking | Repair | What it does |
+|----------|--------|--------------|
+| R6 scope | **Split** | Break one issue into independently shippable children |
+| R1 stories, R5 approach | **Fill** | Re-run the PM or architect phase against the existing issue |
+| R2 ambiguous | **Clarify** | Ask the user the specific questions, then amend |
+
+More than one can apply. Split first: it changes which content belongs to which issue, so
+filling before splitting means filling issues that are about to be dissolved.
+
+### Step R3a: Split
+
+**Find the seams.** A child is a genuine child when it passes both tests:
+
+- **Ships alone.** It delivers user value on its own, without waiting for a sibling.
+- **Owns its criteria.** Its acceptance criteria are about it, not shared with a sibling.
+
+Content that fails both tests is not a child, it is shared context, and it gets duplicated
+into every child that needs it. Children must be readable without opening the parent.
+
+**Gate before creating anything.** Creating several issues is outward-facing and tedious to
+unwind. Use AskUserQuestion to present the proposed split first:
+
+```
+#<N> splits into <count> issues:
+
+1. <title> — <one line on what ships> — effort/<S|M|L>
+2. <title> — <one line on what ships> — effort/<S|M|L>
+...
+
+Dependency order: <which must land first, and why>
+
+- Create them → I'll file the children and convert #<N> into an epic
+- Adjust the split → tell me what to merge or separate
+- Stop → leave #<N> as it is
+```
+
+**Preserve the original.** Before rewriting the parent body, post it verbatim as a comment
+titled "Original issue body before split on <date>". Never destroy something a human wrote.
+The split is a judgment call and judgment calls get revisited.
+
+**Create each child** carrying its own overview, user stories with observable acceptance
+criteria, the slice of UX and architecture that applies to it, its own value and effort
+labels, and a link back to the parent. Size each child independently: the parent's `effort/M`
+does not mean each child is M.
+
+**Convert the parent** into an epic: an overview, the child list in dependency order, the
+shared context children reference, and the `epic` label. Keep the parent's References section.
+
+### Step R3b: Fill
+
+Re-invoke the phase that produced the missing content, giving it the existing issue as
+context rather than starting from a blank page:
+
+- R1 missing stories → `product-manager` skill
+- R5 missing or stale technical approach → the domain architect skill
+
+**Verify before you amend.** A technical approach that cites `RecipeSearch.swift:65` is only
+useful if that line still says what the issue claims. Check the citations and correct the
+stale ones. A confidently wrong file reference is worse than none, because it sends the
+implementer somewhere real and wrong.
+
+Amend the issue in place, quoting whatever you replaced.
+
+### Step R3c: Clarify
+
+Reached when acceptance criteria are too ambiguous to rewrite without inventing requirements.
+That distinction matters: rewriting "saving feels fast" as "saves within 2 seconds" is
+inventing a requirement, not repairing one.
+
+Use AskUserQuestion with the specific ambiguities, not a general request for more detail. One
+question per genuine fork, with the options you can see. Then amend the issue with the answers
+and note that they came from the user.
+
+### Step R4: Hand back to /ready
+
+Every repaired issue re-enters the loop through the gate that rejected it. A repair is not
+self-certifying.
+
+Print, for each issue that came out of the repair:
+
+```
+REPAIR COMPLETE: #<N>  action=<split|fill|clarify>  produced=<issue numbers>  route=/ready
+```
+
+Then print the `/goal` command for the user to paste:
+
+```
+/goal Each of issues <list> has been audited by /ready and the transcript contains a
+"DOR VERDICT:" line for each one. Report each verdict and its route, then stop.
+Stop after <2 × count> turns.
+```
 
 ## Output Composition
 
@@ -305,5 +458,5 @@ This skill orchestrates:
 
 ## Next Phase
 
-After spec is complete and user confirms, chains to → `/ui-design` (UI features) or
-`/implement` (backend/CLI-only).
+Both modes hand off to → `/ready`, which audits the Definition of Ready and routes onward to
+`/ui-design` or `/implement`. Nothing skips the gate, including issues this skill just wrote.

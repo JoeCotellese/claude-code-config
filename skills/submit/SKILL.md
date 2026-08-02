@@ -1,7 +1,7 @@
 ---
 name: submit
 effort: medium
-description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Pushes branch, creates PR/MR, handles review iteration, and gates to merge/deploy when approved."
+description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs a fresh-context code review committee on fixed lenses sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
 ---
 
 # Feature Submission Phase
@@ -27,10 +27,10 @@ Submit completed work for review, iterate on feedback, and merge when approved.
 ┌─────────────────────────────────────────────────────────────────┐
 │  SUBMIT PHASE                                                   │
 │                                                                 │
-│   Push → Create PR → Review Loop → Gate → Merge → Cleanup      │
-│                          ↑    │                                 │
-│                          └────┘                                 │
-│                      (iterate on feedback)                      │
+│   Committee → Push → Create PR → Review Loop → Gate → Merge     │
+│                                      ↑    │                     │
+│                                      └────┘                     │
+│                                 (iterate on feedback)           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,35 +55,65 @@ Check that:
 - Branch name uses one of the prefixes in `~/.claude/docs/source-control.md`:
   `feature/`, `fix/`, `bugfix/`, `hotfix/`, `chore/`, `docs/`, `test/`, `refactor/`
 
-### Step 2: Run Code Review
+### Step 2: Confirm the Definition of Done Passed
+
+Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
+and the results file it names.
+
+If there is none, run `/verify` before going further. Submitting work whose acceptance test was
+never run puts the whole judgment on the reviewers, which is what the loop exists to avoid.
+
+### Step 3: Run the Code Review Committee
 
 Detect project domain using the detection script:
 
 ```bash
-DOMAIN=$(bash skills/submit/scripts/detect_project_domain.sh)
+DOMAIN=$(bash ~/.claude/skills/submit/scripts/detect_project_domain.sh)
 echo "Detected domain: $DOMAIN"
 ```
 
-Then invoke the reviewer matching the detected domain:
-
-| Domain | Reviewer | Type |
-|--------|----------|------|
-| `swift` | `swift-swiftui-reviewer` | Agent (subagent_type) |
-| `python` | `python-code-reviewer` | Skill |
-| `cpp-qt` | `cpp-qt-reviewer` | Skill |
-| `unknown` | STOP — ask user which reviewer to use |
-
 **IMPORTANT:** Always run the detection script. Do NOT guess the domain from context.
 
-**If critical issues found, STOP.** Report issues and wait for fixes.
+Reviewers run in **fresh contexts** via the Agent tool. The builder does not grade its own
+work: an agent that watched the code get written has already accepted every assumption in it.
+Give each one the diff, the issue, and one lens only.
 
-### Step 3: Run Unit Tests
+**The lenses, in priority order:**
 
-Quick sanity check before pushing. Run the project's test command (detected from project config or conventions).
+1. **Correctness against the acceptance criteria.** Read the ACs from the issue and the diff.
+   Does the code do what each criterion says, including the empty and error paths? This lens
+   does not care about style.
+2. **Platform safety.** The domain-specific reviewer, which owns this lens:
+   - `swift` → `swift-swiftui-reviewer` agent — concurrency and main-actor safety
+   - `python` → `python-code-reviewer` skill
+   - `cpp-qt` → `cpp-qt-reviewer` skill
+   - `unknown` → STOP, ask the user which reviewer to use
+3. **Test adequacy.** For each test added on this branch: would it still fail if the fix were
+   reverted? A test that passes either way guards nothing. This lens also checks that every
+   `[test: <name>]` acceptance criterion has the test it names.
+
+**Size gating.** `/ready` recorded a committee tier in the issue from the `effort/` label. Use
+it rather than re-deriving it:
+
+- **effort/S** — lens 1 only.
+- **effort/M** — lenses 1 and 2.
+- **effort/L** — all three.
+
+**Each reviewer returns a blocking finding count.** Only blocking findings stop the
+submission. Non-blocking findings get logged to the issue and dropped — without that rule
+every submission takes another round on somebody's style preference.
+
+**If any lens returns a blocking finding, STOP.** Report and wait for fixes. A blocking finding
+that reveals a gap the Definition of Ready should have caught is also a `/retro`.
+
+### Step 4: Run Unit Tests
+
+Re-run after the committee. `/verify` already ran the suite, but committee fixes landed since
+then, so this catches what those fixes broke.
 
 **If tests fail, STOP.** Report failures and wait for fixes.
 
-### Step 4: Push to Remote
+### Step 5: Push to Remote
 
 ```bash
 git push -u origin $(git branch --show-current)
@@ -97,7 +127,7 @@ git rebase origin/main
 git push -u origin $(git branch --show-current)
 ```
 
-### Step 5: Detect Platform and Check for Existing PR
+### Step 6: Detect Platform and Check for Existing PR
 
 ```bash
 PLATFORM=$(bash scripts/detect_git_platform.sh)
@@ -116,9 +146,9 @@ fi
 EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
 ```
 
-If PR exists, skip to Step 7 (review loop).
+If PR exists, skip to Step 8 (review loop).
 
-### Step 6: Create PR/MR
+### Step 7: Create PR/MR
 
 **GitHub:**
 ```bash
@@ -132,7 +162,8 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 
 ## Testing
 - [x] Unit tests pass
-- [x] Manual testing completed
+- [x] Definition of Done: PASS — <results file path>
+- [x] Code review committee: <n> lenses, 0 blocking findings
 
 ## Related Issues
 Fixes #<issue>
@@ -145,7 +176,7 @@ EOF
 glab mr create --title "<Type> #<issue>: <description>" --description "..."
 ```
 
-### Step 7: Report PR and Enter Review Loop
+### Step 8: Report PR and Enter Review Loop
 
 ```
 ✅ Pull Request Created (or exists)
@@ -158,7 +189,7 @@ Awaiting human review. Let me know when:
 - The review is approved and ready to merge
 ```
 
-### Step 8: Review Iteration Loop
+### Step 9: Review Iteration Loop
 
 When user reports review feedback:
 
@@ -169,7 +200,7 @@ When user reports review feedback:
 5. Report: "Changes pushed. PR updated."
 6. Return to waiting for review outcome
 
-### Step 9: Gate to Merge
+### Step 10: Gate to Merge
 
 When user confirms review is approved:
 
@@ -181,7 +212,7 @@ Ready to merge and deploy?
 - No → Keep PR open for now
 ```
 
-### Step 10: Merge and Cleanup
+### Step 11: Merge and Cleanup
 
 If user confirms merge:
 
@@ -199,7 +230,7 @@ gh pr merge --squash --delete-branch
 glab mr merge --squash --remove-source-branch
 ```
 
-### Step 11: Return to Main
+### Step 12: Return to Main
 
 ```bash
 git checkout main
@@ -209,7 +240,7 @@ git pull origin main
 git branch -d <branch-name>
 ```
 
-### Step 12: Report Success
+### Step 13: Report Success
 
 ```
 ✅ Merged and deployed!
@@ -233,6 +264,9 @@ You're now on main with latest changes.
 | PR already exists | Skip creation, enter review loop |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
+| No `DOD VERDICT` for the issue | Run `/verify` before submitting |
+| Blocking committee finding | STOP - fix, then re-run that lens only |
+| Blocking finding the DoR should have caught | Fix it, then `/retro` the gate |
 
 ## Resources
 
