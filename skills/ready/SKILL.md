@@ -1,7 +1,7 @@
 ---
 name: ready
 effort: high
-description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when the user says 'is this ready', 'DoR check', 'audit this issue', 'can we implement #N'. Audits an issue against seven readiness criteria, repairs what it can (rewrites vague acceptance criteria, names accessibility identifiers, derives the AXe acceptance test), and routes what it cannot back to /spec or /ui-design. Prints a fixed DOR VERDICT line so a /goal evaluator can judge the outcome."
+description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when the user says 'is this ready', 'DoR check', 'audit this issue', 'can we implement #N'. Audits an issue against seven readiness criteria, repairs what it can (rewrites vague acceptance criteria, names accessibility identifiers, derives the acceptance test), and routes what it cannot back to /spec or /ui-design. Prints a fixed DOR VERDICT line so a /goal evaluator can judge the outcome."
 ---
 
 # Definition of Ready Gate
@@ -144,8 +144,10 @@ become.
 
 ### R7 — Acceptance test exists
 
-An AXe YAML under `scripts/uitests/` whose `success_criteria` map one-to-one onto the R2
-acceptance criteria.
+An acceptance test in the project's own harness whose `success_criteria` map one-to-one onto
+the R2 acceptance criteria. On Apple platforms that is an AXe YAML under `scripts/uitests/`;
+on web it is a named Playwright flow. The procedure below is written for the AXe case, which
+is the one with the most moving parts; the rules hold for either harness.
 
 **Derive it here, before any code exists.** That ordering is the point: it forces the ACs to
 be testable and it gives `/implement` a target that was not written by the person trying to
@@ -311,4 +313,8 @@ and no issue amendment, the gate did not do its job.
 ## Next Phase
 
 Whatever `route=` says. `/spec` to fix the specification, `/ui-design` to design it,
-`/implement` to build it.
+`/implement` to build it. `/implement` closes with `/verify`, which runs the test committed
+here and prints the `DOD VERDICT` line that answers this gate.
+
+When a criterion fails in a way that means an earlier phase should have caught it, that is a
+`/retro`, not just a reroute.

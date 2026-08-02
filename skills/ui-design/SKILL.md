@@ -1,7 +1,7 @@
 ---
 name: ui-design
 effort: high
-description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target template rendered with fake data — not a throwaway mock), drives it in a browser with Playwright, pressure-tests it in an independent review context, iterates up to 3 times, then amends the issue and gates to /implement. UI features only."
+description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target template rendered with fake data — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
 ---
 
 # UI/UX Design Phase
@@ -34,7 +34,7 @@ Run it **only for features with a UI**. Backend/CLI-only work skips this phase
 ```
 Step 1: Fetch spec issue + create/switch the feature branch
 Step 2: Build the static prototype (real template + hardcoded fake context, throwaway view/URL)
-Step 3: Iteration loop (max 3): drive UI (Playwright) → independent review → present → decide
+Step 3: Iteration loop (passes sized by effort/): drive UI → design committee → present → decide
 Step 4: On decision — amend the issue (final UX + acceptance + screenshots), commit the template
 Step 5: GATE → /implement
 ```
@@ -78,13 +78,26 @@ item). A design that only looks good with three tidy rows is not approved.
 Bring the app up so the prototype is live (for this repo: `db` container + uvicorn), then
 commit: `prototype: <feature>`.
 
-### Step 3: Iteration Loop (max 3)
+### Step 3: Iteration Loop (sized by the effort label)
 
-Repeat up to **three** times until the user decides:
+`/ready` recorded a committee tier in the issue from the `effort/` label. Use it rather than
+re-deriving it:
 
-1. **Drive the UI with Playwright.** Navigate to the prototype URL; screenshot desktop
-   **and** mobile widths; exercise the key interactions the spec calls for (drag, hover,
-   dialog, focus). Capture the screenshots.
+- **effort/S** — one pass, one reviewer (the acceptance-criteria lens).
+- **effort/M** — up to two passes, two lenses.
+- **effort/L** — up to three passes, all three lenses.
+
+Repeat up to the tier's pass count until the user decides:
+
+1. **Drive the UI.** Capture the empty, typical, and stress states at two widths, and
+   exercise the key interactions the spec calls for (drag, hover, dialog, focus).
+
+   - **Web** — Playwright against the prototype URL; screenshot desktop **and** mobile widths.
+   - **Apple platforms** — render the real view through `mcp__xcode__RenderPreview` for each
+     state. On the final pass, build and drive it in the simulator with AXe, so the design is
+     confirmed through the same harness that will run the Definition of Done test.
+
+   For Playwright:
 
    - **Load the interaction tool schemas up front** — they're deferred, so their params
      aren't known until fetched:
@@ -97,12 +110,26 @@ Repeat up to **three** times until the user decides:
      name like `"empty.png"` lands in the repo root and shows up in `git status` — you'd then
      have to delete it before committing.
 
-2. **Independent review — fresh context.** Spawn a subagent (Agent tool) that did *not*
-   build the prototype. Give it the issue + the screenshots (and the live URL if it can
-   drive Playwright itself). Instruct it to **pressure-test, not rubber-stamp**, against:
-   acceptance criteria, UX heuristics, accessibility (WCAG — keyboard path, focus order,
-   contrast, non-drag fallback), platform conventions, and the empty/typical/stress states.
-   It returns a concise, prioritized critique. The builder does not grade its own homework.
+2. **Design committee — fresh contexts.** Spawn subagents (Agent tool) that did *not* build
+   the prototype. Give each the issue + the screenshots (and the live URL if it can drive
+   Playwright itself), and **one lens only** — overlapping lenses produce three copies of the
+   same finding and no coverage of the other two. Instruct each to **pressure-test, not
+   rubber-stamp**. The builder does not grade its own homework.
+
+   The lenses, in the order the tiers add them:
+
+   1. **Acceptance criteria coverage** across the empty, typical, and stress states. Does each
+      criterion have a visible path in this design?
+   2. **Accessibility** — keyboard path, focus order, contrast, tap target size, non-drag
+      fallback, and how it reads under a screen reader. WCAG for web, VoiceOver and Dynamic
+      Type for Apple platforms.
+   3. **Platform conventions and aesthetic fit** — Apple HIG on Apple platforms, the
+      platform's own idioms elsewhere, plus whether it looks like it belongs in this app.
+
+   **Each reviewer returns a blocking finding count.** Only blocking findings force another
+   pass; non-blocking findings get logged to the issue and dropped. Without that rule, a
+   three-pass tier always takes three passes, because a fresh reviewer can always find one
+   more thing to prefer differently.
 
 3. **Present + decide.** Show the user the screenshots, the independent critique, and your
    recommended changes. Use **AskUserQuestion**: **Approve** / **Iterate** / **Stop**.
@@ -110,9 +137,12 @@ Repeat up to **three** times until the user decides:
    - Iterate → apply changes, increment the counter, loop.
    - Stop → exit; leave the branch as-is for later.
 
-After the **3rd** iteration without approval, do **not** loop again — present the best
+After the tier's last pass without approval, do **not** loop again — present the best
 version and ask the user to decide: approve as-is, take it over manually, or defer. The
 cap is a forcing function, not a failure.
+
+**You approve each pass. Taste is not delegated.** The committee reports blocking findings;
+it does not decide whether the design is good.
 
 ### Step 4: On Decision — Finalize
 
@@ -141,14 +171,14 @@ or repurposes the throwaway prototype route.
 
 The prototype renders live in a browser (verified via Playwright screenshots across
 desktop + mobile widths and the empty/typical/stress states), an independent review context
-has pressure-tested it, and the user has explicitly approved a version. Only then does the
-phase gate to `/implement`.
+has pressure-tested it on its assigned lenses with no blocking findings left, and the user has
+explicitly approved a version. Only then does the phase gate to `/implement`.
 
 ## Dependencies
 
 - `gh` / `glab` (issue read + amend)
-- Playwright MCP (drive the prototype in a browser)
-- Agent tool (independent review context)
+- Playwright MCP (drive the prototype in a browser) or `mcp__xcode__RenderPreview` on Apple platforms
+- Agent tool (fresh-context design committee)
 - `../implement/scripts/create_feature_branch.sh` (shared branch naming)
 
 ## Next Phase

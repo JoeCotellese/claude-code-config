@@ -64,10 +64,25 @@ After installation, `~/.claude/skills/` will contain:
 
 Custom skills extend Claude's capabilities with specialized knowledge, workflows, and tool integrations.
 
+### The feature development loop
+
+Six phases plus a reverse edge. See [`skills/WORKFLOW.md`](skills/WORKFLOW.md) for how they
+fit together, the Definition of Ready, and the Definition of Done.
+
 | Skill | Description |
 |-------|-------------|
-| **git-workflow** | Enforce branch-first git workflow - prevents direct commits to main branch |
-| **git-submit** | Submit changes through proper PR workflow |
+| **spec** | Specification phase — product, UX, and architecture into a filed issue. Also repairs an issue that failed the Definition of Ready |
+| **ready** | Definition of Ready gate — audits seven criteria, repairs what it can, derives the acceptance test, prints `DOR VERDICT` |
+| **ui-design** | Builds the real view as a prototype, drives it, and runs a fresh-context design committee. UI features only |
+| **implement** | TDD implementation under a goal whose exit condition is the Definition of Done |
+| **verify** | Definition of Done runner — unit suite plus the acceptance test, reconciles every criterion to its channel, prints `DOD VERDICT` |
+| **submit** | Code review committee, then PR/MR, review iteration, and merge |
+| **retro** | Reverse edge — names the gate that missed a failure and amends it |
+
+### Everything else
+
+| Skill | Description |
+|-------|-------------|
 | **kaizen** | Continuous improvement practices |
 | **learnings** | Curate durable project learnings into a shared, opt-in `LEARNINGS.md` |
 | **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
