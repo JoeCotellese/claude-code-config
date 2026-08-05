@@ -1,136 +1,178 @@
-# Jira Workflow Operations
+# Jira Workflow Operations with acli
 
-## Issue Transitions (Status Changes)
+## Transitions (Status Changes)
 
-### jira_get_transitions
-Get available status transitions for an issue. Always call this before transitioning.
-
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | e.g., `"PROJ-123"` |
-
-### jira_transition_issue
-Move an issue to a new status.
-
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | |
-| `transition_id` | Yes | string | From `jira_get_transitions` |
-
-**Pattern**: Always get transitions first, then transition:
-```
-# Step 1: Get available transitions
-jira_get_transitions(issue_key="PROJ-123")
-
-# Step 2: Use the transition ID from results
-jira_transition_issue(issue_key="PROJ-123", transition_id="31")
+```bash
+acli jira workitem transition --key "PROJ-123" --status "Done"
+acli jira workitem transition --key "PROJ-123,PROJ-124" --status "In Progress" --yes
 ```
 
----
+Flags: `-k, --key`, `--jql`, `--filter`, `-s, --status`, `-y, --yes`, `--ignore-errors`,
+`--json`.
 
-## Issue Links
+`--status` takes the target status **by name**. There is no transition ID and no command that
+lists the transitions available from the current status, so an invalid or unreachable status
+name only surfaces as a command failure.
 
-### jira_get_link_types
-Lists all available link types (Blocks, Relates to, Duplicate, etc.).
+Before transitioning an item whose workflow you do not know:
 
-### jira_create_issue_link
-Creates a link between two issues.
+```bash
+acli jira workitem view PROJ-123 --fields status
+```
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `link_type` | Yes | string | e.g., `"Blocks"`, `"Relates"`, `"Duplicate"` |
-| `inward_issue_key` | Yes | string | The issue that IS blocked / IS related / IS duplicate |
-| `outward_issue_key` | Yes | string | The issue that blocks / relates to / duplicates |
+Status names are workflow-specific. `Done` on one project may be `Closed` or `Resolved` on
+another. If a transition fails, read the error rather than trying names at random, and ask the
+user for the correct one after one failed guess.
 
-**Directionality matters**:
-- `Blocks`: outward "blocks" inward → `inward=PROJ-200, outward=PROJ-100` means "PROJ-100 blocks PROJ-200"
-- Call `jira_get_link_types` if unsure about available link types
+`--jql` transitions in bulk. Size it with `search --count` first, and get approval before adding
+`--yes`.
 
-### jira_remove_issue_link
-Removes a link between two issues.
+## Links Between Work Items
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `link_id` | Yes | string | The link ID (from issue details) |
+List the link types your instance actually has:
 
-### jira_link_to_epic
-Links an issue to an Epic.
+```bash
+acli jira workitem link type
+```
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | The child issue |
-| `epic_key` | Yes | string | The Epic to link to |
+Create a link:
 
-### jira_create_remote_issue_link
-Creates a link to an external URL (GitHub PR, doc, etc.).
+```bash
+acli jira workitem link create --out PROJ-123 --in PROJ-456 --type Blocks
+```
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | |
-| `url` | Yes | string | External URL |
-| `title` | Yes | string | Link display text |
+Direction matters. `--out` is the outward item and `--in` the inward one, so the example above
+reads "PROJ-123 blocks PROJ-456". `--type` accepts the outward description of the link type,
+which is why `link type` is worth running when you are unsure.
 
----
+Multiple links at once:
 
-## Sprints and Boards
+```bash
+acli jira workitem link create --generate-json > /path/to/scratchpad/links.json
+acli jira workitem link create --from-json /path/to/scratchpad/links.json
+```
 
-### jira_get_agile_boards
-List all agile boards.
+The template is an array of objects with `inwardIssue`, `outwardIssue`, and `type`. A CSV path
+exists too via `--from-csv`, with columns outward, inward, type, and the first row ignored as a
+header.
 
-### jira_get_sprints_from_board
-Get sprints for a board. Prefer this over JQL sprint filtering.
+List and remove:
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `board_id` | Yes | integer | From `jira_get_agile_boards` |
+```bash
+acli jira workitem link list --key PROJ-123
+acli jira workitem link delete --help
+```
 
-### jira_get_sprint_issues
-Get issues in a specific sprint.
+### Epic links
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `sprint_id` | Yes | integer | From `jira_get_sprints_from_board` |
+There is no `link-to-epic` command. `create --parent <id>` is the closest thing, and the JSON
+template describes `parentIssueId` as being for sub-tasks. Whether it also attaches a Story to
+an Epic is unverified. Test it on one work item and check the result in Jira before doing it in
+bulk.
 
-### jira_get_board_issues
-Get all issues on a board.
+### Remote links
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `board_id` | Yes | integer | |
+`acli` cannot create a remote link to an external URL such as a GitHub PR. Put the URL in a
+comment instead, or tell the user this needs the web UI.
 
-### jira_create_sprint / jira_update_sprint
-Create or modify sprints on a board.
+## Sprints
 
----
+```bash
+acli jira sprint create --name "Sprint 12" --board 5 --start 2026-08-10 --end 2026-08-24
+acli jira sprint create --name "Release Planning" --board 10 --goal "Prepare for Q3 release"
+acli jira sprint view --help
+acli jira sprint update --help
+acli jira sprint delete --help
+```
 
-## Versions
+`create` requires `--name` and `--board`. Dates are ISO 8601, either `2026-08-10` or
+`2026-08-10T09:00:00Z`. `--goal` sets the sprint goal.
 
-### jira_get_project_versions
-List all versions/releases for a project.
+List work items in a sprint (both flags required):
 
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `project_key` | Yes | string | e.g., `"PROJ"` |
+```bash
+acli jira sprint list-workitems --sprint 45 --board 5
+acli jira sprint list-workitems --sprint 45 --board 5 --jql "assignee = currentUser()"
+```
 
-### jira_create_version / jira_batch_create_versions
-Create release versions for a project.
+Also accepts `--fields`, `--limit` (default 50), `--paginate`, `--json`, `--csv`.
 
----
+There is no command that moves a work item into or out of a sprint. That needs the web UI.
 
-## Worklogs
+## Boards
 
-### jira_get_worklog
-Get time tracking entries for an issue.
+```bash
+acli jira board search
+acli jira board view --help
+acli jira board list-sprints --id 123 --state active,closed
+acli jira board list-projects --help
+```
 
-### jira_add_worklog
-Add time tracking to an issue.
+`board search` finds boards and their IDs, which the sprint commands need. `list-sprints`
+accepts `--state` with `future`, `active`, `closed`, comma-separated, plus `--limit`,
+`--paginate`, `--json`, `--csv`.
 
----
+Note the asymmetry: `board get` and `filter get` are marked DEPRECATED in the CLI's own help.
+Use `view` instead of `get` for both.
 
-## Batch Operations
+There is no command that lists all work items on a board. Use `workitem search` with a JQL query
+or `sprint list-workitems`.
 
-### jira_batch_create_issues
-Create multiple issues at once.
+## Projects
 
-### jira_batch_get_changelogs
-Get change history for multiple issues.
+```bash
+acli jira project list --recent
+acli jira project list --paginate --json
+acli jira project view --help
+```
+
+`list` defaults to a limit of 30. `--recent` returns up to 20 recently viewed projects, which is
+usually what you want when resolving an ambiguous project key with the user.
+
+`create`, `update`, `archive`, `restore`, and `delete` also exist. Treat all five as
+user-approval operations.
+
+## Filters
+
+```bash
+acli jira filter list
+acli jira filter search --help
+acli jira filter view --help
+```
+
+A filter ID from these commands can be passed as `--filter` to `workitem search`, `edit`,
+`transition`, `delete`, `assign`, and `clone`. The same bulk guardrail applies: a filter can
+match hundreds of items.
+
+## Bulk Creation
+
+```bash
+acli jira workitem create-bulk --generate-json > /path/to/scratchpad/issues.json
+acli jira workitem create-bulk --from-json /path/to/scratchpad/issues.json
+```
+
+The template is an object with an `issues` array, each entry having `summary`, `projectKey`,
+`issueType`, `label` (array), `assignee`, and optionally `description` and `parentIssueId`.
+
+Note the key names differ from the single-create template: `issueType` here versus `type` there,
+`label` here versus `labels` there. Generate the template rather than writing it from memory.
+
+`--from-csv` takes columns `summary, projectKey, issueType, description, label, parentIssueId,
+assignee`.
+
+`--ignore-errors` continues past a failed row. Without it, a bad row stops the run partway,
+leaving some items created and some not. Prefer running without it so a failure is loud, then
+fix the input and rerun only the remainder.
+
+Show the user the JSON before running `create-bulk`. It is the fastest way in this toolset to
+create fifty wrong tickets.
+
+## Archive
+
+```bash
+acli jira workitem archive --help
+acli jira workitem unarchive --help
+```
+
+Archiving is reversible, unlike delete. When a user asks to "get rid of" work items, offer
+archive first.

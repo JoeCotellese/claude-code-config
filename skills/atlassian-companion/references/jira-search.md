@@ -1,106 +1,125 @@
-# Jira Search and JQL Patterns
+# Jira Search and JQL with acli
 
-## jira_search
+## acli jira workitem search
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `jql` | Yes | string | JQL query string |
-| `fields` | No | string | Comma-separated fields to return |
-| `limit` | No | integer | 1-50, default 10 |
-| `start_at` | No | integer | Pagination offset, 0-based |
-| `projects_filter` | No | string | Comma-separated project keys |
-| `expand` | No | string | `renderedFields`, `transitions`, `changelog` |
+```bash
+acli jira workitem search --jql "project = PROJ AND status != Done"
+acli jira workitem search --jql "project = PROJ" --fields "key,summary,assignee" --csv
+acli jira workitem search --jql "project = PROJ" --limit 50 --json
+acli jira workitem search --jql "project = PROJ" --count
+acli jira workitem search --jql "project = PROJ" --paginate
+```
+
+Flags:
+
+- `-j, --jql`: the query
+- `--filter`: search by saved filter ID instead of JQL
+- `-f, --fields`: comma-separated. Default is
+  `issuetype,key,assignee,priority,status,summary`
+- `-l, --limit`: maximum items to fetch
+- `--paginate`: fetch everything, ignoring `--limit`
+- `--count`: return only the number of matches
+- `--json` / `--csv`: machine-readable output
+- `-w, --web`: open the search in a browser
+
+`--count` is the cheap way to size a result set. Use it before any `--jql` write, and use it
+instead of fetching everything when the user only asked "how many".
+
+Quote the whole JQL string in the shell. Values containing spaces need inner quotes, so use
+double quotes outside and single quotes inside:
+
+```bash
+acli jira workitem search --jql "project = PROJ AND status = 'In Progress'"
+```
 
 ## JQL Patterns That Work
 
-### By status
-```jql
-project = <PROJECT> AND status = "In Progress"
-project = <PROJECT> AND status != Done
-project = <PROJECT> AND status not in (Done, Closed)
+These are properties of Jira's JQL, not of `acli`, so they carry over unchanged.
+
+By status:
+
+```
+project = PROJ AND status = "In Progress"
+project = PROJ AND status != Done
+project = PROJ AND status not in (Done, Closed)
 ```
 
-### By assignee
-```jql
+By assignee:
+
+```
 assignee = currentUser()
 assignee = "user@example.com"
 ```
 
-### By label
-```jql
-project = <PROJECT> AND labels = "v2-wrapper"
+By label:
+
+```
+project = PROJ AND labels = "v2-wrapper"
 ```
 
-### By date
-```jql
-updated >= -7d AND project = <PROJECT>
-created >= "2026-01-01" AND project = <PROJECT>
+By date:
+
+```
+updated >= -7d AND project = PROJ
+created >= "2026-01-01" AND project = PROJ
 ```
 
-### By issue type
-```jql
-project = <PROJECT> AND issuetype = Bug
-project = <PROJECT> AND issuetype in (Bug, Task)
+By work item type:
+
+```
+project = PROJ AND issuetype = Bug
+project = PROJ AND issuetype in (Bug, Task)
 ```
 
-### By Epic / parent
-```jql
-parent = <PROJECT>-100
-"Epic Link" = <PROJECT>-100
+By Epic or parent:
+
+```
+parent = PROJ-100
+"Epic Link" = PROJ-100
 ```
 
-### Combined with ordering
-```jql
-project = <PROJECT> AND status != Done ORDER BY priority DESC, updated DESC
+With ordering:
+
+```
+project = PROJ AND status != Done ORDER BY priority DESC, updated DESC
 ```
 
 ## JQL Patterns That FAIL Silently
 
 ### Numeric comparisons on Story Points
-These operators do NOT work on "Story point estimate":
-- `"Story point estimate" >= 5` — returns nothing
-- `"Story point estimate" > 3` — returns nothing
-- `"Story point estimate" < 8` — returns nothing
 
-### Workaround
-Fetch all issues with story points and filter client-side:
-```jql
-project = <PROJECT> AND "Story point estimate" is not EMPTY ORDER BY "Story point estimate" DESC
+These operators return nothing rather than erroring on "Story point estimate":
+
+- `"Story point estimate" >= 5`
+- `"Story point estimate" > 3`
+- `"Story point estimate" < 8`
+
+An empty result looks identical to "no matching items", so the failure is invisible.
+
+Workaround: select the non-empty set, order by the field, and filter in the shell:
+
+```bash
+acli jira workitem search \
+  --jql "project = PROJ AND 'Story point estimate' is not EMPTY ORDER BY 'Story point estimate' DESC" \
+  --json | jq '...'
 ```
 
-### Sprint filtering via JQL
-Sprint JQL can be unreliable. Prefer using dedicated tools:
-- `jira_get_sprints_from_board` to list sprints
-- `jira_get_sprint_issues` to get issues in a sprint
+### Sprint filtering
 
----
+Sprint predicates in JQL are unreliable. Prefer the dedicated commands:
 
-## jira_search_fields
-
-Finds Jira field definitions by keyword (fuzzy match). Useful for discovering custom field IDs.
-
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `keyword` | No | string | Fuzzy search term. Empty = list first N fields |
-| `limit` | No | integer | Default 10 |
-| `refresh` | No | boolean | Force refresh field cache |
-
-### Example: Find the Story Points field
-```
-keyword: "story point"
+```bash
+acli jira board list-sprints --id 123 --state active
+acli jira sprint list-workitems --sprint 45 --board 123
 ```
 
----
+`sprint list-workitems` also accepts `--jql` to filter within the sprint, which is more reliable
+than putting the sprint itself in the query.
 
-## jira_get_project_issues
+## Getting all work items for a project
 
-Shortcut to get all issues for a project without writing JQL.
+There is no project-issues shortcut. Use search:
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `project_key` | Yes | string | e.g., `"<PROJECT>"` |
-| `limit` | No | integer | 1-50, default 10 |
-| `start_at` | No | integer | Pagination offset |
+```bash
+acli jira workitem search --jql "project = PROJ" --paginate
+```

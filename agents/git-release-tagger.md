@@ -166,8 +166,8 @@ Major Features:
 
 **Related Issues URL Construction**:
 - Jira keys: Discover the Jira base URL deterministically — NEVER guess from org name, repo name, or git remote URL. The Jira subdomain rarely matches the GitHub org/repo name, and guessing produces links that look right but 404 (e.g. `wavely.atlassian.net` vs the correct `wavelydx.atlassian.net`). Use this discovery chain in order:
-  1. **Preferred — query the MCP server.** If Jira keys were extracted from commits and the `mcp__mcp-atlassian__jira_get_issue` tool is available, call it with ONE known key and extract the base URL from the response `url` field using regex `https://[^/]+\.atlassian\.net`. Use that base for all Jira links in the changelog.
-  2. **Fallback — ask the user.** If the MCP tool is not available or the call fails, ask the user for the Jira base URL before writing the changelog. Do not proceed with a guess.
+  1. **Preferred: query Jira with `acli`.** If Jira keys were extracted from commits and `acli` is on `PATH`, run `acli jira workitem view <KEY> --json` with ONE known key and extract the base URL from the response using regex `https://[^/]+\.atlassian\.net`. Use that base for all Jira links in the changelog. If `acli auth status` reports `unauthorized`, skip to step 2 rather than asking the user to authenticate mid-release.
+  2. **Fallback: ask the user.** If `acli` is unavailable, unauthenticated, or the call fails, ask the user for the Jira base URL before writing the changelog. Do not proceed with a guess.
 - GitHub issues: Construct from the repo's `origin` remote URL (e.g., `https://github.com/org/repo/issues/47`)
 - GitLab issues: Construct from the repo's `origin` remote URL (e.g., `https://gitlab.com/org/repo/-/issues/47`)
 - If no issue references are found in any commits, omit the Related Issues section entirely

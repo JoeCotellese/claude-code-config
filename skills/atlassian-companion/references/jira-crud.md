@@ -1,207 +1,226 @@
-# Jira CRUD Operations
+# Jira Work Item CRUD with acli
 
-## jira_create_issue
+All commands are `acli jira workitem <verb>`. Add `--json` to any of them for machine-readable
+output.
 
-Creates a new Jira issue. Returns the created issue with key and URL.
+## create
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `project_key` | Yes | string | e.g., `"PROJ"`. Do NOT use `project` |
-| `summary` | Yes | string | Issue title |
-| `issue_type` | Yes | string | `"Bug"`, `"Task"`, `"Story"`, `"Epic"` |
-| `description` | No | string | **Markdown**, not raw Jira wiki markup. The MCP layer converts markdown → wiki on the way in. See "Description Formatting" below. |
-| `additional_fields` | No | dict | Optional dict for `priority`, `labels`, custom fields, etc. See below. |
+Creates one work item.
 
-### Setting priority, labels, assignee at Creation
-These CAN be set at creation via `additional_fields`. You do NOT need a follow-up update call.
-
-```
-additional_fields: {
-  "priority": {"name": "Medium"},
-  "labels": ["v2-wrapper", "frontend"]
-}
+```bash
+acli jira workitem create \
+  --project "PROJ" \
+  --type "Bug" \
+  --summary "Login times out on slow networks" \
+  --assignee "user@example.com" \
+  --label "frontend,v2-wrapper"
 ```
 
-`assignee` accepts a string identifier (email, display name, or accountId) as a top-level parameter on `jira_create_issue`.
+Flags:
 
-### Description Formatting (CRITICAL)
+- `-p, --project` (required in practice): project key, e.g. `PROJ`
+- `-t, --type` (required): work item type, **case sensitive**: `Epic`, `Story`, `Task`, `Bug`
+- `-s, --summary`: the title
+- `-d, --description`: plain text or ADF. See "Descriptions" below
+- `--description-file`: read the description from a file, plain text or ADF
+- `-a, --assignee`: email or account ID. `@me` self-assigns; `default` uses the project default
+- `-l, --label`: comma-separated label names
+- `--parent`: parent work item ID
+- `-f, --from-file`: read summary and description from a file
+- `--from-json`: read the whole definition from a JSON file
+- `--generate-json`: print a JSON template to stdout, then fill it in
+- `-e, --editor`: opens an interactive editor. **Never use this.** It blocks on a TTY
 
-The MCP layer interprets the `description` string as **markdown** and converts it to Jira wiki markup before sending to the API. Use markdown syntax, not raw wiki markup.
+There is no `--priority` flag. Priority must go through `additionalAttributes` in the JSON path,
+which is unverified. Ask the user rather than guessing.
 
-| You write (markdown) | Stored as (wiki) | Renders as |
-|---|---|---|
-| `1. item`<br/>`2. item` | `# item`<br/>`# item` | ✅ Numbered list |
-| `* item`<br/>`* item` | `* item`<br/>`* item` | ✅ Bullet list |
-| `**bold**` | `*bold*` | ✅ Bold |
-| `# Heading` | `h1. Heading` | h1 heading |
-| `## Subheading` | `h2. Subheading` | h2 heading |
-| `### Section` | `h3. Section` | h3 heading |
-| `` `code` `` | `{{code}}` | ✅ Inline code |
+`--parent` is documented in the JSON template as "only if the work item is a sub-task". Whether
+it also links a Story to an Epic is unverified. Check the result after the first use.
 
-**⚠️ The trap:** If you write `# Open the screen` thinking it's a Jira wiki ordered list (which it would be in the web UI), the MCP will treat it as a markdown h1 and store it as `h1. Open the screen`. Always use `1.` for numbered lists when going through the MCP.
+## Descriptions
 
-**Headings** (`h3. *Steps to Reproduce:*`) appear to pass through verbatim if you write them in raw wiki markup — but for consistency, prefer markdown `### Steps to Reproduce` and let the MCP convert.
+`acli` does no markdown conversion. A description is either a plain string or Atlassian Document
+Format JSON. Markdown written into `--description` arrives as literal text: `## Steps` shows up
+as `## Steps`, and `1. item` stays a line beginning with `1.` rather than becoming a list.
 
-**⚠️ Angle brackets get stripped EVERYWHERE — prose, inline code, and fenced blocks.** The markdown→wiki layer treats `<...>` as an HTML tag and deletes it, content and all. This is not limited to code blocks.
+For a one-line description, plain text is fine:
 
-| You write | Arrives in Jira as |
-|---|---|
-| `Array<{ id: number }>` (fenced block) | `Array[{ id: number }]` |
-| `` `amend/<version>/<DOC>` `` (inline code) | `` `amend//` `` — `<version>` and `<DOC>` vanish |
-| `git diff <vtag>..HEAD` (prose) | `git diff ..HEAD` — placeholder gone |
-
-The most insidious case is **angle-bracket placeholders** (`<version>`, `<name>`, `<DOC>`): they disappear silently, leaving meaningless `//` or `..` and garbling the sentence. Workarounds:
-- Use bracket-free placeholder notation: `VERSION`, `DOC-rREV`, `vN.N.N..HEAD` instead of `<version>`, `<DOC>`, `<vtag>`.
-- Replace generics with prose comments: `Array /* of */ { id: number } /* */`.
-- Describe the type signature in prose instead of a code block.
-
-This affects both `description` on `jira_create_issue` and `comment` on `jira_add_comment`/`jira_edit_comment`, since all flow through the same markdown→wiki layer.
-
-**⚠️ Emphasis at the START of a list item collides with the bullet marker.** A bullet whose content begins with `**bold**` (or `*italic*`) merges the list `*` with the emphasis `*`, producing `****text***` — visible stray asterisks, and it can even nest the *following* bullet as a sub-item. Likewise a bare `*` mid-item (e.g. `` `amend/*` ``) gets doubled to `amend/**` and may break the list structure.
-
-Rule: **keep list items plain text.** Do not lead a bullet with bold/italic, and avoid bare `*` anywhere in a bullet (reword `amend/*` → "per-doc amend tags"). If you need a lead-in label, write it as plain prose ("First use: ...") rather than "**First use:** ...". Bold is safe in paragraph prose; it is not safe at the head of a list item.
-
-### ⚠️ Code-identifier hazards in prose (the underscore/star trap)
-
-Identifiers written as **bare prose** (no backticks) get mangled by the markdown→wiki layer because markdown reserves `_` and `*` for emphasis. The MCP escapes them on the way to wiki, producing ugly `\_` and `\*` sequences in the rendered output.
-
-| You write (bare) | What happens | Renders as |
-|---|---|---|
-| `audio_files` | `_files` parsed as italic span | `audio\_files` (visible backslash) |
-| `complex_short_chirp` | underscores escaped or italicized | `complex\*short\*chirp` |
-| `*` between words (e.g. "6 * 3 modes") | parsed as bold/italic | escaped or eats surrounding text |
-| `i++` in prose or fenced block | second `+` consumed somewhere in the pipeline | renders as `i+` |
-
-**Fix (partial):** wrap code identifiers in backticks for inline code. This helps visual styling in some renderers, but **the MCP currently escapes `_` and `+` chars BEFORE backtick scoping is applied**, so even `` `audio_files` `` arrives in Jira as `audio\_files` with a visible backslash. Backticks are NOT a reliable shield.
-
-**Practical workarounds (in order of preference):**
-1. Rephrase to avoid the hazardous identifier: "the audio files array" instead of `audio_files`. Lose precision; gain readability.
-2. Replace `_` with hyphens or camelCase when the audience will tolerate it: `audioFiles`.
-3. For pseudocode, prefer `i = i + 1` over `i++` (the `+` characters survive in arithmetic context most of the time, but not always — verify in a low-stakes ticket first).
-4. Accept the cosmetic backslashes. They are ugly but readable. Substance survives.
-5. If correctness matters more than cosmetics (e.g., for an auditor), put the exact code in the repo and **link** from the Jira comment instead of inlining.
-
-**Fenced code blocks (`\`\`\``) are NOT a safe haven.** Some characters (`++`, `<`, `>`, occasional `_`) still get processed even inside triple-backtick fences depending on the MCP version. For critical pseudocode, prefer:
-- Rephrase to avoid hazardous characters (`for (let i = 1; i <= n; i = i + 1)` instead of `i++`)
-- Use the wiki `{noformat}` block sent **without** surrounding markdown formatting — but be aware the markdown layer may still pre-process it
-- Accept that pseudocode in Jira comments may render imperfectly; put exact code in the repo, link from the comment
-
-**Rule of thumb:** if it would compile, wrap it in backticks. Treat bare prose as prose only.
-
-### Example
-```
-project_key: "<PROJECT_KEY>"       # Resolve from local CLAUDE.md (Step 0)
-summary: "Fix login timeout on slow networks"
-issue_type: "Bug"
-description: "### Problem\nLogin times out after 15s on 3G.\n\n### Steps to Reproduce\n1. Open login screen\n2. Connect to throttled network\n3. Tap Sign In\n\n### Acceptance Criteria\n* Timeout extended to 30s\n* Retry logic added"
-additional_fields: {"priority": {"name": "High"}, "labels": ["frontend"]}
+```bash
+acli jira workitem create --project PROJ --type Task \
+  --summary "Bump the retry ceiling" \
+  --description "Raise the network retry ceiling from 15s to 30s."
 ```
 
----
+For structured content, write ADF to a file and pass `--description-file`. The minimal envelope:
 
-## jira_get_issue
-
-Retrieves a single issue by key.
-
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | e.g., `"PROJ-123"` |
-| `fields` | No | string | Comma-separated. Default: `summary,issuetype,status,priority,description,updated,assignee,labels,reporter,created`. Use `*all` for everything |
-| `expand` | No | string | `renderedFields`, `transitions`, `changelog` |
-| `comment_limit` | No | integer | 0-100, default 10. Set to 0 for no comments |
-
----
-
-## jira_update_issue
-
-Updates an existing issue. The `fields` parameter is where most mistakes happen.
-
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | e.g., `"PROJ-123"` |
-| `fields` | Yes | **object** | Must be a dict/object, NOT a JSON string |
-| `additional_fields` | No | object | For custom fields or complex updates |
-| `attachments` | No | string | Comma-separated file paths |
-
-### Fields Object Patterns
-
-**Assignee** — pass email as a plain string:
-```json
-{"assignee": "user@example.com"}
-```
-
-**Priority** — pass as an object with `name`:
-```json
-{"priority": {"name": "High"}}
-```
-
-**Labels** — pass as an array of strings (replaces all labels, does NOT append):
-```json
-{"labels": ["v2-wrapper", "audio-bug"]}
-```
-
-⚠️ **The `fields` parameter must be a real object, not a JSON string.** If the tool call fails with:
-```
-1 validation error for call[update_issue]
-fields
-  Input should be a valid dictionary [type=dict_type, input_value='{"labels": ["wont-do"]}', input_type=str]
-```
-…it means the value was serialized as a string. The fix is to pass the value as a structured JSON object in the tool call, not as a quoted string. When in doubt, retry the call exactly as written — sometimes the issue is encoder-side, not your input.
-
-⚠️ **Labels REPLACE, they don't append.** If you want to add a label without losing existing ones, first `jira_get_issue` with `fields: "labels"`, then send the merged list back.
-
-**Summary**:
-```json
-{"summary": "Updated title"}
-```
-
-**Combined example**:
 ```json
 {
-  "assignee": "user@example.com",
-  "priority": {"name": "High"},
-  "labels": ["v2-wrapper"],
-  "summary": "Updated title"
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Problem" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "Login times out after 15s on 3G." }]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Timeout extended to 30s" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
----
+Useful ADF node types: `paragraph`, `heading` (with `attrs.level`), `bulletList` and
+`orderedList` (each child is a `listItem` wrapping a `paragraph`), `codeBlock` (with
+`attrs.language`), `rule`. Inline emphasis goes on a text node as
+`"marks": [{"type": "strong"}]`, with `em`, `code`, and `strike` as the other common marks.
 
-## jira_delete_issue
+Because ADF carries formatting in structure rather than in punctuation, there are no escaping
+rules to remember. Angle brackets, underscores, and `++` survive literally inside a text node.
+Put code in a `codeBlock` and it stays intact.
 
-Deletes an issue permanently.
+Write the ADF file to the scratchpad directory, not into the user's repo.
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | e.g., `"PROJ-123"` |
+## The JSON path
 
-**Warning**: This is irreversible. Always confirm with the user before deleting.
+`--generate-json` prints a template you can fill in and pass back through `--from-json`:
 
----
+```bash
+acli jira workitem create --generate-json > /path/to/scratchpad/workitem.json
+# edit it
+acli jira workitem create --from-json /path/to/scratchpad/workitem.json
+```
 
-## jira_add_comment
+The create template's keys are `projectKey`, `type`, `summary`, `description` (ADF object),
+`assignee`, `reporter`, `labels` (array), `parentIssueId`, and `additionalAttributes` (an object
+keyed by custom field ID, e.g. `customfield_10001`).
 
-Adds a comment to an issue.
+Note the key names differ from the flags: `projectKey` not `project`, `labels` not `label`.
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | e.g., `"PROJ-123"` |
-| `comment` | Yes | string | The comment text. NOT `body` |
+## view
 
----
+```bash
+acli jira workitem view PROJ-123
+acli jira workitem view PROJ-123 --fields summary,comment
+acli jira workitem view PROJ-123 --json
+```
 
-## jira_edit_comment
+The key is a positional argument, not a flag. Default fields are
+`key,issuetype,summary,status,assignee,description`, so comments, labels, and priority are
+absent unless requested.
 
-Edits an existing comment.
+`--fields` accepts `*all`, `*navigable`, and minus-prefixed exclusions such as
+`*navigable,-comment`.
 
-### Parameters
-| Parameter | Required | Type | Notes |
-|-----------|----------|------|-------|
-| `issue_key` | Yes | string | |
-| `comment_id` | Yes | string | |
-| `comment` | Yes | string | Updated text |
+`-w, --web` opens it in a browser. Only use it when the user asks to see the item.
+
+## edit
+
+```bash
+acli jira workitem edit --key "PROJ-123" --summary "New summary"
+acli jira workitem edit --key "PROJ-123,PROJ-124" --assignee "user@example.com" --yes
+```
+
+Flags:
+
+- `-k, --key`: comma-separated work item keys
+- `--jql` / `--filter`: select items to edit in bulk. See the guardrail below
+- `-s, --summary`, `-d, --description`, `--description-file`, `-t, --type`
+- `-a, --assignee`, `--remove-assignee`
+- `-l, --labels`, `--remove-labels`
+- `-y, --yes`: skip the confirmation prompt
+- `--ignore-errors`: continue past failures in a multi-item edit
+- `--from-json` / `--generate-json`
+
+Whether `--labels` replaces the existing set or adds to it is unverified. The JSON path is
+unambiguous and is the safer choice when it matters: the edit template exposes `labelsToAdd` and
+`labelsToRemove` as separate arrays, so additive edits are explicit.
+
+The edit JSON template's keys are `issues` (array of keys), `summary`, `description` (ADF),
+`type`, `assignee`, `labelsToAdd`, `labelsToRemove`.
+
+### Bulk guardrail
+
+`--jql` and `--filter` on `edit` apply to every matching work item. Before running one:
+
+```bash
+acli jira workitem search --jql "project = PROJ AND status = 'To Do'" --count
+```
+
+Report the count to the user and get approval before adding `--yes`.
+
+## delete
+
+```bash
+acli jira workitem delete --key "PROJ-123"
+```
+
+Irreversible. Always confirm with the user first, and never combine `--jql` with `--yes` on a
+delete. Same flags as `edit` for selection: `--key`, `--jql`, `--filter`, `--from-file`.
+
+## comment
+
+```bash
+acli jira workitem comment create --key "PROJ-123" --body "Fixed in v2.1.0."
+acli jira workitem comment create --key "PROJ-123" --body-file /path/to/comment.json
+acli jira workitem comment list --key "PROJ-123"
+```
+
+- `create`: `-b, --body` (plain text or ADF), `-F, --body-file`, `-e, --edit-last` to amend your
+  own last comment, `--editor` (never use, it blocks on a TTY)
+- `list`: `--key`, `--limit` (default 50), `--order` (`created` or `updated`, prefix with `-` to
+  reverse), `--paginate`
+- `update`, `delete`, `visibility` also exist
+
+Comment bodies follow the same plain-text-or-ADF rule as descriptions.
+
+## assign
+
+```bash
+acli jira workitem assign --key "PROJ-123" --assignee "@me"
+```
+
+`--assignee` takes an email, an account ID, `@me`, or `default`. `--remove-assignee` clears it.
+
+## clone
+
+```bash
+acli jira workitem clone --key "PROJ-123" --to-project "TEAM"
+```
+
+`--to-site` targets a different Atlassian site; it defaults to the authenticated one.
+
+## attachment
+
+Only `list` and `delete`. `acli` cannot upload an attachment.
+
+```bash
+acli jira workitem attachment list --key "PROJ-123"
+```
+
+## Not available in acli
+
+These have no `acli` equivalent. If a task needs one, tell the user rather than working around
+it:
+
+- Uploading attachments
+- Worklogs and time tracking
+- Project versions and releases
+- Remote links to external URLs, such as a GitHub PR
+- Searching field definitions by keyword (`acli jira field` only creates, updates, and deletes
+  custom fields; it cannot list them)
