@@ -161,7 +161,9 @@ Claude Code hooks live in `~/.claude/settings.json`, which this repo deliberatel
 
 ### Atlassian companion reminder
 
-`scripts/atlassian-companion-reminder.sh` is a `PreToolUse` hook body that prints a reminder to load the `atlassian-companion` skill before any `mcp-atlassian` tool call. It exists because Jira/Confluence MCP calls silently return wrong results when parameters are shaped incorrectly (e.g. reporter by email instead of display name), and the skill documents those quirks.
+`scripts/atlassian-companion-reminder.sh` is a `PreToolUse` hook body that prints a reminder to load the `atlassian-companion` skill before any `acli` command. It exists because Jira work-item commands take flags that are easy to get subtly wrong, and because the write verbs accept `--jql`, which turns a typo into a bulk edit across a whole project. The skill documents both.
+
+The matcher is `Bash`, so the hook fires on every Bash call and the script decides for itself whether the command invokes `acli`. Non-matching commands produce no output. It needs `jq` on `PATH`.
 
 After `make install`, add this block to `~/.claude/settings.json` (once, per machine):
 
@@ -169,7 +171,7 @@ After `make install`, add this block to `~/.claude/settings.json` (once, per mac
 "hooks": {
   "PreToolUse": [
     {
-      "matcher": "mcp__mcp-atlassian__.*",
+      "matcher": "Bash",
       "hooks": [
         {
           "type": "command",
@@ -181,10 +183,11 @@ After `make install`, add this block to `~/.claude/settings.json` (once, per mac
 }
 ```
 
-Verify it works:
+Verify it works. The first prints the reminder JSON; the second prints nothing:
 
 ```bash
-bash ~/.claude/scripts/atlassian-companion-reminder.sh | jq .
+echo '{"tool_input":{"command":"acli jira workitem view PROJ-1"}}' | bash ~/.claude/scripts/atlassian-companion-reminder.sh | jq .
+echo '{"tool_input":{"command":"git status"}}' | bash ~/.claude/scripts/atlassian-companion-reminder.sh
 ```
 
 ## Benefits of This Approach
