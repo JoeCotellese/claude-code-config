@@ -178,6 +178,28 @@ Procedure:
    testability so the user can object. An entry point that already exists and is extended is
    fine; a test-only backdoor that bypasses the real code path is not, because it passes while
    the feature is broken.
+8. **Check the test can fail, and check it can read.** Step 7 asks whether the app can be put
+   into the asserted state. These are two different questions, and a test can satisfy step 7
+   and still be incapable of doing its job.
+
+   *Would every step still pass with the feature deleted?* Name the line you would remove, then
+   walk the steps against its absence. If they all still pass, the test guards nothing.
+   FAIL example, WPD-2604 AC3: the guard for "tapping the field still focuses it" tapped a field
+   that the new mount-focus had already focused. The entire earlier fix it existed to protect
+   could have been deleted with every step still green. The repair was to move first responder
+   elsewhere first, and confirm the blur, before tapping.
+
+   *Does each assertion's channel actually surface at runtime?* An identifier in the source is
+   proof it was typed, not proof it reaches the accessibility tree. Confirm each one against a
+   running screen — `axe describe-ui` on iOS, the equivalent dump elsewhere — not with `rg`.
+   FAIL example, WPD-2604: the acceptance test addressed the code field by `my-code-input`,
+   which is present on both screens and never appears in the tree, because the library renders
+   it at `opacity: 0.015` and iOS drops near-transparent views. No amount of reading the wording
+   would have shown it; one `describe-ui` against the real screen did.
+
+   Both checks cost one run of the harness against the *current* build. That run is the point.
+   R7's output is a test written before the code exists, and the only thing separating a real
+   failing test from a decorative one is having watched it fail for the right reason.
 
 The test will not pass yet. Nothing is built. That is expected and correct: it is the failing
 test at the top of the TDD cycle, one level up.
