@@ -16,9 +16,12 @@ implementation until its acceptance criteria are observable and an acceptance te
 **Definition of Done** (`/verify`) refuses to call it finished until that test passes and every
 criterion has something reporting on it.
 
-**→ [`skills/WORKFLOW.md`](skills/WORKFLOW.md)** documents the whole thing: a diagram, the
-seven loops with their exit conditions and caps, both definitions in full, and what each phase
-does.
+**→ [`plugins/dev-jawn/skills/WORKFLOW.md`](plugins/dev-jawn/skills/WORKFLOW.md)** documents the
+whole thing: a diagram, the seven loops with their exit conditions and caps, both definitions in
+full, and what each phase does.
+
+The loop ships as the **dev-jawn plugin** (`plugins/dev-jawn/`), a single toggleable unit. See
+[The dev-jawn workflow plugin](#the-dev-jawn-workflow-plugin) below.
 
 ## Installation
 
@@ -57,11 +60,46 @@ git pull
 # Symlinks update automatically since they point to the repo files
 ```
 
+## The dev-jawn workflow plugin
+
+The feature development loop (the eight phase skills, `WORKFLOW.md`, and the `cpr` command) is
+packaged as a Claude Code plugin under `plugins/dev-jawn/` so the whole workflow can be toggled
+as one unit. The workflow policy that used to live in `CLAUDE.md`'s "Git Workflow" section now
+ships with the plugin as a `UserPromptSubmit` hook (`hooks/workflow-policy.sh`): disable the
+plugin and the rules leave context along with the skills, so nothing dangles.
+
+Because the loop skills now come from the plugin rather than `~/.claude/skills/`, they are **not**
+symlinked by `make install`. Install and toggle them with the plugin commands instead:
+
+```bash
+# one-time: point Claude Code at this repo as a marketplace, then install dev-jawn
+claude plugin marketplace add ~/git/claude-code-config
+claude plugin install dev-jawn
+
+claude plugin disable dev-jawn   # swap the workflow off
+claude plugin enable  dev-jawn   # swap it back on
+```
+
+### Migrating from the symlinked skills
+
+If you previously ran `make install`, the eight phase skills, `WORKFLOW.md`, and `cpr.md` are
+still symlinked into `~/.claude/` and now point at files that moved into the plugin, leaving
+dangling links. Remove them once, then install the plugin:
+
+```bash
+make prune            # removes broken symlinks in the managed ~/.claude dirs
+claude plugin install dev-jawn
+```
+
+`ios-ui-tester` and the language `docs/` stay in the base repo; the plugin references them by
+skill name and by `~/.claude/docs/` path, so keep `make install` for the rest of the config.
+
 ## Structure
 
 ```
 claude-code-config/
-├── skills/              # Custom skill packages
+├── skills/              # Custom skill packages (base, symlinked via make install)
+├── plugins/dev-jawn/    # The feature development loop, as a toggleable plugin
 ├── agents/              # Agent configurations
 ├── commands/            # Slash command definitions
 ├── docs/                # Language/tech standards
@@ -84,8 +122,10 @@ Custom skills extend Claude's capabilities with specialized knowledge, workflows
 
 ### The feature development loop
 
-Six phases plus a reverse edge. See [`skills/WORKFLOW.md`](skills/WORKFLOW.md) for how they
-fit together, the Definition of Ready, and the Definition of Done.
+Ships as the [dev-jawn plugin](#the-dev-jawn-workflow-plugin), not as base symlinks. Six phases
+plus a reverse edge. See
+[`plugins/dev-jawn/skills/WORKFLOW.md`](plugins/dev-jawn/skills/WORKFLOW.md) for how they fit
+together, the Definition of Ready, and the Definition of Done.
 
 | Skill | Description |
 |-------|-------------|

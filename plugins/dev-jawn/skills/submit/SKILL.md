@@ -68,7 +68,7 @@ never run puts the whole judgment on the reviewers, which is what the loop exist
 Detect project domain using the detection script:
 
 ```bash
-DOMAIN=$(bash ~/.claude/skills/submit/scripts/detect_project_domain.sh)
+DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh)
 echo "Detected domain: $DOMAIN"
 ```
 

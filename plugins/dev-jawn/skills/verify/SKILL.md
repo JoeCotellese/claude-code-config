@@ -73,7 +73,7 @@ is exactly the failure the gate exists to prevent.
 ### Step 2 — Detect the platform
 
 ```bash
-DOMAIN=$(bash ~/.claude/skills/submit/scripts/detect_project_domain.sh)
+DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh)
 ```
 
 Always run the script. Do not guess from context. The domain picks both commands below.
@@ -98,7 +98,7 @@ saves a round trip over two runs that each report one.
 
 ### Step 4 — Run the acceptance harness
 
-For `swift`, read `~/.claude/skills/ios-ui-tester/SKILL.md` and follow it, including the
+For `swift`, read the `ios-ui-tester` skill and follow it, including the
 checkpoint screenshots. The AX tree proves an element is present, not that the screen
 rendered.
 
@@ -200,7 +200,7 @@ with no results file did not verify anything.
 ## Dependencies
 
 - `glab` (ClipDish default) or `gh`
-- `~/.claude/skills/submit/scripts/detect_project_domain.sh` for platform detection
+- `${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh` for platform detection
 - `ios-ui-tester` skill for the AXe harness on `swift` projects
 - Playwright MCP for web acceptance flows
 

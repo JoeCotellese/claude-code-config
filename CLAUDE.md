@@ -76,14 +76,6 @@ broken down.
 # Output channel
 - Use the `drafts` skill proactively for delivering substantive content (long answers, drafts, code snippets meant to leave the terminal). Inline terminal text is fine for short answers and status updates. The skill handles destination routing (Drafts by default, clipboard on explicit override).
 
-# Git Workflow (CRITICAL)
-- **NEVER commit directly to main/master branch** - Always create a feature branch first
-- When the user says "implement", "work on issue", "fix", or mentions an issue number → invoke a phase skill IMMEDIATELY, before writing any code. Pick by the state of the work: nothing filed yet → `/spec`; a filed issue that has not passed the Definition of Ready → `/ready #N`, which audits, repairs what it can, and routes onward itself; an issue already carrying a passing `DOR VERDICT` and its committed acceptance test → `/implement #N`; code already written → `/submit`.
-- Do NOT skip `/ready` because the issue looks complete. Judging whether it is complete is the gate's job, not yours. Skip it only when Joe says to.
-- Those are three phases of a loop: `/spec` → `/ready` → `/ui-design` → `/implement` → `/verify` → `/submit`, with `/retro` as the reverse edge when something gets through a gate it should not have. Read `~/.claude/skills/WORKFLOW.md` when entering the loop at any phase or when a phase routes work backwards. It holds the Definition of Ready, the Definition of Done, and the seven loops with their exit conditions.
-- Branch naming: `<prefix>/<issue>-<desc>`. See `~/.claude/docs/source-control.md` for the full prefix set (feature, fix, hotfix, chore, docs, test, refactor)
-- All changes must go through PRs for review
-
 ## SSH / 1Password agent
 - 1Password is the SSH agent. `~/.ssh/config` deliberately points each `IdentityFile` at the matching PUBLIC key in `~/.ssh/pub/` with `IdentitiesOnly yes` — the agent uses it to offer exactly one key. This is correct, NOT broken.
 - When git push/pull/fetch over SSH fails auth (`Permission denied (publickey)`, `sign_and_send_pubkey`, hangs at auth), the cause is almost always 1Password locked/quit, not the config. Tell Joe to unlock 1Password and retry.

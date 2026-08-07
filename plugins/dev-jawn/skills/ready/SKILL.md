@@ -155,7 +155,7 @@ pass it.
 
 Procedure:
 
-1. Read `~/.claude/skills/ios-ui-tester/SKILL.md` for the harness and
+1. Read the `ios-ui-tester` skill for the harness and
    `assets/test-template.yaml` for the schema.
 2. Read two or three existing tests in `scripts/uitests/` to match local conventions.
 3. Write `scripts/uitests/test_<slug>.yaml`. Start with the two-line `ABOUTME:` header the
@@ -256,7 +256,7 @@ EXISTING=$(git branch -a | grep -E "(feature|fix)/${ISSUE_NUM}-" | head -1 | xar
 if [ -n "$EXISTING" ]; then
     git checkout "$EXISTING"
 else
-    bash ~/.claude/skills/implement/scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-desc>
+    bash ${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-desc>
 fi
 ```
 
@@ -330,7 +330,7 @@ and no issue amendment, the gate did not do its job.
 
 - `glab` (ClipDish default) or `gh`
 - `ios-ui-tester` skill for the AXe test schema and conventions
-- `~/.claude/skills/implement/scripts/create_feature_branch.sh` for branch naming
+- `${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh` for branch naming
 
 ## Next Phase
 
