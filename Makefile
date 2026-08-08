@@ -14,7 +14,7 @@ DIRS := skills agents commands docs scripts output-styles
 # Individual files to symlink
 FILES := CLAUDE.md statusline-command.sh
 
-.PHONY: help install uninstall status clean dirs
+.PHONY: help install uninstall status clean dirs prune
 
 help:
 	@echo "Claude Code Config Manager"
@@ -127,3 +127,28 @@ status:
 
 clean: uninstall
 	@echo "Clean complete."
+
+# Remove dangling symlinks in the managed dirs that point into this repo.
+# Use after content moves out of a managed dir (e.g. the loop skills moving
+# into plugins/dev-jawn), which leaves broken links make uninstall cannot see.
+prune:
+	@echo "Pruning dangling symlinks that point into this repo..."
+	@for dir in $(DIRS); do \
+		if [ -d "$(TARGET_DIR)/$$dir" ]; then \
+			for item in "$(TARGET_DIR)/$$dir"/*; do \
+				[ -L "$$item" ] || continue; \
+				if readlink "$$item" | grep -q "$(SOURCE_DIR)" && [ ! -e "$$item" ]; then \
+					rm "$$item"; \
+					echo "  [pruned] $$dir/$$(basename $$item)"; \
+				fi \
+			done \
+		fi \
+	done
+	@for file in $(FILES); do \
+		target="$(TARGET_DIR)/$$file"; \
+		if [ -L "$$target" ] && readlink "$$target" | grep -q "$(SOURCE_DIR)" && [ ! -e "$$target" ]; then \
+			rm "$$target"; \
+			echo "  [pruned] $$file"; \
+		fi \
+	done
+	@echo "Done."

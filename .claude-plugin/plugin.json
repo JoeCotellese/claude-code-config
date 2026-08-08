@@ -12,7 +12,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__mcp-atlassian__.*",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",

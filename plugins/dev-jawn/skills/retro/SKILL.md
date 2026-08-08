@@ -107,9 +107,9 @@ friction than it catches, that is a conversation with the user, not an edit.
 
 ### Step 5 — Land the amendment in the right repository
 
-The phase skills are symlinked from the config repo into `~/.claude/skills/`, so **editing the
-skill edits the config repo**. That means the normal git rules apply and the amendment does
-not go on `main`.
+The phase skills ship from the config repo as the dev-jawn plugin
+(`plugins/dev-jawn/skills/`), so **editing the skill edits the config repo**. That means the
+normal git rules apply and the amendment does not go on `main`.
 
 ```bash
 cd ~/git/claude-code-config
