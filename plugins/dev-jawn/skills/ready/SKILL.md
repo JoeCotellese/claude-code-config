@@ -69,7 +69,15 @@ it. Each AC carries one of three tags:
 - **`[ui]`** — asserted by the AXe acceptance test through an accessibility identifier.
 - **`[test: <name>]`** — asserted by a named unit or integration test. Use this for behavior
   with no UI surface: a migration running exactly once, a write path touching only one record,
-  an attribute set having the right shape.
+  an attribute set having the right shape. Before tagging `[test:]`, confirm a test can actually
+  reach the behavior through the codebase's real seams. A property that is only structurally
+  true — "store A holds no reference to store B", an invariant true by construction — or that
+  sits behind a dependency the project can't mock (an un-injectable `db` handle, a live
+  listener) is **not** `[test:]`; tag it `[manual: structural]` with an automatable proxy. FAIL
+  example — an AC tagged `[test: sharedRecipesIsolatedFromPersonalStore]` where "the shared
+  store never writes to the personal store" is guaranteed by there being no reference between
+  the two stores: no unit test can drive it, so the proxy (seed the shared store, assert the
+  recipe never appears in the personal dict) belongs under `[manual: structural]`.
 - **`[manual]`** — verified by a human, with the reason automation cannot. Allowed, but an AC
   tagged `[manual]` must be paired with an automatable proxy that catches regressions. "Reads
   naturally under VoiceOver" is genuinely manual; "`contentDescription` contains no newlines
