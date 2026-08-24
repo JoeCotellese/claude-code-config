@@ -1,7 +1,7 @@
 ---
 name: video-to-zettelkasten
 effort: high
-description: Decompose YouTube videos into atomic Zettelkasten permanent notes in the Obsidian vault. Invoke with `/video-to-zettelkasten <youtube-url>` or when user says "ZK this video", "atomize this video", "extract notes from this video". Downloads transcript via yt-dlp, extracts concepts, and creates interlinked permanent notes plus a literature note.
+description: Decompose YouTube videos into atomic Zettelkasten permanent notes in the Obsidian vault. Invoke with `/video-to-zettelkasten <youtube-url>` or when user says "ZK this video", "atomize this video", "extract notes from this video". Downloads transcript via yt-dlp, fact-checks empirical claims against primary sources (with a cui bono check) before writing, extracts concepts, and creates interlinked permanent notes plus a literature note.
 ---
 
 # Video to Zettelkasten
@@ -37,7 +37,35 @@ Read [references/vault-standards.md](references/vault-standards.md) for Obsidian
    - `Grep` for the video title across `**/*.md`
    - `Glob` for filename matches in `2_Literature Notes/` and `3_Permanent Notes/`
 
-### Phase 2: Analyze and Propose Structure
+### Phase 2: Verify Claims (conditional)
+
+**When to run:** The video makes empirical claims — health, medical, nutrition, financial, scientific, or any "studies show / research proves" cause-and-effect assertion. Skip for pure opinion, tutorial, history, or commentary with nothing checkable. When unsure, run it.
+
+Two independent checks:
+
+1. **Evidence check.** For each substantive claim, find the primary source and judge whether it says what the video says. Delegate to parallel research agents (one per cluster of claims) with web access; have each return, per claim:
+   - Verdict: SUPPORTED / OVERSIMPLIFIED / MISLEADING / UNSUPPORTED
+   - The actual finding: real effect size, study design, population, sample size
+   - Citation: authors, journal, year, URL
+   - How the video distorted it, if it did
+
+   Watch for the recurring failure modes: a fabricated or misattributed citation; a lab/surrogate marker (insulin, blood viscosity, a few mmHg of blood pressure, HRV) sold as a hard outcome (stroke, heart attack) the study never measured; an observational association stated as causation; a small or non-generalizable sample generalized to everyone; a real number inflated.
+
+2. **Cui bono.** Determine who profits if the viewer believes the claims. The description is the primary source, and Phase 1's metadata pull truncates it to 500 chars — so fetch it in full and scan for the money trail:
+   ```bash
+   yt-dlp --dump-json --no-download "<url>" | jq -r '.description' \
+     | rg -i 'https?://|discount|promo|code|amazon|lvnta|linktr|patreon|sponsor|waitlist|supplement|shop|store|join|free '
+   ```
+   Look across the full description, the channel (its "About" links, shop, membership), the transcript (a spoken sponsor read or "link below / use my code"), and optionally the pinned comment for: affiliate or storefront links, discount codes, supplement or product sales, a paid course or community, a waitlist or email capture, sponsorships, or a book. A creator selling the thing their claims make you want to buy is a conflict of interest that colors the whole video. State it plainly, naming what they're selling.
+
+**Present the verdict before proposing notes** — a claim-by-claim scorecard plus the cui bono finding. Then let it steer Phase 3:
+- Claims hold up → proceed normally.
+- Claims are mixed or weak → build notes only around what survives, properly caveated, and reframe the literature note as an annotated debunk (claim → verdict → real finding + citation). Do NOT launder unverified claims into permanent notes as if they were knowledge.
+- Consider a standalone permanent note for any reusable *reasoning* pattern the check exposes (e.g. the surrogate-endpoint-to-hard-outcome leap) — often more valuable than the video's content itself.
+
+Ask the user how to proceed when the picture is mixed.
+
+### Phase 3: Analyze and Propose Structure
 
 Present video context to the user:
 - Video title, channel, duration, upload date
@@ -70,7 +98,7 @@ Wait for user approval before proceeding.
 
 **Auto-mode exception:** If auto mode is active (a `## Auto Mode Active` system reminder is present), skip the approval gate. Present the proposed structure inline and proceed with the writes in the same turn.
 
-### Phase 3: Create Permanent Notes
+### Phase 4: Create Permanent Notes
 
 For each approved note, write to `3_Permanent Notes/` following this structure:
 
@@ -121,7 +149,7 @@ Keep content dense but scannable.]
 - Exhaustive examples (pick 2-3 best ones)
 - Content that merely recaps the video narrative without extracting a reusable idea
 
-### Phase 4: Create Literature Note
+### Phase 5: Create Literature Note
 
 Write to `2_Literature Notes/videox - [Title].md`:
 
@@ -150,6 +178,11 @@ upload_date: "[YYYY-MM-DD]"
 ## Summary
 [3-5 sentence summary of the video's content and main argument]
 
+## Claim Check
+[Include only when Phase 2 ran. A claim-by-claim scorecard with verdict and the
+real finding + citation, plus the cui bono note (who profits). Omit this section
+entirely for videos with nothing empirical to check.]
+
 ## Core Concepts
 
 ### Tier 1
@@ -172,7 +205,7 @@ upload_date: "[YYYY-MM-DD]"
 
 **If updating existing literature note:** Add or update Core Concepts section, wiki-links, and Terms. Do NOT remove existing content.
 
-### Phase 5: Verify Cross-Links
+### Phase 6: Verify Cross-Links
 
 After all notes are created:
 - Confirm every permanent note links back to the literature note
@@ -180,7 +213,7 @@ After all notes are created:
 - Confirm the literature note's Core Concepts section lists all permanent notes by tier
 - Search the vault for existing permanent notes on related topics and suggest cross-links to user
 
-### Phase 6: Cleanup
+### Phase 7: Cleanup
 
 Remove temporary files from `/tmp/`:
 ```bash
