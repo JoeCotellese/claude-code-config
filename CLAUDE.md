@@ -112,6 +112,18 @@ See ~/.claude/skills/ for specialized skills (python-architect, swift-architect,
 ## Development Workflow
 - Use `tldr` tool when you are trying to figure out the syntax of a 3rd party tool
 
+### Code intelligence
+- Prefer the LSP tool over text-based built-ins (grep, ast-grep, Read) for
+  symbol-level work whenever a language server exists for the file's language:
+  go-to-definition, find references, call hierarchy, hover types,
+  workspace/document symbols. It resolves real symbols, so it does not match
+  comments or miss indirection the way text search does.
+- Fall back to ast-grep or rg for syntactic or text search, and for a capability
+  the server lacks (e.g. pyright has no goToImplementation, so Protocol
+  implementers still need an ast-grep signature search).
+- The LSP tool is often deferred: load it once with `ToolSearch("select:LSP")`
+  before first use in a session.
+
 ## Tooling for shell interactions
 When piping or composing shell commands, prefer these tools:
 Is it about finding FILES? use 'fd'
