@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "obsidian",
+  "displayName": "Obsidian vault skills",
+  "description": "Joe's Obsidian-vault skills: Zettelkasten capture from books and videos, a video-transcript companion, dev-log capture, meeting processing, and the scotch tasting journal. Toggle it off to remove the whole Obsidian skill set from context.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Joe Cotellese",
+    "email": "joe@cotellese.net"
+  },
+  "repository": "https://github.com/JoeCotellese/claude-code-config"
+}

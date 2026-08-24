@@ -13,6 +13,10 @@
     {
       "name": "dev-jawn",
       "source": "./plugins/dev-jawn"
+    },
+    {
+      "name": "obsidian",
+      "source": "./plugins/obsidian"
     }
   ]
 }
