@@ -21,7 +21,7 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
         status=""
     fi
 
-    git_info=" on $(printf '\033[38;2;255;121;198m%s\033[0m' "$branch")$(printf '\033[38;2;255;85;85m%s\033[0m' "$status")"
+    git_info=" on $(printf '\033[35m%s\033[0m' "$branch")$(printf '\033[31m%s\033[0m' "$status")"
 fi
 
 # Context window percentage (using current_usage for active context)
@@ -32,15 +32,15 @@ if [ "$usage" != "null" ]; then
     size=$(echo "$input" | jq '.context_window.context_window_size')
     if [ "$size" != "0" ] && [ "$size" != "null" ]; then
         pct=$((current * 100 / size))
-        context_info=" $(printf '\033[38;2;241;250;140m%d%%\033[0m' "$pct")"
+        context_info=" $(printf '\033[33m%d%%\033[0m' "$pct")"
     fi
 fi
 
 # Model name
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 model_info=""
-[ -n "$model" ] && model_info=" $(printf '\033[38;2;139;233;253m%s\033[0m' "$model")"
+[ -n "$model" ] && model_info=" $(printf '\033[36m%s\033[0m' "$model")"
 
-# Build the status line with Starship-inspired colors (simplified)
-printf '\033[38;2;80;250;123m%s\033[0m%s%s%s' \
+# Build the status line with theme-aware ANSI colors (resolve through the terminal palette)
+printf '\033[32m%s\033[0m%s%s%s' \
     "$dir" "$git_info" "$context_info" "$model_info"
