@@ -10,6 +10,7 @@ settings.local.json
 
 # Skill-specific local config (contains rclone remotes, paths, etc.)
 skills/*/config.json
+plugins/*/skills/*/config.json
 
 # Python bytecode caches
 __pycache__/

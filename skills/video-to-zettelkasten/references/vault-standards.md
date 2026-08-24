@@ -1,1 +1,0 @@
-/Users/joec/git/claude-code-config/skills/book-to-zettelkasten/references/vault-standards.md

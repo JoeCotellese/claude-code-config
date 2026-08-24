@@ -94,12 +94,45 @@ claude plugin install dev-jawn
 `ios-ui-tester` and the language `docs/` stay in the base repo; the plugin references them by
 skill name and by `~/.claude/docs/` path, so keep `make install` for the rest of the config.
 
+## The obsidian plugin
+
+The Obsidian-vault skills are packaged as a Claude Code plugin under `plugins/obsidian/` so the
+whole set can be toggled as one unit. It bundles `book-to-zettelkasten`, `video-to-zettelkasten`,
+`video-transcript`, `log`, `process-meeting`, and `scotch-tasting`. `managing-productivity` stays
+in the base config: it is a Todoist/GTD skill that only integrates the vault.
+
+Like dev-jawn, these skills now come from the plugin rather than `~/.claude/skills/`, so they are
+**not** symlinked by `make install`. Install and toggle them with the plugin commands:
+
+```bash
+# one-time: point Claude Code at this repo as a marketplace, then install obsidian
+claude plugin marketplace add ~/git/claude-code-config
+claude plugin install obsidian
+
+claude plugin disable obsidian   # remove the Obsidian skill set from context
+claude plugin enable  obsidian   # bring it back
+```
+
+If you previously ran `make install`, the six skills are still symlinked into `~/.claude/skills/`
+and now point at files that moved into the plugin. Clear the dangling links once, then install:
+
+```bash
+make prune            # removes broken symlinks in the managed ~/.claude dirs
+claude plugin install obsidian
+```
+
+The two Zettelkasten skills share one `references/vault-standards.md`: the canonical copy lives in
+`book-to-zettelkasten/references/`, and `video-to-zettelkasten/references/vault-standards.md` is a
+relative symlink to it. This works because the marketplace sources the repo in place (`./`), so
+the plugin stays a real filesystem tree rather than being copied.
+
 ## Structure
 
 ```
 claude-code-config/
 ├── skills/              # Custom skill packages (base, symlinked via make install)
 ├── plugins/dev-jawn/    # The feature development loop, as a toggleable plugin
+├── plugins/obsidian/    # Obsidian-vault skills, as a toggleable plugin
 ├── agents/              # Agent configurations
 ├── commands/            # Slash command definitions
 ├── docs/                # Language/tech standards
