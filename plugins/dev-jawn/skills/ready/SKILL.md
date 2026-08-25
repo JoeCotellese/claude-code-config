@@ -36,9 +36,10 @@ yourself:
 blocking criteria named. Report the route and stop. Stop after 6 turns.
 ```
 
-## The Seven Criteria
+## The Criteria
 
-Audit each one. A criterion is PASS, FAIL, or N/A. Record the evidence, not just the verdict.
+Audit each one (R1 through R8). A criterion is PASS, FAIL, or N/A. Record the evidence, not just
+the verdict.
 
 ### R1 — User stories exist
 
@@ -209,6 +210,34 @@ the same one-to-one mapping to the ACs.
 
 **Repairable.** This is the main artifact `/ready` produces.
 
+### R8 — Gate is set
+
+Exactly one `gate:` label is present, naming who can close the issue and whether an unattended
+loop may touch it. This is the routing axis, orthogonal to `value/`×`effort/`, and it is what
+lets a downstream loop query for a next item it is actually allowed to finish.
+
+- `gate:machine` — a loop can drive it to done with no person and no hardware in the close path.
+- `gate:human` — a person or physical hardware must close it.
+- `gate:mixed` — both; a machine does most of it, at least one step needs a human.
+
+- PASS: exactly one `gate:` label present.
+- FAIL: no `gate:` label, or more than one.
+
+Two companion routing labels are `/ready`'s to set while auditing, not `/spec`'s:
+
+- **`unattended`** — set it when the issue is safe for the loop to pull with no human and no
+  hardware. In practice that means `gate:machine`, no `blocked`, and R4 not routing to design.
+  It is the single flag an autonomous puller keys on, so do not set it on anything a machine
+  cannot actually finish.
+- **`blocked`** — set it when a dependency must clear first, and name the dependency in the
+  issue. Clear it when the dependency lands. A `blocked` issue never satisfies `unattended`.
+
+**Repairable.** If `gate:` is unset, classify it from the issue's own signals (does the close
+path need a device, a credential, a taste call?) and set it. Route to `/spec` only when
+machine-closability is genuinely a product decision you cannot make from the issue — that is a
+scope question, not a wording one. `polish` is **not** part of this axis: it is a work-type tag,
+outside the Definition of Ready and outside the pull query.
+
 ## Workflow
 
 ### Step 1 — Fetch the issue
@@ -230,8 +259,9 @@ Record: title, body, labels, and whether an `effort/` label is present.
 
 ### Step 3 — Audit and repair
 
-Work R1 through R7 in order. Later criteria depend on earlier ones: R7 cannot be written
-until R2 is observable and R3 is named.
+Work R1 through R8 in order. Later criteria depend on earlier ones: R7 cannot be written
+until R2 is observable and R3 is named. R8 (the gate) is independent of the rest and can be set
+at any point in the pass.
 
 For each criterion, capture one line of evidence: what you found, quoted or cited, not a
 summary. The verdict has to be defensible when the user disagrees with it.

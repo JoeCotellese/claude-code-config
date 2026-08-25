@@ -149,6 +149,10 @@ it does not decide whether the design is good.
 - **Amend the issue:** replace the provisional UX + acceptance criteria with what was
   actually designed; attach/link the key screenshots; note the prototype template path and
   the throwaway view that `/implement` will productionize.
+- **Clear the `needs-design` routing label** now that design is done, so it does not strand the
+  issue behind a stale flag: `gh issue edit $ISSUE_NUM --remove-label needs-design` (or the
+  `glab` equivalent). `/ui-design` is the single owner of clearing this label — no other phase
+  removes it — which is what keeps it a reliable signal for the pull query.
 - Ensure the template + prototype view are **committed on the feature branch**.
 
 ### Step 5: GATE — Ready to Implement

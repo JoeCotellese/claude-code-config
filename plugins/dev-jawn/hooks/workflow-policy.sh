@@ -10,6 +10,17 @@
 
 set -euo pipefail
 
+# Quiet mode: a repo that wants the phase skills available but not the every-prompt nudge marks
+# itself by putting a `dev-jawn: quiet` sentinel in its CLAUDE.md (or .claude/CLAUDE.md). When the
+# marker is present we inject nothing and exit — the skills stay loaded (unlike disabling the
+# plugin), so /spec, /ready, etc. still work when invoked by hand. See plugins/dev-jawn/README.md.
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+for marker_file in "$PROJECT_DIR/CLAUDE.md" "$PROJECT_DIR/.claude/CLAUDE.md"; do
+    if [ -f "$marker_file" ] && grep -qiE 'dev-jawn:[[:space:]]*quiet' "$marker_file"; then
+        exit 0
+    fi
+done
+
 WORKFLOW="${CLAUDE_PLUGIN_ROOT:-.}/skills/WORKFLOW.md"
 
 read -r -d '' POLICY <<EOF || true
