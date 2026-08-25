@@ -157,8 +157,41 @@ pass/fail line per criterion.
   an AXe YAML under `scripts/uitests/`; on web it is the named Playwright flow. Non-UI work
   names the unit or integration tests instead.
 
+- **R8 Gate is set** — exactly one `gate:` label is present (`gate:machine`, `gate:human`, or
+  `gate:mixed`), naming who can close the issue and whether an unattended loop may touch it.
+  `/spec` sets it at sizing time; `/ready` refuses an issue whose gate is unset. This is the
+  routing axis, and it is what makes the pull query below possible.
+
 R7 is the load-bearing one. **The acceptance test is authored before any code**, which is
 what makes the Definition of Done objective rather than aspirational.
+
+## The routing axis
+
+`value/`×`effort/` answers *how important and how big*. It does not answer *who can close this,
+and can the loop touch it* — a second, orthogonal axis carried by a small set of labels:
+
+- **`gate:machine` · `gate:human` · `gate:mixed`** — who closes it. R8, set at `/spec`, required
+  by `/ready`.
+- **`unattended`** — safe for the loop to pull with no human and no hardware. Set by `/ready`.
+- **`blocked`** — a dependency must clear first. Set and cleared as dependencies move.
+- **`needs-design`** — must go through `/ui-design` before it can be built. Set when design is
+  missing; **cleared by `/ui-design` on its final approved pass**, so it never goes stale (single
+  owner). It mirrors what `/ready`'s R4 route computes fresh, so it is a convenience for querying,
+  not a second source of truth.
+
+A loop that wants a next item it can actually finish queries the label side:
+
+```
+highest value/, lowest effort/, unattended AND gate:machine, NOT blocked
+```
+
+The consuming loop adds its own open/status filter on top (a Project board's `status=Todo`, or
+just "issue is open"). That board and its status field live in the consuming repo, not in
+dev-jawn — dev-jawn only exposes the labels the query needs.
+
+**`polish` (✨) is a work-type tag, not routing.** It answers neither "who closes it" nor "can
+the loop touch it," so it stays out of the Definition of Ready and out of the pull query. Treat
+it like `bug` or `documentation`: a category, not a gate.
 
 ## Definition of Done
 
