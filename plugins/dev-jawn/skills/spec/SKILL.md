@@ -203,7 +203,9 @@ Assess the feature on two dimensions using the labels available in the repo. Use
 | S | Nice-to-have, minor polish |
 | M | Useful improvement, affects some users |
 | L | Important feature, clear user demand |
-| XL | Critical capability, blocks major goals |
+
+Value tops out at L. There is no `value/XL`: a critical capability is still `value/L`, and the
+thing that actually needs its own tier is effort, where `XL` triggers a split back to `/spec`.
 
 **Effort** — implementation complexity:
 | Rating | Meaning |
@@ -228,6 +230,41 @@ Does this sizing look right?
 ```
 
 **Collect confirmed sizing as:** `VALUE_SIZE`, `EFFORT_SIZE`, `VALUE_RATIONALE`, `EFFORT_RATIONALE`
+
+**Then classify the gate before creating the issue.**
+
+#### Gate classification — who closes it
+
+Value and effort are the priority axis. The gate is a second, orthogonal axis: **who can close
+this issue, and can an unattended loop touch it.** Every issue gets exactly one `gate:` label,
+and `/ready` refuses to pass an issue whose gate is unset (Definition of Ready, R8).
+
+| Gate | Meaning |
+|--------|---------|
+| `gate:machine` | An unattended loop can drive it to done — no person, no hardware, no external approval in the close path. |
+| `gate:human` | A person or physical hardware must close it: a device test, a taste call, a credential only a human holds. |
+| `gate:mixed` | Both — a machine does most of it, but at least one step needs a human. |
+
+Ask for the machine-closability honestly: "could a loop finish this with no me and no device?"
+When in doubt it is `gate:mixed`, not `gate:machine` — an over-eager `gate:machine` is what lets
+an autonomous puller grab something it cannot actually finish.
+
+Confirm with AskUserQuestion:
+```
+Gate — who closes #<N>?
+**Proposed: gate:<machine|human|mixed>** — <one-line rationale>
+
+- Yes
+- gate:machine  (loop can finish it)
+- gate:human    (needs a person or hardware)
+- gate:mixed    (both)
+```
+
+**Collect confirmed gate as:** `GATE_CLASS`.
+
+The other routing labels — `unattended` (safe for the loop to pull with no human/hardware),
+`blocked` (cannot proceed yet), `needs-design` (must go through `/ui-design` first) — are set by
+`/ready` and the design phase, not here. `/spec` sets only `gate:`.
 
 **Then AUTOMATICALLY proceed to create the issue.**
 
@@ -255,6 +292,7 @@ gh issue create \
   --title "Feature: <brief title from feature description>" \
   --label "value/<VALUE_SIZE>" \
   --label "effort/<EFFORT_SIZE>" \
+  --label "gate:<GATE_CLASS>" \
   --body "$(cat <<'EOF'
 <composed issue body>
 EOF
@@ -267,6 +305,7 @@ glab issue create \
   --title "Feature: <brief title from feature description>" \
   --label "value/<VALUE_SIZE>" \
   --label "effort/<EFFORT_SIZE>" \
+  --label "gate:<GATE_CLASS>" \
   --description "$(cat <<'EOF'
 <composed issue body>
 EOF
