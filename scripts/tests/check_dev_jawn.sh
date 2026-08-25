@@ -53,8 +53,13 @@ else
 fi
 
 # AC3 (proxy) — the hook emits the workflow policy markers when run standalone.
+# Run it against a marker-free temp dir so this checks the hook's DEFAULT injection behavior,
+# independent of whether the repo it executes in has opted into quiet mode (dev-jawn: quiet in
+# CLAUDE.md). Without this, marking this repo quiet would falsely fail AC3.
 if [ -x "$HOOK" ]; then
-    out="$("$HOOK" 2>/dev/null)"
+    AC3_TMP="$(mktemp -d)"
+    out="$(CLAUDE_PROJECT_DIR="$AC3_TMP" "$HOOK" 2>/dev/null)"
+    rm -rf "$AC3_TMP"
     echo "$out" | grep -qi 'never commit' && echo "$out" | grep -qiE 'phase skill|/ready|/implement' \
         && pass "AC3 hook output carries never-commit + phase-routing policy" \
         || bad "AC3 hook output missing policy markers"

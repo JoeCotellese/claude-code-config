@@ -1,3 +1,8 @@
+<!-- dev-jawn: quiet -->
+<!-- ^ Silences the dev-jawn workflow hook for THIS repo only (it greps the project's own
+     CLAUDE.md by path, never the global symlink). The phase skills stay available to invoke by
+     hand; the every-prompt nudge stops. See plugins/dev-jawn/README.md → Quiet mode. -->
+
 # Interaction
 ALWAYS at every turn address me as: Mr. Cotellese, Mr. C, or Joe.
 
