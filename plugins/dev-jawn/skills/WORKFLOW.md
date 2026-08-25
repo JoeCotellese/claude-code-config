@@ -189,6 +189,11 @@ The consuming loop adds its own open/status filter on top (a Project board's `st
 just "issue is open"). That board and its status field live in the consuming repo, not in
 dev-jawn — dev-jawn only exposes the labels the query needs.
 
+Both axes are defined once, with colors and descriptions, in
+`plugins/dev-jawn/scripts/setup_labels.sh`. A project adopts the taxonomy by running that script
+once (`bash plugins/dev-jawn/scripts/setup_labels.sh`); see `plugins/dev-jawn/README.md` for the
+full table and the GitLab translation.
+
 **`polish` (✨) is a work-type tag, not routing.** It answers neither "who closes it" nor "can
 the loop touch it," so it stays out of the Definition of Ready and out of the pull query. Treat
 it like `bug` or `documentation`: a category, not a gate.

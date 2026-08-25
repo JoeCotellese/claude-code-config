@@ -88,6 +88,27 @@ else
     bad "AC7 WORKFLOW missing routing axis / pull query / polish note"
 fi
 
+# AC8 — the taxonomy is version-controlled and adoptable: a manifest script that lists every
+# label, and a README documenting the two axes and pointing at the script.
+MANIFEST="plugins/dev-jawn/scripts/setup_labels.sh"
+DJREADME="plugins/dev-jawn/README.md"
+if [ ! -x "$MANIFEST" ]; then
+    bad "AC8 label manifest missing or not executable: $MANIFEST"
+else
+    missing=""
+    for L in value/S value/M value/L effort/S effort/M effort/L effort/XL \
+             gate:machine gate:human gate:mixed unattended blocked needs-design polish; do
+        grep -qF "$L" "$MANIFEST" || missing="$missing $L"
+    done
+    if [ -n "$missing" ]; then bad "AC8 manifest omits labels:$missing"
+    else pass "AC8 manifest lists the full taxonomy"; fi
+fi
+if [ -f "$DJREADME" ] && grep -qi 'taxonomy' "$DJREADME" && grep -qF 'setup_labels.sh' "$DJREADME"; then
+    pass "AC8 README documents the taxonomy and points at the manifest"
+else
+    bad "AC8 README missing or does not document taxonomy + manifest"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — issue #37 routing-label invariants hold."

@@ -35,7 +35,13 @@ checks in that script. 7/7 observed and passing.
 
 Issue criteria: 7. Observed across channels: 7 (all `[test:]`). No `[ui]`, no `[manual]`. 7 = 7.
 
-## Caveats / notes
+## Addendum (2026-08-25, adoption)
 
-- Labels are created imperatively via `gh`, not tracked in a version-controlled manifest (same
-  pattern `/spec` already uses). Filed as a follow-up rather than expanded into this issue.
+The version-control gap noted below was closed in-scope rather than deferred, on request:
+
+- **AC8** — `plugins/dev-jawn/scripts/setup_labels.sh` is the taxonomy of record (all 14 labels
+  with colors/descriptions, idempotent applier, `--dry-run`), and `plugins/dev-jawn/README.md`
+  documents both axes, the pull query, and the one-line adoption step. → PASS.
+
+Reconciliation is now **8/8** ACs, all `[test: scripts/tests/check_issue_37.sh]`. The manifest
+was applied to this repo, which also created the previously-missing `polish` label.
