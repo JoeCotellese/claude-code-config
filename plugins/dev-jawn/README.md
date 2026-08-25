@@ -84,4 +84,22 @@ repo opts out without changing your global default.
 **Note the all-or-nothing:** disabling the plugin removes the skills too, so `/spec`, `/ready`,
 and the rest become un-invokable in that repo. That is what you want for a repo that will never
 use the loop. It is **not** what you want for a repo that should keep the skills available but
-not be nagged toward them every turn — for that, keep the plugin enabled and gate the hook.
+not be nagged toward them every turn — for that, use quiet mode.
+
+### Quiet mode: keep the skills, drop the every-prompt nudge
+
+The forcing you feel each turn is the `UserPromptSubmit` hook injecting the workflow policy. A
+repo can silence just that hook while leaving the phase skills loaded and invokable by adding a
+sentinel to its `CLAUDE.md` (or `.claude/CLAUDE.md`):
+
+```markdown
+<!-- dev-jawn: quiet -->
+```
+
+The hook greps the project's `CLAUDE.md` for `dev-jawn: quiet` (case-insensitive) and injects
+nothing when it finds it. `/spec`, `/ready`, `/implement`, and the rest still work when you type
+them — nothing pushes you toward them automatically. Use this for a repo where the loop is
+occasionally useful but should never be the default, such as a mostly-markdown or config repo.
+
+- **Disable the plugin** (`enabledPlugins: false`) when the repo should never use the loop.
+- **Quiet mode** (`dev-jawn: quiet`) when the repo wants the skills on hand but not enforced.
