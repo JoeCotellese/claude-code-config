@@ -61,3 +61,27 @@ bash <path-to>/plugins/dev-jawn/scripts/setup_labels.sh --dry-run
 The script is idempotent (`--force`), so re-running it reconciles colors and descriptions after
 an edit. On GitLab, translate each line in the script to `glab label create`; the names and
 meanings are identical.
+
+## Opting out per project
+
+Not every repo wants the loop. A mostly-markdown or docs repo can turn dev-jawn off for itself,
+even when it is enabled globally, by adding this to the repo's `.claude/settings.json`:
+
+```json
+{ "enabledPlugins": { "dev-jawn": false } }
+```
+
+A disabled plugin loads **none** of its components — the every-prompt workflow hook and all the
+phase skills go away together for that repo. Scope follows the normal settings precedence:
+
+- `.claude/settings.json` — committed, applies to the whole team on that repo.
+- `.claude/settings.local.json` — personal, not committed; overrides the shared file for just
+  you. A teammate can re-enable it for themselves with `{ "enabledPlugins": { "dev-jawn": true } }`.
+
+Project settings override the user-level (`~/.claude/settings.json`) setting, so this is how one
+repo opts out without changing your global default.
+
+**Note the all-or-nothing:** disabling the plugin removes the skills too, so `/spec`, `/ready`,
+and the rest become un-invokable in that repo. That is what you want for a repo that will never
+use the loop. It is **not** what you want for a repo that should keep the skills available but
+not be nagged toward them every turn — for that, keep the plugin enabled and gate the hook.
