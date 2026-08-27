@@ -170,6 +170,16 @@ Procedure:
 5. Steps reference the R3 identifiers by `element_id`. Do not use raw coordinates for elements
    that will have identifiers, because those tests break on every layout change.
 6. Cover the empty, typical, and stress states the ACs describe, not just the happy path.
+   When a test bounds its coverage by asserting a path "only ever sees input Y" or "behaviour is
+   unchanged for case Z", VERIFY that exclusion against the feature's own outputs before trusting
+   it — a sibling feature may feed the path the excluded input directly, making the case reachable
+   and untested. An excluded case is only safe when the exclusion is checked against what the
+   feature can actually produce, never assumed.
+   FAIL example, #142 AC4: the nav-map-centre test asserted the hyper-jump arrival "only ever sees
+   procedural centres — a catalogue star is only ever the initial spawn." But the local star map
+   (#130) lists catalogue stars AS jump destinations, so jumping to one was a reachable state the
+   test never covered. It passed all four ACs while the feature re-centred the map on the wrong
+   (rebind-cell) coordinate in production, caught only by a human flying it.
 7. **Check the trigger is reachable.** A criterion can be perfectly observable and still have
    no way to reach the state that exhibits it. Siri invocation is not drivable in a simulator;
    a push notification path needs a way to fire one; a migration needs a way to install the
