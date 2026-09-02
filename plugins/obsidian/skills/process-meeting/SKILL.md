@@ -67,7 +67,7 @@ Filter files to only those containing "Notes by" (Gemini meeting notes with embe
 
 **When no argument is provided and no meetings are found for today**, ask the user: "No meetings found for today. How far back should I look?" and offer options: `latest`, `week`, `month`, or a specific date.
 
-**Deduplication:** Scan `2_Literature Notes/` for existing meeting notes. Match by date AND participant names to avoid collisions (multiple meetings on the same day across sources). Skip any meeting that already has a corresponding note.
+**Deduplication:** Scan `6_Meetings/` for existing meeting notes. Match by date AND participant names to avoid collisions (multiple meetings on the same day across sources). Skip any meeting that already has a corresponding note.
 
 **Important:** Fullwidth slashes (`／`) in Google Drive filenames break `rclone cat`. Always use `rclone copy` with `--include` glob patterns, never `rclone cat` with fullwidth-slash filenames.
 
@@ -94,7 +94,7 @@ For each meeting:
 
 ## Stage 3: Write
 
-Create note at: `2_Literature Notes/YYYYMMDD - <Participants> Meeting - <Brief Description>.md`
+Create note at: `6_Meetings/YYYYMMDD - <Participants> Meeting - <Brief Description>.md`
 
 See [references/note-template.md](references/note-template.md) for the complete template.
 
@@ -107,7 +107,7 @@ Key rules:
 
 After writing the note:
 
-1. **Search vault** (`3_Permanent Notes/`, `2_Literature Notes/`, `4_Projects/`) for concepts mentioned in the meeting
+1. **Search vault** (`3_Permanent Notes/`, `2_Literature Notes/`, `4_Projects/`, `6_Meetings/`) for concepts mentioned in the meeting
 2. **Add `[[wiki-links]]`** inline where matches exist
 3. **Add "Suggested Permanent Notes" section** at the end — topics that might deserve their own evergreen note in `3_Permanent Notes/`. One-line rationale each. Do NOT auto-create.
 
@@ -131,7 +131,7 @@ When a task is ambiguous, default to Todoist.
 
 Common fields for every task:
 - **title/content**: Clear, actionable task title
-- **description/body**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<filename>.md`
+- **description/body**: Standalone context + Obsidian link: `obsidian://open?vault=obsidian-vault&file=6_Meetings%2F<filename>.md`
 - **due date**: From transcript context if a date/timeframe is mentioned, otherwise omit
 
 **NEXTGRES tasks → Notion.** Read `notionRouting` from `config.json` (this skill's directory; see `config.example.json` for the schema). If that block is missing, warn and fall back to Todoist for these tasks — do not hardcode IDs here. Create via `notion-create-pages` with `parent: {type: "data_source_id", data_source_id: "<notionRouting.dataSourceId>"}` and properties:
@@ -195,7 +195,7 @@ ls "$HOME/Library/Group Containers/group.com.apple.VoiceMemos.shared/Recordings/
 - `voice YYYY-MM-DD`: specific date — convert to `YYYYMMDD` prefix match
 - `voice all`: all unprocessed (warn about volume first)
 
-**Deduplication:** Scan `1_inbox/` (solo path) and `2_Literature Notes/` (multi-person path) for any note whose frontmatter `source_file` matches the .m4a basename. Skip already-processed.
+**Deduplication:** Scan `1_inbox/` (solo path) and `6_Meetings/` (multi-person path) for any note whose frontmatter `source_file` matches the .m4a basename. Skip already-processed.
 
 ### Stage 2: Transcribe
 
@@ -237,7 +237,7 @@ When uncertain, ask the user with `AskUserQuestion` showing a 2-3 sentence trans
 
 **Solo path:** `1_inbox/YYYYMMDDHHMMSS - Voice Memo - <Title>.md` — see solo template in [references/voice-memo-template.md](references/voice-memo-template.md). Tag includes `voice-memo`.
 
-**Multi-person path:** `2_Literature Notes/YYYYMMDD - <Participants> Meeting - <Brief Description>.md` — same as Google Meet path but with `source: "Apple Voice Memo - mlx-whisper transcript"` and added `source_file`/`duration` frontmatter fields.
+**Multi-person path:** `6_Meetings/YYYYMMDD - <Participants> Meeting - <Brief Description>.md` — same as Google Meet path but with `source: "Apple Voice Memo - mlx-whisper transcript"` and added `source_file`/`duration` frontmatter fields.
 
 ### Stage 6: Link
 

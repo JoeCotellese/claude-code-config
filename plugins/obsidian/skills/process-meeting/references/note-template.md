@@ -72,4 +72,4 @@ the what, we capture the why.>
 - **Decisions must be scannable**: Even though narratives flow as paragraphs, decisions get their own bulleted list for quick reference.
 - **Action items are standalone**: Each should make sense without reading the full note.
 - **Wiki-links**: Use `[[Note Title]]` for any concept that has or should have its own note.
-- **Obsidian URLs**: When referencing this note externally (Todoist, calendar), use: `obsidian://open?vault=obsidian-vault&file=2_Literature%20Notes%2F<url-encoded-filename>.md`
+- **Obsidian URLs**: When referencing this note externally (Todoist, calendar), use: `obsidian://open?vault=obsidian-vault&file=6_Meetings%2F<url-encoded-filename>.md`
