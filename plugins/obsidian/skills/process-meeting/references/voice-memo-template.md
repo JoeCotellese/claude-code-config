@@ -56,7 +56,7 @@ memos to self are usually one stream of thought, even if it meanders.>
 - **No timestamps in body**: voice memos rarely have meaningful time markers. Skip the Topic-with-timestamp structure entirely.
 - **Tag `voice-memo`** so all voice-captured fleeting notes can be filtered as a cohort.
 
-## Multi-Person Path — destination `2_Literature Notes/`
+## Multi-Person Path — destination `6_Meetings/`
 
 Use the standard meeting note template at [note-template.md](note-template.md). Adjustments:
 
