@@ -228,6 +228,21 @@ Procedure:
    testability so the user can object. An entry point that already exists and is extended is
    fine; a test-only backdoor that bypasses the real code path is not, because it passes while
    the feature is broken.
+
+   One reachability blocker is not a plain implementation task: a trigger whose reachability
+   rests on a platform capability you have *measured as not currently working*. Filing "make it
+   reachable" as a task bets the whole cycle on that capability being achievable, and if it is
+   not, the test is guaranteed to fail for a reason unrelated to the feature. When you hit one,
+   spike the capability now, or write the AC provisional with the working fallback as the
+   *committed* trigger and the harder bar flagged for a follow-up.
+   FAIL example, #105: AC1 asserted spacebar plays "with no prior tap", and the gate had already
+   measured on a real build that keyboard focus does not land on the chart at launch. Instead of
+   treating that as this kind of blocker, it filed "make the chart auto-hold focus" as the
+   implementer's task and committed the test with the no-tap trigger. That trigger's reachability
+   depended on SwiftUI programmatic focus promoting a view to first responder with no interaction
+   — which does not hold in the simulator. The cycle spent a full implement → verify → retro to
+   learn what a short focus spike at the gate would have shown, and the fallback (a single
+   tap-to-focus) should have been the committed trigger from the start.
 8. **Check the test can fail, and check it can read.** Step 7 asks whether the app can be put
    into the asserted state. These are two different questions, and a test can satisfy step 7
    and still be incapable of doing its job.
