@@ -208,9 +208,26 @@ Procedure:
    it at `opacity: 0.015` and iOS drops near-transparent views. No amount of reading the wording
    would have shown it; one `describe-ui` against the real screen did.
 
-   Both checks cost one run of the harness against the *current* build. That run is the point.
-   R7's output is a test written before the code exists, and the only thing separating a real
-   failing test from a decorative one is having watched it fail for the right reason.
+   *Can the test PASS at all?* A numeric proxy (a metric with a threshold, standing in for a
+   `[manual]` criterion) fails today by design, so watching it fail proves little. When the
+   proxy has more than one threshold, or a guard that rejects a way of faking the metric,
+   confirm every threshold holds AT ONCE on a synthetic positive — a hand-made mask, a mock
+   render, a doctored capture that has the property the feature will add — not only that the
+   guard rejects the synthetic negative it was built against. A guard calibrated against the
+   negative alone may measure the same quantity as the metric it protects, from the other side.
+   FAIL example, periplus #193: the coast gate wanted a full/half-resolution length ratio above
+   2.30 (fine detail) and a "coast surviving a 1 px opening" above 0.90 as a speckle guard,
+   calibrated only against salt noise (0.86) and the shipped smooth coast (0.95). Every real
+   ragged coast produced at implementation sat on one line, keep ≈ 0.95 − 0.45 × (ratio − 2.13),
+   because the opening shaves exactly the 1 px bumps the ratio counts. The pair was unreachable
+   by construction; ten tuning runs found it. A connected-component filter (drop components
+   under 12 px, then measure) separated the cases the guard could not: salt fell to the shipped
+   ratio, the ragged coast kept its 2.3+.
+
+   All three checks cost one run of the harness against the *current* build (the positive check
+   runs on a doctored artifact). That run is the point. R7's output is a test written before the
+   code exists, and the only thing separating a real failing test from a decorative one is having
+   watched it fail for the right reason — and knowing it can pass for the right one.
 
 The test will not pass yet. Nothing is built. That is expected and correct: it is the failing
 test at the top of the TDD cycle, one level up.
