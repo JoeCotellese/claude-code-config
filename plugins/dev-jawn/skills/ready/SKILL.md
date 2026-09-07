@@ -75,6 +75,28 @@ it. Each AC carries one of three tags:
   naturally under VoiceOver" is genuinely manual; "`contentDescription` contains no newlines
   and is under two sentences" is the proxy that guards it between manual checks.
 
+**A `[manual]` AC whose evidence is produced by automation gets R7's reachability check too.**
+The tag says a human reads the result; it does not exempt the machinery that generates it.
+Naming a harness is not the same as confirming the harness can reach the states being asked
+for, and `[manual]` criteria bypass R7 by design because they never enter the AXe file. So when
+a `[manual]` AC says "screenshots of X, automated via `<harness>`", walk step 7 of R7 against
+every state it names, and state the per-run cost.
+
+FAIL example, WPD-2606 AC5: "Screenshots of all 11 Commercial screens across four device
+classes, automated via the AXe harness." It read as ready — the screens were enumerated, the
+harness existed, the devices were installed. Three of the states it named were not reachable:
+one screen appears only until the device calibrates, and that state is server-side and survives
+an app reinstall; two more sit behind a control carrying no identifier of any kind, so the flow
+reaching them could not be driven deterministically. None of that was visible in the wording,
+all of it would have surfaced from one pass of step 7, and it was the only criterion to fail at
+`/verify` — after the code was written and correct.
+
+Size the evidence against the change, too. A 44-shot four-device sweep is release-qualification
+work; requiring it to accept a 30-point margin change on two screens costs more than the change
+and puts the issue's whole Definition of Done behind the least reliable thing in it. When a
+`[manual]` AC's evidence is disproportionate, cut it to the states the change can actually
+break and file the broad sweep as its own issue.
+
 An untagged AC fails R2 even when its wording is precise. This is the most common way an issue
 looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
 surfaces at the end when the DoD test is written and covers three of five criteria.
