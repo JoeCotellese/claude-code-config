@@ -89,25 +89,76 @@ turn on:
 #### The generic sweep — always
 
 Invoke the built-in `code-review` skill against the branch diff at the level the tier names.
-**Name the branch explicitly.** With no target, `/code-review` resolves to the working tree
-and the upstream diff, and this committee runs before the Step 5 push, so on an unpushed
-branch that resolves to nothing and the sweep returns a silent pass on an empty input:
+**Give it a target that resolves to a real diff, and confirm it reviewed something.**
+
+```
+Skill tool: skill="code-review", args="<low|medium|high> <target>"
+```
+
+**A bare branch name is not a working target.** `/code-review` with no target diffs against the
+branch's upstream, and a branch just created by `/ready` has no upstream at all. Pushing does
+not fix it either: after `git push -u`, the upstream *is* the branch, so the diff is empty by
+definition. Naming the branch resolves no better.
+
+FAIL example, #79: the sweep was invoked three ways before the PR existed — `low <branch>`,
+`low` with no target, and `low` after `push -u`. All three returned an empty result in under
+ten seconds. The second said so out loud: "there's no upstream to diff against... the only
+thing on HEAD (vs HEAD~1) is a single markdown doc, no code." A fourth run, against the PR
+number, was needed before any target named the actual change.
+
+So the reliable order is **push, open the PR as a draft, then sweep the PR number.** This
+inverts Steps 5 and 7 relative to the committee, which is fine: a draft PR cannot reach a human
+reviewer, so the property this phase protects — no human reads it until the committee passes —
+still holds. Mark it ready only after the committee is clean.
 
 ```bash
-BRANCH=$(git branch --show-current)
+git push -u origin $(git branch --show-current)
+gh pr create --draft --title "..." --body-file <path>   # Step 7's body, written now
+PR=$(gh pr view --json number --jq .number)
 ```
 
 ```
-Skill tool: skill="code-review", args="<low|medium|high> $BRANCH"
+Skill tool: skill="code-review", args="<low|medium|high> $PR"
 ```
 
 **An empty diff is a blocking condition.** If `/code-review` reports no diff to review, or
 that the working tree matches upstream, do not record it as a clean sweep. A review that
 inspected nothing is not a review that found nothing, and the difference is invisible in the
-PR body once it has been written down as a pass. Fix the target and re-run.
+PR body once it has been written down as a pass.
+
+**Confirm the diff was non-empty before trusting a zero-finding result.** `gh pr view $PR --json
+files` lists what the sweep should have seen. A clean sweep over three files and a clean sweep
+over nothing are the same sentence in a PR body and opposite facts.
+
+**Check the working tree is still on the feature branch afterwards.** In #79 the first sweep
+left the repo checked out on `main` mid-committee. Nothing was lost, but a subsequent lens or
+test run would have graded the wrong tree:
+
+```bash
+git branch --show-current   # must still be the feature branch
+```
+
+### When the sweep cannot be made to run at all
+
+Distinct from an empty diff, and it needs its own answer, because "fix the target and re-run"
+assumes a target exists that works. If every target form returns empty — including the PR
+number, with `gh pr view` confirming the PR has files — the sweep is broken, not mis-aimed.
+
+Do not record it as a pass, and do not silently drop it. Instead:
+
+1. Say so to the user, with the target forms tried and the evidence each returned.
+2. Run a **substitute** correctness pass in a fresh `Agent` context, scoped to the specific
+   risks in this diff rather than a generic bug hunt.
+3. **Label it a substitute in the PR body and in the issue**, explicitly not equivalent to the
+   sweep, so a later reader is not misled about what was actually checked.
+
+This is the one exception to "do not hand-write a bug-hunting lens." The rule exists because a
+hand-written lens is worse than `/code-review` at the job — which is an argument for preferring
+the real sweep, not for shipping with no correctness pass at all when it is unavailable.
 
 It owns generic correctness bugs and reuse/simplification/efficiency cleanups. Do not
-hand-write a bug-hunting lens alongside it — that is the job it already does, better.
+hand-write a bug-hunting lens alongside a sweep that **did** run — that is the job it already
+does, better.
 
 Findings come back through `ReportFindings`. Triage them:
 
@@ -353,7 +404,9 @@ You're now on main with latest changes.
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
 | Blocking committee finding | STOP - fix, then re-run that lens only |
 | `/code-review` correctness finding | STOP - fix, then re-run `/code-review` |
-| `/code-review` reports an empty diff or no diff to review | STOP - the sweep reviewed nothing; fix the target and re-run |
+| `/code-review` reports an empty diff or no diff to review | STOP - the sweep reviewed nothing; retarget at the draft PR number and re-run |
+| Every target form returns empty, PR confirmed non-empty | Sweep is broken, not mis-aimed. Tell the user, run a labelled substitute lens, mark it as such in the PR |
+| Working tree on a different branch after a sweep | Restore the feature branch before running any further lens |
 | Domain is `ambiguous:...` at effort/M or L | STOP - ask which reviewer the diff wants |
 | Domain is `unknown` at effort/M or L | Note Lens B skipped, continue the committee |
 | Blocking finding the DoR should have caught | Fix it, then `/retro` the gate |
