@@ -264,8 +264,10 @@ Record: title, body, labels, and whether an `effort/` label is present.
 - **User-facing?** Look for a `UI` label, or ACs that describe screens and taps. Determines
   whether R4 applies and whether R7 is an AXe test or a unit test list.
 - **Size gate.** Read the `effort/` label and record which committee tier later phases get.
-  S gets one reviewer, M gets two, L gets three. Write the tier into the issue so `/ui-design`
-  and `/submit` do not re-derive it.
+  The tier sets both the `/ui-design` design passes and the `/submit` code review depth:
+  S is `/code-review low` + the acceptance-criteria lens, M adds the domain reviewer at
+  `medium`, L adds the test-adequacy lens at `high`. Write the tier into the issue so
+  `/ui-design` and `/submit` do not re-derive it.
 
 ### Step 3 — Audit and repair
 

@@ -40,12 +40,11 @@ Step 4: Enter plan mode → write implementation plan
 Step 5: GATE              ← "Plan approved?"   (human)
 Step 6: Set the goal      ← exit condition = Definition of Done
 Step 7: Implement (TDD)   ┐
-Step 8: /verify           ├── unattended under the goal, loops on FAIL
-Step 9: Code review       ┘
-Step 10: GATE             ← "Ready for review?"  (human)
+Step 8: /verify           ┴── unattended under the goal, loops on FAIL
+Step 9: GATE              ← "Ready for review?"  (human)
 ```
 
-Steps 7 through 9 run **unattended under a goal**. Plan approval and the submit gate stay
+Steps 7 and 8 run **unattended under a goal**. Plan approval and the submit gate stay
 human. The loop is closed by `/verify`'s printed `DOD VERDICT` line, not by your own judgment
 that the work looks finished.
 
@@ -213,23 +212,7 @@ no matter how many times the loop runs:
   judgment is not yours to make mid-loop.
 - **Do not weaken a unit test or delete an assertion.** Same rule as everywhere else.
 
-### Step 9: Code Review
-
-**Run the code reviewer** matching the project:
-
-| Domain | Reviewer |
-|--------|----------|
-| Swift | `swift-swiftui-reviewer` agent |
-| Python | `python-code-reviewer` skill |
-| C++/Qt | `cpp-qt-reviewer` skill |
-
-**TDD compliance check:**
-Review the commit history for this branch. Tests should appear in commits *alongside* their implementation code, not lumped together at the end. If all tests were written after all implementation, flag this to the user — TDD was not followed.
-
-Address findings before proceeding. A review finding that reveals a gap the rubric should have
-caught is a `/retro`, not just a fix.
-
-### Step 10: GATE - Ready for Review
+### Step 9: GATE - Ready for Review
 
 **CRITICAL**: STOP and ask user before proceeding to submit phase.
 
@@ -240,7 +223,6 @@ Use AskUserQuestion:
 Branch: feature/<issue>-<description>
 Commits: <count> commits
 DoD: PASS — <criteria>/<criteria> criteria, results at <path>
-Code review: ✓ no critical issues
 
 Ready for code review?
 - Yes → Continue to /submit
@@ -277,7 +259,6 @@ bash scripts/setup_git_hooks.sh
 | Issue not found | Ask user for correct issue number |
 | Branch conflict | Ask user how to resolve |
 | Tests failing | Fix before gating to submit |
-| Code review issues | Fix before proceeding |
 | No acceptance test on the branch | The issue never passed `/ready`. STOP and route to `/ready` — do not write one now, because a test written by the implementer proves nothing |
 | Same criterion fails 3 runs in a row | STOP. Report to the user; the loop is not converging |
 | `/verify` routes to `/retro` | STOP. The gate is wrong, not the code |

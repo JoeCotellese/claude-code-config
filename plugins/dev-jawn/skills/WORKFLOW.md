@@ -63,8 +63,9 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 - Cap: none, and it needs none. It is per task, and the plan bounds the task list.
 
 **L5 · Review committee** — `/submit`
-- Trigger: a lens returns a blocking finding.
-- Exit: zero blocking findings across the lenses the size gate turned on.
+- Trigger: `/code-review` returns a correctness finding, or a lens returns a blocking finding.
+- Exit: zero correctness findings from `/code-review` and zero blocking findings across the
+  lenses the size gate turned on.
 - Cap: the `effort/` tier again. Non-blocking findings are logged to the issue and dropped, so
   the loop cannot be kept alive by style preferences.
 
@@ -278,13 +279,25 @@ signal that says whether the work is done.
 
 ### `/submit` — human gated
 
-Confirms a `DOD VERDICT` exists for the issue, then runs a code review committee in fresh
-contexts before the MR is opened, on fixed lenses added in this order by the size gate:
+Confirms a `DOD VERDICT` exists for the issue, then reviews the branch before the MR is
+opened. Two parts:
 
-- Correctness against the acceptance criteria
-- Platform safety, via the domain reviewer: Swift concurrency and main-actor safety on Apple
-  platforms, the `python-code-reviewer` or `cpp-qt-reviewer` skill elsewhere
-- Test adequacy: would each test still fail if the fix were reverted
+The **generic sweep** is the built-in `/code-review` skill, run at the level the size gate
+names. It owns correctness bugs and reuse/simplification/efficiency cleanups, so dev-jawn
+does not hand-maintain a bug-hunting prompt. Its correctness findings block; the rest are
+logged and dropped.
+
+The **lenses** run in fresh contexts and cover what `/code-review` structurally cannot:
+
+- Lens A, acceptance-criteria conformance — `/code-review` reads the diff, not the issue, so
+  nothing else checks the code against what the ticket asked for. Always on.
+- Lens B, platform safety, via the domain reviewer: Swift concurrency and main-actor safety on
+  Apple platforms, the `python-code-reviewer` or `cpp-qt-reviewer` skill elsewhere.
+  `effort/M` and up.
+- Lens C, test adequacy: would each test still fail if the fix were reverted. `effort/L` only.
+
+Lens A and Lens C ship as agent definitions under `plugins/dev-jawn/agents/`, each carrying
+its own `effort: high`, so committee depth does not follow `/submit`'s orchestration effort.
 
 Blocking findings stop the submission; non-blocking ones are logged and dropped. After the MR
 exists, `/loop` handles polling for CI and review comments.
@@ -307,9 +320,11 @@ genuine one-off gets a `LEARNINGS.md` line and nothing more.
 Committee cost scales with the `effort/` label. `/ready` records the gate in the issue so
 later phases do not re-derive it.
 
-- **effort/S** — one design pass, one reviewer, one code reviewer.
-- **effort/M** — up to two design passes, two lenses, two code lenses.
-- **effort/L** — full three passes, three lenses, three code lenses.
+- **effort/S** — one design pass, one design reviewer. Code review: `/code-review low` + Lens A.
+- **effort/M** — up to two design passes, two design lenses. Code review: `/code-review medium`
+  + Lens A + Lens B.
+- **effort/L** — full three passes, three design lenses. Code review: `/code-review high` +
+  Lens A + Lens B + Lens C.
 - **effort/XL** — does not pass DoR. Split it first.
 
 ## Gates

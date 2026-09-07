@@ -81,6 +81,70 @@ else
     bad "AC7 marketplace.json does not list dev-jawn"
 fi
 
+# --- Code review consolidation: one review, in /submit ---
+# Reverting any part of the consolidation flips one of these to FAIL.
+
+IMPL="$SKILLS/implement/SKILL.md"
+SUBMIT="$SKILLS/submit/SKILL.md"
+AGENTS="$PLUGIN/agents"
+
+# /implement no longer reviews its own work.
+if grep -q '^### Step .*: Code Review' "$IMPL"; then
+    bad "CR /implement still has a Code Review step"
+else
+    pass "CR /implement has no Code Review step"
+fi
+for r in swift-swiftui-reviewer python-code-reviewer cpp-qt-reviewer; do
+    if grep -q "$r" "$IMPL"; then
+        bad "CR /implement still routes to $r"
+    else
+        pass "CR /implement does not route to $r"
+    fi
+done
+
+# The TDD compliance check moved rather than being deleted.
+if grep -q 'Tests should appear in commits' "$SUBMIT"; then
+    pass "CR TDD compliance check lives in /submit"
+else
+    bad "CR TDD compliance check lost in the move"
+fi
+
+# /submit delegates the generic sweep to the built-in code-review skill.
+if grep -q 'skill="code-review"' "$SUBMIT"; then
+    pass "CR /submit invokes the built-in code-review skill"
+else
+    bad "CR /submit does not invoke the built-in code-review skill"
+fi
+for tier in 'effort/S.*code-review low' 'effort/M.*code-review medium' 'effort/L.*code-review high'; do
+    if grep -Eq "$tier" "$SUBMIT"; then
+        pass "CR /submit maps $(echo "$tier" | cut -d. -f1)"
+    else
+        bad "CR /submit missing tier mapping: $tier"
+    fi
+done
+
+# Lens A and Lens C are real agents with their own effort, namespaced for the plugin.
+for a in acceptance-criteria-reviewer test-adequacy-reviewer; do
+    if [ -f "$AGENTS/$a.md" ]; then pass "CR agent present: $a"; else bad "CR agent missing: $a"; fi
+    if grep -q "^effort: high" "$AGENTS/$a.md" 2>/dev/null; then
+        pass "CR agent $a carries its own effort"
+    else
+        bad "CR agent $a does not set effort: high"
+    fi
+    if grep -q "subagent_type=\"dev-jawn:$a\"" "$SUBMIT"; then
+        pass "CR /submit calls $a by its namespaced type"
+    else
+        bad "CR /submit does not call dev-jawn:$a"
+    fi
+done
+
+# /submit orchestrates; depth lives in the reviewers.
+if grep -q '^effort: low' "$SUBMIT"; then
+    pass "CR /submit runs at effort: low"
+else
+    bad "CR /submit is not at effort: low"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
