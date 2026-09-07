@@ -1,7 +1,7 @@
 ---
 name: test-adequacy-reviewer
 description: Reviews the tests added on a branch for whether they actually guard anything. Invoked by /submit as the test-adequacy lens of the code review committee at effort/L. Runs in a fresh context. Give it the branch diff and the issue's acceptance criteria.
-effort: high
+model: opus
 tools: Bash, Read, Grep, Glob
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: acceptance-criteria-reviewer
 description: Reviews a branch diff against the acceptance criteria of a specific issue. Invoked by /submit as the acceptance-criteria lens of the code review committee. Runs in a fresh context so it has not accepted the builder's assumptions. Give it the issue number, the acceptance criteria verbatim, and the diff.
-effort: high
+model: opus
 tools: Bash, Read, Grep, Glob
 ---
 

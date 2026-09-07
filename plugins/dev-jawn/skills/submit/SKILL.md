@@ -366,8 +366,11 @@ You're now on main with latest changes.
   `ambiguous:<a>,<b>` when a repo matches more than one
 
 ### agents/
-Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each with its own
-`effort: high`, so committee depth does not follow this skill's orchestration effort.
+Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each pinning
+`model: opus`, so review quality does not follow whatever `/model` the session happens to be
+set to. There is no per-agent effort key: `effort:` is skill-only, and putting it on an agent
+stops that agent registering at all (#56). The model pin is the only lever holding committee
+depth up, which is why it is a dependency here and not an optimization.
 
 ### references/
 - `pr_template.md` - PR format examples
