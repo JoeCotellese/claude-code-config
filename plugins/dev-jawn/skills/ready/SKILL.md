@@ -79,10 +79,33 @@ An untagged AC fails R2 even when its wording is precise. This is the most commo
 looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
 surfaces at the end when the DoD test is written and covers three of five criteria.
 
+**A numeric threshold must be set from the measurement's own spread, and the AC must say how
+that spread was established.** An AC can be perfectly observable, correctly tagged, and still
+unassertable. If repeated measurement of *unchanged code* moves further than the threshold
+allows, the criterion reports the machine's mood rather than the code's behaviour, and it goes
+red on a re-run with nothing to fix. Measure the quantity at least three times in conditions
+that differ — cold and warm, quiet and loaded — before writing the number. If the spread
+swallows the effect, assert something that survives it (an ordering, a ratio, a within-run
+comparison) or say the quantity is not yet assertable and route to `/spec`.
+
+A *difference* is not automatically safer than an absolute. "It's a delta, so the drift
+cancels" is a hypothesis about the measurement, and it needs the same three runs as any other
+threshold.
+
+FAIL example, #217 AC4b: "the gate re-measures one term live and requires its delta within 25%
+of the committed row." Observable, correctly tagged, and calibrated on ONE run that happened to
+come back 1.4% off. The same term then measured 18.1, 25.1, 25.5 and 37.6 ms within ninety
+minutes on unchanged code — a 2x spread on a *difference* — and the criterion failed at 47.5%
+drift. An issue documenting ~30% drift on that very instrument (#219) was already open, filed
+by the same person who then wrote the threshold assuming deltas were immune to it. One
+observation is not a calibration.
+
 Rewrite each failing AC into observable form. Preserve the intent: "feels fast" usually means
 a stated latency budget, "handled gracefully" usually means a named error state. When you
 cannot tell what the author meant, say so in the verdict and route to `/spec` rather than
-inventing a requirement.
+inventing a requirement. Note that this repair leads directly into the trap above: a latency
+budget is the right shape for "feels fast", and it is still a coin flip until its threshold
+clears the spread test.
 
 **Repairable in most cases.**
 
