@@ -151,7 +151,7 @@ fi
 DETECT="$SKILLS/submit/scripts/detect_project_domain.sh"
 
 # AC1 — an unknown domain continues the committee instead of stopping it.
-if grep -Eiq 'unknown.*STOP' "$SUBMIT"; then
+if grep -Eq 'unknown.*\bSTOP\b' "$SUBMIT"; then
     bad "DOMAIN unknown still routes to STOP in /submit"
 else
     pass "DOMAIN unknown does not stop submit"
@@ -161,9 +161,16 @@ if grep -Eiq 'unknown.*(continue|acknowledg)' "$SUBMIT"; then
 else
     bad "DOMAIN unknown has no acknowledge-and-continue route"
 fi
+# AC1 also forbids prompting the user. "continue" alone is satisfiable by
+# "ask which reviewer before you continue", which reinstates the prompt.
+if grep -Eiq 'unknown.*(ask the user|ask which|which reviewer)' "$SUBMIT"; then
+    bad "DOMAIN unknown still prompts the user to pick a reviewer"
+else
+    pass "DOMAIN unknown does not prompt for a reviewer"
+fi
 
 # AC2 — the error handling table carries the collision case, not an unknown stop.
-if grep -Eiq '^\|.*unknown.*STOP' "$SUBMIT"; then
+if grep -Eq '^\|.*unknown.*\bSTOP\b' "$SUBMIT"; then
     bad "DOMAIN error table still stops on unknown"
 else
     pass "DOMAIN error table has no unknown stop"
@@ -175,11 +182,12 @@ else
 fi
 
 # AC3 — the three real reviewer routes survive the change.
-for r in swift-swiftui-reviewer python-code-reviewer cpp-qt-reviewer; do
-    if grep -q "$r" "$SUBMIT"; then
-        pass "DOMAIN reviewer route intact: $r"
+for pair in "swift:swift-swiftui-reviewer" "python:python-code-reviewer" "cpp-qt:cpp-qt-reviewer"; do
+    dom="${pair%%:*}"; rev="${pair##*:}"
+    if grep -Eq "\`$dom\`.*$rev" "$SUBMIT"; then
+        pass "DOMAIN route intact: $dom -> $rev"
     else
-        bad "DOMAIN reviewer route lost: $r"
+        bad "DOMAIN route broken: $dom does not map to $rev"
     fi
 done
 
@@ -224,10 +232,17 @@ else
 fi
 
 # AC5 — ambiguous is the only domain condition that stops a submission.
-if grep -Eiq 'ambiguous.*STOP|STOP.*ambiguous' "$SUBMIT"; then
+if grep -Eq '^- `ambiguous:[^→]*→ *\bSTOP\b' "$SUBMIT"; then
     pass "DOMAIN stop is reserved for the ambiguous case"
 else
-    bad "DOMAIN ambiguous case does not stop /submit"
+    bad "DOMAIN ambiguous route does not STOP /submit"
+fi
+# The arrow anchor alone is direction-blind: "ambiguous domains never STOP"
+# matches a bare `.*STOP` pattern. Guard the negation explicitly.
+if grep -Eiq 'ambiguous.*(never|not|no longer|does not).*\bSTOP\b' "$SUBMIT"; then
+    bad "DOMAIN skill states ambiguous does not STOP"
+else
+    pass "DOMAIN ambiguous STOP is not negated"
 fi
 
 
