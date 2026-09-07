@@ -1,7 +1,7 @@
 ---
 name: submit
-effort: medium
-description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs a fresh-context code review committee on fixed lenses sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
+effort: low
+description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs /code-review plus a fresh-context lens committee sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
 ---
 
 # Feature Submission Phase
@@ -55,6 +55,17 @@ Check that:
 - Branch name uses one of the prefixes in `~/.claude/docs/source-control.md`:
   `feature/`, `fix/`, `bugfix/`, `hotfix/`, `chore/`, `docs/`, `test/`, `refactor/`
 
+**TDD compliance check.** Read the branch's commit history:
+
+```bash
+git log --oneline --stat origin/main..HEAD
+```
+
+Tests should appear in commits *alongside* their implementation code, not lumped together
+at the end. If all tests were written after all implementation, flag it to the user — TDD
+was not followed. This is a cheap deterministic read, so it runs on every issue regardless
+of the size gate. It is a flag, not a blocker.
+
 ### Step 2: Confirm the Definition of Done Passed
 
 Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
@@ -65,7 +76,53 @@ never run puts the whole judgment on the reviewers, which is what the loop exist
 
 ### Step 3: Run the Code Review Committee
 
-Detect project domain using the detection script:
+**Size gating.** `/ready` recorded a committee tier in the issue from the `effort/` label.
+Read it rather than re-deriving it. The tier sets the `/code-review` level and which lenses
+turn on:
+
+- **effort/S** — `/code-review low` + Lens A.
+- **effort/M** — `/code-review medium` + Lens A + Lens B.
+- **effort/L** — `/code-review high` + Lens A + Lens B + Lens C.
+
+`/code-review ultra` is user-triggered and billed. Do not attempt to launch it from here.
+
+#### The generic sweep — always
+
+Invoke the built-in `code-review` skill against the branch diff at the level the tier names:
+
+```
+Skill tool: skill="code-review", args="<low|medium|high>"
+```
+
+It owns generic correctness bugs and reuse/simplification/efficiency cleanups. Do not
+hand-write a bug-hunting lens alongside it — that is the job it already does, better.
+
+Findings come back through `ReportFindings`. Triage them:
+
+- **correctness** findings are **blocking**.
+- **simplification**, **efficiency**, and everything else are **non-blocking**: log them to
+  the issue and drop them.
+
+#### The lenses
+
+Lenses run in **fresh contexts** via the Agent tool. The builder does not grade its own
+work: an agent that watched the code get written has already accepted every assumption in
+it. Give each one the diff, the issue, and one lens only — overlapping lenses produce
+three copies of the same finding.
+
+**Lens A — acceptance-criteria conformance. Always.**
+
+```
+Agent tool: subagent_type="dev-jawn:acceptance-criteria-reviewer"
+```
+
+Give it the issue number, the acceptance criteria verbatim, and the diff. `/code-review`
+reviews the diff, not the issue — it has no idea what the ticket asked for. This lens is
+the only thing that checks the code against what was actually requested.
+
+**Lens B — platform safety. effort/M and up.**
+
+Detect the project domain using the detection script:
 
 ```bash
 DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh)
@@ -74,37 +131,32 @@ echo "Detected domain: $DOMAIN"
 
 **IMPORTANT:** Always run the detection script. Do NOT guess the domain from context.
 
-Reviewers run in **fresh contexts** via the Agent tool. The builder does not grade its own
-work: an agent that watched the code get written has already accepted every assumption in it.
-Give each one the diff, the issue, and one lens only.
+- `swift` → `swift-swiftui-reviewer` agent — concurrency and main-actor safety
+- `python` → `python-code-reviewer` skill
+- `cpp-qt` → `cpp-qt-reviewer` skill
+- `unknown` → STOP, ask the user which reviewer to use
 
-**The lenses, in priority order:**
+`effort/S` issues get no platform-safety pass. That is the deliberate cost of the S tier.
 
-1. **Correctness against the acceptance criteria.** Read the ACs from the issue and the diff.
-   Does the code do what each criterion says, including the empty and error paths? This lens
-   does not care about style.
-2. **Platform safety.** The domain-specific reviewer, which owns this lens:
-   - `swift` → `swift-swiftui-reviewer` agent — concurrency and main-actor safety
-   - `python` → `python-code-reviewer` skill
-   - `cpp-qt` → `cpp-qt-reviewer` skill
-   - `unknown` → STOP, ask the user which reviewer to use
-3. **Test adequacy.** For each test added on this branch: would it still fail if the fix were
-   reverted? A test that passes either way guards nothing. This lens also checks that every
-   `[test: <name>]` acceptance criterion has the test it names.
+**Lens C — test adequacy. effort/L only.**
 
-**Size gating.** `/ready` recorded a committee tier in the issue from the `effort/` label. Use
-it rather than re-deriving it:
+```
+Agent tool: subagent_type="dev-jawn:test-adequacy-reviewer"
+```
 
-- **effort/S** — lens 1 only.
-- **effort/M** — lenses 1 and 2.
-- **effort/L** — all three.
+Would each test still fail if the fix were reverted? A test that passes either way guards
+nothing. This lens also checks that every `[test: <name>]` acceptance criterion has the
+test it names.
 
-**Each reviewer returns a blocking finding count.** Only blocking findings stop the
+#### Blocking
+
+**Each lens returns a blocking finding count.** Only blocking findings stop the
 submission. Non-blocking findings get logged to the issue and dropped — without that rule
 every submission takes another round on somebody's style preference.
 
-**If any lens returns a blocking finding, STOP.** Report and wait for fixes. A blocking finding
-that reveals a gap the Definition of Ready should have caught is also a `/retro`.
+**If `/code-review` returns a correctness finding, or any lens returns a blocking finding,
+STOP.** Report and wait for fixes. A blocking finding that reveals a gap the Definition of
+Ready should have caught is also a `/retro`.
 
 ### Step 4: Run Unit Tests
 
@@ -163,7 +215,7 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 ## Testing
 - [x] Unit tests pass
 - [x] Definition of Done: PASS — <results file path>
-- [x] Code review committee: <n> lenses, 0 blocking findings
+- [x] Code review: `/code-review <level>` + <n> lenses, 0 blocking findings
 
 ## Related Issues
 Fixes #<issue>
@@ -266,13 +318,19 @@ You're now on main with latest changes.
 | CI checks failing | STOP - wait for fixes |
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
 | Blocking committee finding | STOP - fix, then re-run that lens only |
+| `/code-review` correctness finding | STOP - fix, then re-run `/code-review` |
+| Domain is `unknown` at effort/M or L | STOP - ask which reviewer to use |
 | Blocking finding the DoR should have caught | Fix it, then `/retro` the gate |
 
 ## Resources
 
 ### scripts/
 - `detect_git_platform.sh` - Detects GitHub vs GitLab
-- `detect_project_domain.sh` - Detects project domain for code reviewer selection
+- `detect_project_domain.sh` - Detects project domain for Lens B reviewer selection
+
+### agents/
+Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each with its own
+`effort: high`, so committee depth does not follow this skill's orchestration effort.
 
 ### references/
 - `pr_template.md` - PR format examples
