@@ -134,7 +134,29 @@ echo "Detected domain: $DOMAIN"
 - `swift` → `swift-swiftui-reviewer` agent — concurrency and main-actor safety
 - `python` → `python-code-reviewer` skill
 - `cpp-qt` → `cpp-qt-reviewer` skill
-- `unknown` → STOP, ask the user which reviewer to use
+- `unknown` → no dedicated reviewer exists. Say so in one line and continue the committee.
+- `ambiguous:<a>,<b>` → STOP, ask which reviewer the diff wants.
+
+**`unknown` is not a blocker.** Lens B adds language-specific depth on top of a committee
+that already works without it: `/code-review` covers correctness, Lens A covers the
+acceptance criteria, Lens C covers test adequacy. When no reviewer exists for the language,
+the honest move is to name the gap and keep going, not to halt a submission that already
+passed the Definition of Done. Print one line and move to the blocking triage:
+
+```
+Lens B skipped: no dedicated reviewer for this domain. Platform safety is uncovered on this PR.
+```
+
+Do not prompt the user to pick a reviewer, and do not substitute a hand-written one. A
+generic "platform safety" lens with no curated checklist behind it repeats what
+`/code-review` already did.
+
+**`ambiguous` is a blocker**, because a monorepo that matches two domains has a real answer
+and the user knows it. STOP and ask which reviewer the diff wants.
+
+Adding a domain to `detect_project_domain.sh` is only worth doing when a reviewer for that
+language actually exists. Detecting `rust` with nothing to route it to just moves this
+decision one step later.
 
 `effort/S` issues get no platform-safety pass. That is the deliberate cost of the S tier.
 
@@ -319,14 +341,16 @@ You're now on main with latest changes.
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
 | Blocking committee finding | STOP - fix, then re-run that lens only |
 | `/code-review` correctness finding | STOP - fix, then re-run `/code-review` |
-| Domain is `unknown` at effort/M or L | STOP - ask which reviewer to use |
+| Domain is `ambiguous:...` at effort/M or L | STOP - ask which reviewer the diff wants |
+| Domain is `unknown` at effort/M or L | Note Lens B skipped, continue the committee |
 | Blocking finding the DoR should have caught | Fix it, then `/retro` the gate |
 
 ## Resources
 
 ### scripts/
 - `detect_git_platform.sh` - Detects GitHub vs GitLab
-- `detect_project_domain.sh` - Detects project domain for Lens B reviewer selection
+- `detect_project_domain.sh` - Detects project domain for Lens B reviewer selection; reports
+  `ambiguous:<a>,<b>` when a repo matches more than one
 
 ### agents/
 Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each with its own

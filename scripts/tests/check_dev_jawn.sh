@@ -145,6 +145,107 @@ else
     bad "CR /submit is not at effort: low"
 fi
 
+# --- Issue #53: domain gate is enrichment, not a blocker ---
+# Reverting the SKILL.md or detector change flips one of these to FAIL.
+
+DETECT="$SKILLS/submit/scripts/detect_project_domain.sh"
+
+# AC1 — an unknown domain continues the committee instead of stopping it.
+if grep -Eq 'unknown.*\bSTOP\b' "$SUBMIT"; then
+    bad "DOMAIN unknown still routes to STOP in /submit"
+else
+    pass "DOMAIN unknown does not stop submit"
+fi
+if grep -Eiq 'unknown.*(continue|acknowledg)' "$SUBMIT"; then
+    pass "DOMAIN unknown routes to acknowledge-and-continue"
+else
+    bad "DOMAIN unknown has no acknowledge-and-continue route"
+fi
+# AC1 also forbids prompting the user. "continue" alone is satisfiable by
+# "ask which reviewer before you continue", which reinstates the prompt.
+if grep -Eiq 'unknown.*(ask the user|ask which|which reviewer)' "$SUBMIT"; then
+    bad "DOMAIN unknown still prompts the user to pick a reviewer"
+else
+    pass "DOMAIN unknown does not prompt for a reviewer"
+fi
+
+# AC2 — the error handling table carries the collision case, not an unknown stop.
+if grep -Eq '^\|.*unknown.*\bSTOP\b' "$SUBMIT"; then
+    bad "DOMAIN error table still stops on unknown"
+else
+    pass "DOMAIN error table has no unknown stop"
+fi
+if grep -Eiq '^\|.*ambiguous.*STOP' "$SUBMIT"; then
+    pass "DOMAIN error table stops on ambiguous"
+else
+    bad "DOMAIN error table missing ambiguous stop row"
+fi
+
+# AC3 — the three real reviewer routes survive the change.
+for pair in "swift:swift-swiftui-reviewer" "python:python-code-reviewer" "cpp-qt:cpp-qt-reviewer"; do
+    dom="${pair%%:*}"; rev="${pair##*:}"
+    if grep -Eq "\`$dom\`.*$rev" "$SUBMIT"; then
+        pass "DOMAIN route intact: $dom -> $rev"
+    else
+        bad "DOMAIN route broken: $dom does not map to $rev"
+    fi
+done
+
+# AC4 — the detector reports a collision instead of resolving by precedence.
+if [ -f "$DETECT" ]; then
+    D_TMP="$(mktemp -d)"
+    : > "$D_TMP/Package.swift"
+    : > "$D_TMP/pyproject.toml"
+    d_out="$(bash "$DETECT" "$D_TMP" 2>/dev/null)"
+    rm -rf "$D_TMP"
+    if printf '%s' "$d_out" | grep -q '^ambiguous:' \
+       && printf '%s' "$d_out" | grep -q 'swift' \
+       && printf '%s' "$d_out" | grep -q 'python'; then
+        pass "DOMAIN detector reports collision (got: $d_out)"
+    else
+        bad "DOMAIN detector did not report collision (got: $d_out)"
+    fi
+
+    # Single-domain and no-domain detection must still work.
+    for pair in "Package.swift:swift" "pyproject.toml:python" "app.pro:cpp-qt"; do
+        marker="${pair%%:*}"; want="${pair##*:}"
+        D_TMP="$(mktemp -d)"
+        : > "$D_TMP/$marker"
+        got="$(bash "$DETECT" "$D_TMP" 2>/dev/null)"
+        rm -rf "$D_TMP"
+        if [ "$got" = "$want" ]; then
+            pass "DOMAIN detector single-domain $want"
+        else
+            bad "DOMAIN detector $marker returned '$got', want '$want'"
+        fi
+    done
+    D_TMP="$(mktemp -d)"
+    got="$(bash "$DETECT" "$D_TMP" 2>/dev/null)"
+    rm -rf "$D_TMP"
+    if [ "$got" = "unknown" ]; then
+        pass "DOMAIN detector empty repo is unknown"
+    else
+        bad "DOMAIN detector empty repo returned '$got', want 'unknown'"
+    fi
+else
+    bad "DOMAIN detector script missing: $DETECT"
+fi
+
+# AC5 — ambiguous is the only domain condition that stops a submission.
+if grep -Eq '^- `ambiguous:[^→]*→ *\bSTOP\b' "$SUBMIT"; then
+    pass "DOMAIN stop is reserved for the ambiguous case"
+else
+    bad "DOMAIN ambiguous route does not STOP /submit"
+fi
+# The arrow anchor alone is direction-blind: "ambiguous domains never STOP"
+# matches a bare `.*STOP` pattern. Guard the negation explicitly.
+if grep -Eiq 'ambiguous.*(never|not|no longer|does not).*\bSTOP\b' "$SUBMIT"; then
+    bad "DOMAIN skill states ambiguous does not STOP"
+else
+    pass "DOMAIN ambiguous STOP is not negated"
+fi
+
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
