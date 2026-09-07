@@ -31,9 +31,11 @@ All five ACs are `[manual]` with automatable proxies. Run from
   Evidence: `rg -c` per key returns `#372`=1, `WPD-2606`=1, `#217 AC4b`=1, `#25`=1,
   `#142`=1, `#105`=1, `WPD-2604`=2, `#193`=1. Was 0 for `#372` before the fix; the
   structural `[test:]` example had lost its provenance and it was restored.
-- **AC2 — word count in [3400, 4000].** PASS. `wc -w` = **3,998** (was 4,400). Two words of
-  margin under the ceiling: the next amendment to this file needs a consolidation pass with it,
-  not after it.
+- **AC2 — word count in [3400, 4000].** PASS. `wc -w` = **3,999** (was 4,400). **One word** of margin.
+  The ceiling bound twice during review: once restoring the `passable` leg's explanation, once
+  restoring the `bc4e053` carve-out that this consolidation had destroyed. Both were content
+  the band exists to protect, not bloat. The band needs an explicit re-decision before the next
+  amendment to this file, or it will force the wrong trade.
 - **AC3 — "untagged AC" paragraph sits with the tag bullets.** PASS.
   Evidence: line 110 minus the `[manual]` bullet at line 103 = **7**, threshold ≤ 10.
   Was 27.

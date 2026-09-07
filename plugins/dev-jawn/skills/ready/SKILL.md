@@ -44,13 +44,11 @@ the verdict.
 ### The observation test
 
 R2 and R7 both turn on one question: can the observation actually be **made**, and made
-**twice**? Observable in principle is not observable. Five amendments in five weeks reduced to
-skipping it, so it is stated once here and cited rather than re-argued at each site.
+**twice**? Observable in principle is not observable. Five amendments reduced to skipping it, so it is
+stated once here and cited rather than re-argued at each site.
 
 - **reachable** — something can drive the system into the asserted state. Name the command or
-  gesture; "the state exists" is not an answer. A trigger resting on a platform capability
-  *measured as not working* is not reachable, and filing "make it reachable" as a task bets the
-  cycle on that capability.
+  gesture; "the state exists" is not an answer.
 - **readable** — the channel surfaces at runtime. An identifier in the source proves it was
   typed, not that it reaches the accessibility tree. Confirm against a running screen, not with
   `rg`.
@@ -62,8 +60,9 @@ skipping it, so it is stated once here and cited rather than re-argued at each s
   *difference* is not exempt: "it's a delta, so the drift cancels" is a hypothesis about the
   measurement and needs the same three runs.
 
-When a leg fails the criterion is not observable yet. Assert something that survives it (an
-ordering, a ratio, a within-run comparison), commit the working fallback, or route to `/spec`.
+When a leg fails the criterion is not observable yet. A **readable** failure is usually R3, a
+missing identifier. Otherwise assert something that survives it (an ordering, a ratio, a
+within-run comparison), commit the working fallback, or route to `/spec`.
 
 ### R1 — User stories exist
 
@@ -247,16 +246,20 @@ Procedure:
    test never covered. It passed all four ACs while the feature re-centred the map on the wrong
    (rebind-cell) coordinate in production, caught only by a human flying it.
 7. **Check the trigger is reachable** — the **reachable** leg, run against every asserted state.
-   Siri invocation is not drivable in a simulator; a push path needs a way to fire one; a
-   migration needs the prior version's state installed. If none exists, say what has to be
+   Siri is not drivable in a simulator; a push path needs a way to fire one; a migration
+   needs the prior version's state. If none exists, say what has to be
    built and add it to the issue as an implementation task, flagged as added for testability so
-   the user can object. An existing entry point extended is fine; a test-only backdoor that
-   bypasses the real code path is not, because it passes while the feature is broken.
-   FAIL example, #105: AC1 asserted spacebar plays "with no prior tap" after the gate had
-   measured that focus does not land on the chart at launch. It filed "make the chart auto-hold
-   focus" as an implementation task and committed the no-tap trigger anyway. SwiftUI programmatic
-   focus does not promote a view to first responder without interaction in the simulator. A full
-   implement → verify → retro to learn it; tap-to-focus should have been the committed trigger.
+   the user can object. An existing entry point extended is fine; a test-only backdoor is
+   not, because it passes while the feature is broken.
+
+   One blocker is **not** a plain implementation task: a trigger resting on a platform capability
+   you have *measured as not working*. Filing "make it reachable" bets the cycle on that
+   capability. Spike it now, or commit the working fallback as the trigger and flag the harder
+   bar for follow-up.
+   FAIL example, #105: AC1 asserted spacebar plays "with no prior tap" after the gate had measured
+   that focus does not land on the chart at launch. It filed auto-hold focus as an implementation
+   task and committed the no-tap trigger anyway; SwiftUI focus does not reach first responder
+   without interaction in the simulator. Tap-to-focus should have been committed.
 8. **Check the test can fail, can read, and can pass** — a mutation check plus the **readable**
    and **passable** legs. A test can satisfy step 7 and still fail all three.
 
