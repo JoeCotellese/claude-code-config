@@ -126,11 +126,25 @@ done
 # Lens A and Lens C are real agents with their own effort, namespaced for the plugin.
 for a in acceptance-criteria-reviewer test-adequacy-reviewer; do
     if [ -f "$AGENTS/$a.md" ]; then pass "CR agent present: $a"; else bad "CR agent missing: $a"; fi
-    if grep -q "^effort: high" "$AGENTS/$a.md" 2>/dev/null; then
-        pass "CR agent $a carries its own effort"
+    # `effort:` is a SKILL key. On an agent it is not merely ignored: it kept both
+    # of these from registering at all (#56). Depth comes from `model:` instead.
+    if grep -q "^effort:" "$AGENTS/$a.md" 2>/dev/null; then
+        bad "AGENT $a still carries the invalid effort key"
     else
-        bad "CR agent $a does not set effort: high"
+        pass "AGENT $a has no effort key"
     fi
+    if grep -Eq "^model: *[a-z]" "$AGENTS/$a.md" 2>/dev/null; then
+        pass "AGENT $a pins a model"
+    else
+        bad "AGENT $a does not pin a model; committee depth follows the session"
+    fi
+    for k in name description tools; do
+        if grep -q "^$k:" "$AGENTS/$a.md" 2>/dev/null; then
+            pass "AGENT $a declares $k"
+        else
+            bad "AGENT $a is missing required key $k"
+        fi
+    done
     if grep -q "subagent_type=\"dev-jawn:$a\"" "$SUBMIT"; then
         pass "CR /submit calls $a by its namespaced type"
     else
@@ -243,6 +257,45 @@ if grep -Eiq 'ambiguous.*(never|not|no longer|does not).*\bSTOP\b' "$SUBMIT"; th
     bad "DOMAIN skill states ambiguous does not STOP"
 else
     pass "DOMAIN ambiguous STOP is not negated"
+fi
+
+
+# --- Issue #55: the generic sweep must review a real diff ---
+# /submit runs the committee at Step 3, before the Step 5 push. With no target
+# /code-review resolves to the upstream diff, which on an unpushed branch is empty.
+
+# AC1 — the invocation names an explicit target.
+if grep -Eq 'skill="code-review".*args=.*(BRANCH|branch)' "$SUBMIT"; then
+    pass "CR submit passes an explicit target to code-review"
+else
+    bad "CR submit passes no target to code-review (reviews an empty diff)"
+fi
+
+# AC3 — the ordering constraint is written down so a future edit cannot lose it.
+if grep -Eiq 'committee runs before the push|before the Step 5 push' "$SUBMIT"; then
+    pass "CR submit documents pre-push ordering"
+else
+    bad "CR submit does not document the pre-push ordering constraint"
+fi
+
+# AC4 — a sweep that reviewed nothing is blocking, not a pass.
+if grep -Eiq '(empty diff|reviewed nothing|no diff to review).*blocking|blocking.*(empty diff|reviewed nothing|no diff to review)' "$SUBMIT"; then
+    pass "CR empty review is treated as blocking in the prose"
+else
+    bad "CR empty review is not named as blocking"
+fi
+if grep -Eq '^\|.*(empty|no diff|reviewed nothing).*\bSTOP\b' "$SUBMIT"; then
+    pass "CR error table stops on an empty review"
+else
+    bad "CR error table has no row for an empty review"
+fi
+
+
+# AC4 (#56) — the skill must not still claim the agents carry their own effort.
+if grep -q "each with its own" "$SUBMIT" && grep -q "effort: high" "$SUBMIT"; then
+    bad "AGENT /submit still claims the lenses carry effort: high"
+else
+    pass "AGENT /submit does not claim the lenses carry their own effort"
 fi
 
 

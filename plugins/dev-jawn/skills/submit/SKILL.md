@@ -88,11 +88,23 @@ turn on:
 
 #### The generic sweep — always
 
-Invoke the built-in `code-review` skill against the branch diff at the level the tier names:
+Invoke the built-in `code-review` skill against the branch diff at the level the tier names.
+**Name the branch explicitly.** With no target, `/code-review` resolves to the working tree
+and the upstream diff, and this committee runs before the Step 5 push, so on an unpushed
+branch that resolves to nothing and the sweep returns a silent pass on an empty input:
+
+```bash
+BRANCH=$(git branch --show-current)
+```
 
 ```
-Skill tool: skill="code-review", args="<low|medium|high>"
+Skill tool: skill="code-review", args="<low|medium|high> $BRANCH"
 ```
+
+**An empty diff is a blocking condition.** If `/code-review` reports no diff to review, or
+that the working tree matches upstream, do not record it as a clean sweep. A review that
+inspected nothing is not a review that found nothing, and the difference is invisible in the
+PR body once it has been written down as a pass. Fix the target and re-run.
 
 It owns generic correctness bugs and reuse/simplification/efficiency cleanups. Do not
 hand-write a bug-hunting lens alongside it — that is the job it already does, better.
@@ -341,6 +353,7 @@ You're now on main with latest changes.
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
 | Blocking committee finding | STOP - fix, then re-run that lens only |
 | `/code-review` correctness finding | STOP - fix, then re-run `/code-review` |
+| `/code-review` reports an empty diff or no diff to review | STOP - the sweep reviewed nothing; fix the target and re-run |
 | Domain is `ambiguous:...` at effort/M or L | STOP - ask which reviewer the diff wants |
 | Domain is `unknown` at effort/M or L | Note Lens B skipped, continue the committee |
 | Blocking finding the DoR should have caught | Fix it, then `/retro` the gate |
@@ -353,8 +366,11 @@ You're now on main with latest changes.
   `ambiguous:<a>,<b>` when a repo matches more than one
 
 ### agents/
-Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each with its own
-`effort: high`, so committee depth does not follow this skill's orchestration effort.
+Lens A and Lens C ship as agent definitions in `plugins/dev-jawn/agents/`, each pinning
+`model: opus`, so review quality does not follow whatever `/model` the session happens to be
+set to. There is no per-agent effort key: `effort:` is skill-only, and putting it on an agent
+stops that agent registering at all (#56). The model pin is the only lever holding committee
+depth up, which is why it is a dependency here and not an optimization.
 
 ### references/
 - `pr_template.md` - PR format examples
