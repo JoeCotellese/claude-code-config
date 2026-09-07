@@ -163,7 +163,7 @@ together, the Definition of Ready, and the Definition of Done.
 | Skill | Description |
 |-------|-------------|
 | **spec** | Specification phase — product, UX, and architecture into a filed issue. Also repairs an issue that failed the Definition of Ready |
-| **ready** | Definition of Ready gate — audits seven criteria, repairs what it can, derives the acceptance test, prints `DOR VERDICT` |
+| **ready** | Definition of Ready gate — audits eight criteria, repairs what it can, derives the acceptance test, prints `DOR VERDICT` |
 | **ui-design** | Builds the real view as a prototype, drives it, and runs a fresh-context design committee. UI features only |
 | **implement** | TDD implementation under a goal whose exit condition is the Definition of Done |
 | **verify** | Definition of Done runner — unit suite plus the acceptance test, reconciles every criterion to its channel, prints `DOD VERDICT` |

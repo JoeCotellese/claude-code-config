@@ -64,7 +64,8 @@ Extract, from the sections `/ready` wrote:
 - The path to the committed acceptance test.
 - The identifier contract, so a missing `accessibilityIdentifier` is reported as the contract
   violation it is rather than as a mysterious element-not-found.
-- The `[manual]` criteria and their automatable proxies.
+- The `[manual]` criteria and their automatable proxies. `[manual: structural]` is a qualifier
+  on that channel, not a fourth one: reconcile it as `[manual]`.
 
 If the issue has no channel tags or no acceptance test, the issue never passed `/ready`. Stop
 and say so: `route=/ready`. Do not invent a Definition of Done at the end of the cycle, which

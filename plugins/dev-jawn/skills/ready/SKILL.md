@@ -1,7 +1,7 @@
 ---
 name: ready
 effort: high
-description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when the user says 'is this ready', 'DoR check', 'audit this issue', 'can we implement #N'. Audits an issue against seven readiness criteria, repairs what it can (rewrites vague acceptance criteria, names accessibility identifiers, derives the acceptance test), and routes what it cannot back to /spec or /ui-design. Prints a fixed DOR VERDICT line so a /goal evaluator can judge the outcome."
+description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when the user says 'is this ready', 'DoR check', 'audit this issue', 'can we implement #N'. Audits an issue against eight readiness criteria, repairs what it can (rewrites vague acceptance criteria, names accessibility identifiers, derives the acceptance test), and routes what it cannot back to /spec or /ui-design. Prints a fixed DOR VERDICT line so a /goal evaluator can judge the outcome."
 ---
 
 # Definition of Ready Gate
@@ -41,6 +41,29 @@ blocking criteria named. Report the route and stop. Stop after 6 turns.
 Audit each one (R1 through R8). A criterion is PASS, FAIL, or N/A. Record the evidence, not just
 the verdict.
 
+### The observation test
+
+R2 and R7 both turn on one question: can the observation actually be **made**, and made
+**twice**? Observable in principle is not observable. Five amendments reduced to skipping it, so it is
+stated once here and cited rather than re-argued at each site.
+
+- **reachable** — something can drive the system into the asserted state. Name the command or
+  gesture; "the state exists" is not an answer.
+- **readable** — the channel surfaces at runtime. An identifier in the source proves it was
+  typed, not that it reaches the accessibility tree. Confirm against a running screen, not with
+  `rg`.
+- **passable** — a synthetic positive satisfies every threshold AT ONCE. A guard calibrated
+  only against a negative may measure the same quantity as the metric it protects, from the
+  other side.
+- **repeatable** — the measurement's spread on *unchanged code* is narrower than the threshold.
+  Measure at least three times in conditions that differ, cold and warm, quiet and loaded. A
+  *difference* is not exempt: "it's a delta, so the drift cancels" is a hypothesis about the
+  measurement and needs the same three runs.
+
+When a leg fails the criterion is not observable yet. A **readable** failure is usually R3, a
+missing identifier. Otherwise assert something that survives it (an ordering, a ratio, a
+within-run comparison), commit the working fallback, or route to `/spec`.
+
 ### R1 — User stories exist
 
 At least one story in role/action/benefit form, each carrying acceptance criteria.
@@ -67,75 +90,55 @@ enough: an AC about internal behavior can be perfectly precise and still have no
 it. Each AC carries one of three tags:
 
 - **`[ui]`** — asserted by the AXe acceptance test through an accessibility identifier.
-- **`[test: <name>]`** — asserted by a named unit or integration test. Use this for behavior
-  with no UI surface: a migration running exactly once, a write path touching only one record,
-  an attribute set having the right shape. Before tagging `[test:]`, confirm a test can actually
-  reach the behavior through the codebase's real seams. A property that is only structurally
-  true — "store A holds no reference to store B", an invariant true by construction — or that
-  sits behind a dependency the project can't mock (an un-injectable `db` handle, a live
-  listener) is **not** `[test:]`; tag it `[manual: structural]` with an automatable proxy. FAIL
-  example — an AC tagged `[test: sharedRecipesIsolatedFromPersonalStore]` where "the shared
-  store never writes to the personal store" is guaranteed by there being no reference between
-  the two stores: no unit test can drive it, so the proxy (seed the shared store, assert the
-  recipe never appears in the personal dict) belongs under `[manual: structural]`.
-- **`[manual]`** — verified by a human, with the reason automation cannot. Allowed, but an AC
-  tagged `[manual]` must be paired with an automatable proxy that catches regressions. "Reads
-  naturally under VoiceOver" is genuinely manual; "`contentDescription` contains no newlines
-  and is under two sentences" is the proxy that guards it between manual checks.
-
-**A `[manual]` AC whose evidence is produced by automation gets R7's reachability check too.**
-The tag says a human reads the result; it does not exempt the machinery that generates it.
-Naming a harness is not the same as confirming the harness can reach the states being asked
-for, and `[manual]` criteria bypass R7 by design because they never enter the AXe file. So when
-a `[manual]` AC says "screenshots of X, automated via `<harness>`", walk step 7 of R7 against
-every state it names, and state the per-run cost.
-
-FAIL example, WPD-2606 AC5: "Screenshots of all 11 Commercial screens across four device
-classes, automated via the AXe harness." It read as ready — the screens were enumerated, the
-harness existed, the devices were installed. Three of the states it named were not reachable:
-one screen appears only until the device calibrates, and that state is server-side and survives
-an app reinstall; two more sit behind a control carrying no identifier of any kind, so the flow
-reaching them could not be driven deterministically. None of that was visible in the wording,
-all of it would have surfaced from one pass of step 7, and it was the only criterion to fail at
-`/verify` — after the code was written and correct.
-
-Size the evidence against the change, too. A 44-shot four-device sweep is release-qualification
-work; requiring it to accept a 30-point margin change on two screens costs more than the change
-and puts the issue's whole Definition of Done behind the least reliable thing in it. When a
-`[manual]` AC's evidence is disproportionate, cut it to the states the change can actually
-break and file the broad sweep as its own issue.
+- **`[test: <name>]`** — asserted by a named unit or integration test. Use it for behavior with
+  no UI surface: a migration running exactly once, a write path touching only one record, an
+  attribute set having the right shape. Before tagging `[test:]`, apply the **reachable** leg. A
+  property true only by construction, or behind a dependency the project can't mock (an
+  un-injectable `db` handle, a live listener), is not `[test:]`.
+  FAIL example, #372 AC7: `[test: sharedRecipesIsolatedFromPersonalStore]` for "the shared store
+  never writes to the personal store" — true because no reference exists between the stores, so
+  nothing can drive it. It is `[manual: structural]`, proxied by seeding the shared store and
+  asserting the recipe never reaches the personal dict.
+- **`[manual]`** — verified by a human, with the reason automation cannot. Allowed, but it must
+  be paired with an automatable proxy that catches regressions. "Reads naturally under VoiceOver"
+  is genuinely manual; "`contentDescription` contains no newlines and is under two sentences" is
+  the proxy that guards it between manual checks. Qualify it as **`[manual: structural]`** when
+  the reason is a property true by construction rather than a human judgment — the same channel,
+  not a fourth tag, and `/verify` reconciles both as `[manual]`.
 
 An untagged AC fails R2 even when its wording is precise. This is the most common way an issue
 looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
 surfaces at the end when the DoD test is written and covers three of five criteria.
 
-**A numeric threshold must be set from the measurement's own spread, and the AC must say how
-that spread was established.** An AC can be perfectly observable, correctly tagged, and still
-unassertable. If repeated measurement of *unchanged code* moves further than the threshold
-allows, the criterion reports the machine's mood rather than the code's behaviour, and it goes
-red on a re-run with nothing to fix. Measure the quantity at least three times in conditions
-that differ — cold and warm, quiet and loaded — before writing the number. If the spread
-swallows the effect, assert something that survives it (an ordering, a ratio, a within-run
-comparison) or say the quantity is not yet assertable and route to `/spec`.
+**A `[manual]` AC whose evidence is produced by automation still gets the observation test.**
+The tag says a human reads the result; it does not exempt the machinery generating it. Walk
+**reachable** against every state such an AC names, and state the per-run cost.
 
-A *difference* is not automatically safer than an absolute. "It's a delta, so the drift
-cancels" is a hypothesis about the measurement, and it needs the same three runs as any other
-threshold.
+FAIL example, WPD-2606 AC5: "Screenshots of all 11 Commercial screens across four device
+classes, automated via the AXe harness." Screens enumerated, harness built, devices installed,
+and three states unreachable: one lives only until the device calibrates, which is server-side
+and outlives a reinstall, and two sit behind an unidentified control. The only criterion to fail
+at `/verify`, after the code was written and correct.
 
-FAIL example, #217 AC4b: "the gate re-measures one term live and requires its delta within 25%
-of the committed row." Observable, correctly tagged, and calibrated on ONE run that happened to
-come back 1.4% off. The same term then measured 18.1, 25.1, 25.5 and 37.6 ms within ninety
-minutes on unchanged code — a 2x spread on a *difference* — and the criterion failed at 47.5%
-drift. An issue documenting ~30% drift on that very instrument (#219) was already open, filed
-by the same person who then wrote the threshold assuming deltas were immune to it. One
+Size the evidence against the change, too. A 44-shot four-device sweep is release-qualification
+work; demanding it for a 30-point margin change on two screens costs more than the change and
+puts the whole Definition of Done behind the least reliable thing in it. Cut disproportionate
+evidence to the states the change can break, and file the broad sweep as its own issue.
+
+**A numeric threshold gets the repeatable leg**, and the AC must say how the spread was
+established.
+
+FAIL example, #217 AC4b: a live-remeasured term required within 25% of the committed row,
+calibrated on ONE run that came back 1.4% off. The term then measured 18.1, 25.1, 25.5 and
+37.6 ms within ninety minutes on unchanged code, a 2x spread on a *difference*, and failed at
+47.5% drift. An open issue (#219) already documented ~30% drift on that very instrument. One
 observation is not a calibration.
 
 Rewrite each failing AC into observable form. Preserve the intent: "feels fast" usually means
 a stated latency budget, "handled gracefully" usually means a named error state. When you
 cannot tell what the author meant, say so in the verdict and route to `/spec` rather than
-inventing a requirement. Note that this repair leads directly into the trap above: a latency
-budget is the right shape for "feels fast", and it is still a coin flip until its threshold
-clears the spread test.
+inventing a requirement. A latency budget is the right shape for "feels fast" and still fails
+**repeatable** until its threshold clears the spread.
 
 **Repairable in most cases.**
 
@@ -242,69 +245,50 @@ Procedure:
    (#130) lists catalogue stars AS jump destinations, so jumping to one was a reachable state the
    test never covered. It passed all four ACs while the feature re-centred the map on the wrong
    (rebind-cell) coordinate in production, caught only by a human flying it.
-7. **Check the trigger is reachable.** A criterion can be perfectly observable and still have
-   no way to reach the state that exhibits it. Siri invocation is not drivable in a simulator;
-   a push notification path needs a way to fire one; a migration needs a way to install the
-   prior version's state. Before declaring R7 satisfied, name the concrete command or gesture
-   that puts the app into each asserted state. If none exists, say what has to be built to make
-   it reachable and add it to the issue as an implementation task, flagged as added for
-   testability so the user can object. An entry point that already exists and is extended is
-   fine; a test-only backdoor that bypasses the real code path is not, because it passes while
-   the feature is broken.
+7. **Check the trigger is reachable** — the **reachable** leg, run against every asserted state.
+   Siri is not drivable in a simulator; a push path needs a way to fire one; a migration
+   needs the prior version's state. If none exists, say what has to be
+   built and add it to the issue as an implementation task, flagged as added for testability so
+   the user can object. An existing entry point extended is fine; a test-only backdoor is
+   not, because it passes while the feature is broken.
 
-   One reachability blocker is not a plain implementation task: a trigger whose reachability
-   rests on a platform capability you have *measured as not currently working*. Filing "make it
-   reachable" as a task bets the whole cycle on that capability being achievable, and if it is
-   not, the test is guaranteed to fail for a reason unrelated to the feature. When you hit one,
-   spike the capability now, or write the AC provisional with the working fallback as the
-   *committed* trigger and the harder bar flagged for a follow-up.
-   FAIL example, #105: AC1 asserted spacebar plays "with no prior tap", and the gate had already
-   measured on a real build that keyboard focus does not land on the chart at launch. Instead of
-   treating that as this kind of blocker, it filed "make the chart auto-hold focus" as the
-   implementer's task and committed the test with the no-tap trigger. That trigger's reachability
-   depended on SwiftUI programmatic focus promoting a view to first responder with no interaction
-   — which does not hold in the simulator. The cycle spent a full implement → verify → retro to
-   learn what a short focus spike at the gate would have shown, and the fallback (a single
-   tap-to-focus) should have been the committed trigger from the start.
-8. **Check the test can fail, and check it can read.** Step 7 asks whether the app can be put
-   into the asserted state. These are two different questions, and a test can satisfy step 7
-   and still be incapable of doing its job.
+   One blocker is **not** a plain implementation task: a trigger resting on a platform capability
+   you have *measured as not working*. Filing "make it reachable" bets the cycle on that
+   capability. Spike it now, or commit the working fallback as the trigger and flag the harder
+   bar for follow-up.
+   FAIL example, #105: AC1 asserted spacebar plays "with no prior tap" after the gate had measured
+   that focus does not land on the chart at launch. It filed auto-hold focus as an implementation
+   task and committed the no-tap trigger anyway; SwiftUI focus does not reach first responder
+   without interaction in the simulator. Tap-to-focus should have been committed.
+8. **Check the test can fail, can read, and can pass** — a mutation check plus the **readable**
+   and **passable** legs. A test can satisfy step 7 and still fail all three.
 
    *Would every step still pass with the feature deleted?* Name the line you would remove, then
    walk the steps against its absence. If they all still pass, the test guards nothing.
    FAIL example, WPD-2604 AC3: the guard for "tapping the field still focuses it" tapped a field
-   that the new mount-focus had already focused. The entire earlier fix it existed to protect
-   could have been deleted with every step still green. The repair was to move first responder
-   elsewhere first, and confirm the blur, before tapping.
+   the new mount-focus had already focused. The earlier fix it existed to protect could have been
+   deleted with every step green. The repair: move first responder elsewhere and confirm the blur
+   before tapping.
 
-   *Does each assertion's channel actually surface at runtime?* An identifier in the source is
-   proof it was typed, not proof it reaches the accessibility tree. Confirm each one against a
-   running screen — `axe describe-ui` on iOS, the equivalent dump elsewhere — not with `rg`.
-   FAIL example, WPD-2604: the acceptance test addressed the code field by `my-code-input`,
-   which is present on both screens and never appears in the tree, because the library renders
-   it at `opacity: 0.015` and iOS drops near-transparent views. No amount of reading the wording
-   would have shown it; one `describe-ui` against the real screen did.
+   *Does each assertion's channel actually surface at runtime?* Run **readable** on each.
+   FAIL example, WPD-2604: the test addressed the code field by `my-code-input`, present on both
+   screens and never in the tree, because the library renders it at `opacity: 0.015` and iOS drops
+   near-transparent views. No reading of the wording would have shown it; one `describe-ui` did.
 
-   *Can the test PASS at all?* A numeric proxy (a metric with a threshold, standing in for a
-   `[manual]` criterion) fails today by design, so watching it fail proves little. When the
-   proxy has more than one threshold, or a guard that rejects a way of faking the metric,
-   confirm every threshold holds AT ONCE on a synthetic positive — a hand-made mask, a mock
-   render, a doctored capture that has the property the feature will add — not only that the
-   guard rejects the synthetic negative it was built against. A guard calibrated against the
-   negative alone may measure the same quantity as the metric it protects, from the other side.
-   FAIL example, periplus #193: the coast gate wanted a full/half-resolution length ratio above
-   2.30 (fine detail) and a "coast surviving a 1 px opening" above 0.90 as a speckle guard,
-   calibrated only against salt noise (0.86) and the shipped smooth coast (0.95). Every real
-   ragged coast produced at implementation sat on one line, keep ≈ 0.95 − 0.45 × (ratio − 2.13),
-   because the opening shaves exactly the 1 px bumps the ratio counts. The pair was unreachable
-   by construction; ten tuning runs found it. A connected-component filter (drop components
-   under 12 px, then measure) separated the cases the guard could not: salt fell to the shipped
-   ratio, the ragged coast kept its 2.3+.
+   *Can the test PASS at all?* A numeric proxy fails today by design, so watching it fail proves
+   little. Run **passable** on a synthetic positive: a hand-made mask, a mock render, a doctored
+   capture carrying the property the feature will add.
+   FAIL example, periplus #193: the coast gate wanted a resolution ratio above 2.30 and a "coast
+   surviving a 1 px opening" above 0.90, calibrated only against salt noise (0.86) and the shipped
+   smooth coast (0.95). Every real ragged coast landed on one line, keep ≈ 0.95 − 0.45 × (ratio −
+   2.13), because the opening shaves the very 1 px bumps the ratio counts. Unreachable by
+   construction; ten tuning runs found it. A connected-component filter (drop components under
+   12 px, then measure) separated the cases the guard could not.
 
-   All three checks cost one run of the harness against the *current* build (the positive check
-   runs on a doctored artifact). That run is the point. R7's output is a test written before the
-   code exists, and the only thing separating a real failing test from a decorative one is having
-   watched it fail for the right reason — and knowing it can pass for the right one.
+   All three cost one run of the harness against the *current* build, the positive check on a
+   doctored artifact. That run is the point: the only thing separating a real failing test from a
+   decorative one is having watched it fail for the right reason, and knowing it can pass for the
+   right one.
 
 The test will not pass yet. Nothing is built. That is expected and correct: it is the failing
 test at the top of the TDD cycle, one level up.
@@ -379,7 +363,7 @@ or when R1 or R5 fail unrepairably, finish the *audit* on the remaining criteria
 what they would need, but do not write the repairs and do not derive the acceptance test.
 Say so in the verdict.
 
-Audit all seven regardless. A verdict that stops at the first failure tells the user one thing
+Audit all eight regardless. A verdict that stops at the first failure tells the user one thing
 to fix, then wastes another round discovering the next.
 
 ### Step 4 — Branch and commit the artifacts
@@ -426,7 +410,7 @@ silently overwrite something a human wrote: quote what you replaced.
 it can see:
 
 ```
-DOR VERDICT: #347  status=FAIL  passed=5/7  blocking=R4,R6  route=/spec
+DOR VERDICT: #347  status=FAIL  passed=6/8  blocking=R4,R6  route=/spec
 ```
 
 - `status` — PASS only when every applicable criterion passes. N/A counts as passing.
