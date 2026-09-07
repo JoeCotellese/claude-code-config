@@ -246,6 +246,37 @@ else
 fi
 
 
+# --- Issue #55: the generic sweep must review a real diff ---
+# /submit runs the committee at Step 3, before the Step 5 push. With no target
+# /code-review resolves to the upstream diff, which on an unpushed branch is empty.
+
+# AC1 — the invocation names an explicit target.
+if grep -Eq 'skill="code-review".*args=.*(BRANCH|branch)' "$SUBMIT"; then
+    pass "CR submit passes an explicit target to code-review"
+else
+    bad "CR submit passes no target to code-review (reviews an empty diff)"
+fi
+
+# AC3 — the ordering constraint is written down so a future edit cannot lose it.
+if grep -Eiq 'committee runs before the push|before the Step 5 push' "$SUBMIT"; then
+    pass "CR submit documents pre-push ordering"
+else
+    bad "CR submit does not document the pre-push ordering constraint"
+fi
+
+# AC4 — a sweep that reviewed nothing is blocking, not a pass.
+if grep -Eiq '(empty diff|reviewed nothing|no diff to review).*blocking|blocking.*(empty diff|reviewed nothing|no diff to review)' "$SUBMIT"; then
+    pass "CR empty review is treated as blocking in the prose"
+else
+    bad "CR empty review is not named as blocking"
+fi
+if grep -Eq '^\|.*(empty|no diff|reviewed nothing).*\bSTOP\b' "$SUBMIT"; then
+    pass "CR error table stops on an empty review"
+else
+    bad "CR error table has no row for an empty review"
+fi
+
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
