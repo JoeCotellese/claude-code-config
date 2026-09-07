@@ -1,5 +1,5 @@
-# ABOUTME: Definition of Done results for issue #60, the R2/R7 consolidation.
-# ABOUTME: Records each acceptance criterion, its channel, and the evidence that observed it.
+<!-- ABOUTME: Definition of Done results for issue #60, the R2/R7 consolidation. -->
+<!-- ABOUTME: Records each acceptance criterion, the channel that observed it, and the evidence. -->
 
 # DoD results — #60 Consolidate the reachability/repeatability counter-examples
 
@@ -31,14 +31,21 @@ All five ACs are `[manual]` with automatable proxies. Run from
   Evidence: `rg -c` per key returns `#372`=1, `WPD-2606`=1, `#217 AC4b`=1, `#25`=1,
   `#142`=1, `#105`=1, `WPD-2604`=2, `#193`=1. Was 0 for `#372` before the fix; the
   structural `[test:]` example had lost its provenance and it was restored.
-- **AC2 — word count in [3400, 4000].** PASS. `wc -w` = **3,993** (was 4,400).
+- **AC2 — word count in [3400, 4000].** PASS. `wc -w` = **3,998** (was 4,400). Two words of
+  margin under the ceiling: the next amendment to this file needs a consolidation pass with it,
+  not after it.
 - **AC3 — "untagged AC" paragraph sits with the tag bullets.** PASS.
   Evidence: line 110 minus the `[manual]` bullet at line 103 = **7**, threshold ≤ 10.
   Was 27.
 - **AC4 — stated counts agree with their members.** PASS.
-  Evidence: `rg -c 'seven|/7'` = **0** (was 3: frontmatter, "Audit all seven regardless",
-  and `passed=5/7`). Frontmatter now reads "eight readiness criteria"; the verdict example
-  reads `passed=6/8`.
+  Evidence in `ready/SKILL.md`: `rg -c 'seven|/7'` = **0** (was 3: frontmatter, "Audit all
+  seven regardless", and `passed=5/7`). Frontmatter now reads "eight readiness criteria"; the
+  verdict example reads `passed=6/8`.
+  The `/code-review` sweep flagged that this proxy was scoped to one directory while the
+  criterion is about agreement, so two stale counts survived outside it: `WORKFLOW.md:244`
+  (`passed=7/7`) and `README.md:166` ("audits seven criteria"), both pre-existing on `main` and
+  both made contradictory by this change. Fixed, and the evidence widened: repo-wide
+  `rg 'seven criteria|passed=7/7|all seven'` returns **0 files**.
 - **AC5 — R2 and R7 read with no two blocks repeating each other.** PASS.
   Channel: human judgment, recorded by Joe Cotellese at this run. The four principle
   passages (442 words across `:86-91`, `:112-124`, `:255-260`, `:288-294`) collapsed into

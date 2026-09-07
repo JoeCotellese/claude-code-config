@@ -241,7 +241,7 @@ acceptance test, creates the feature branch, and commits the test.
 Prints a fixed verdict line the goal evaluator reads:
 
 ```
-DOR VERDICT: #347  status=PASS  passed=7/7  blocking=none  route=/ui-design
+DOR VERDICT: #347  status=PASS  passed=8/8  blocking=none  route=/ui-design
 ```
 
 Routes: `/spec` when the problem is scope or missing requirements, `/ui-design` when only the

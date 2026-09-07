@@ -43,9 +43,9 @@ the verdict.
 
 ### The observation test
 
-Before any criterion passes, confirm the observation can be **made**, and made **twice**.
-Observable in principle is not observable. Five amendments in five weeks all reduced to
-skipping this, so it is stated once and cited from R2 and R7 rather than re-argued at each site.
+R2 and R7 both turn on one question: can the observation actually be **made**, and made
+**twice**? Observable in principle is not observable. Five amendments in five weeks reduced to
+skipping it, so it is stated once here and cited rather than re-argued at each site.
 
 - **reachable** — something can drive the system into the asserted state. Name the command or
   gesture; "the state exists" is not an answer. A trigger resting on a platform capability
@@ -54,16 +54,16 @@ skipping this, so it is stated once and cited from R2 and R7 rather than re-argu
 - **readable** — the channel surfaces at runtime. An identifier in the source proves it was
   typed, not that it reaches the accessibility tree. Confirm against a running screen, not with
   `rg`.
-- **passable** — a synthetic positive satisfies every threshold AT ONCE. Watching a guard
-  reject a negative says nothing about whether any real input can satisfy all of them.
+- **passable** — a synthetic positive satisfies every threshold AT ONCE. A guard calibrated
+  only against a negative may measure the same quantity as the metric it protects, from the
+  other side.
 - **repeatable** — the measurement's spread on *unchanged code* is narrower than the threshold.
   Measure at least three times in conditions that differ, cold and warm, quiet and loaded. A
   *difference* is not exempt: "it's a delta, so the drift cancels" is a hypothesis about the
   measurement and needs the same three runs.
 
 When a leg fails the criterion is not observable yet. Assert something that survives it (an
-ordering, a ratio, a within-run comparison), commit the working fallback and flag the harder
-bar, or route to `/spec`.
+ordering, a ratio, a within-run comparison), commit the working fallback, or route to `/spec`.
 
 ### R1 — User stories exist
 
@@ -257,8 +257,8 @@ Procedure:
    focus" as an implementation task and committed the no-tap trigger anyway. SwiftUI programmatic
    focus does not promote a view to first responder without interaction in the simulator. A full
    implement → verify → retro to learn it; tap-to-focus should have been the committed trigger.
-8. **Check the test can read and can pass** — the **readable** and **passable** legs. A test can
-   satisfy step 7 and still fail both.
+8. **Check the test can fail, can read, and can pass** — a mutation check plus the **readable**
+   and **passable** legs. A test can satisfy step 7 and still fail all three.
 
    *Would every step still pass with the feature deleted?* Name the line you would remove, then
    walk the steps against its absence. If they all still pass, the test guards nothing.
