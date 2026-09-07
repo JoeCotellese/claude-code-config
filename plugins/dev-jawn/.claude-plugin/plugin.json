@@ -3,7 +3,7 @@
   "name": "dev-jawn",
   "displayName": "dev-jawn workflow",
   "description": "Joe's spec/ready/ui-design/implement/verify/submit/retro development loop, plus create-goal. Toggle it off to swap in a different workflow. Ships the workflow policy as a UserPromptSubmit hook so the rules leave context when the plugin is disabled.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": {
     "name": "Joe Cotellese",
     "email": "joe@cotellese.net"
