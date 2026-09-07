@@ -156,7 +156,8 @@ pass/fail line per criterion.
 - **R7 DoD test exists** — an acceptance test in the project's own harness whose
   `success_criteria` map one-to-one onto the acceptance criteria. On Apple platforms that is
   an AXe YAML under `scripts/uitests/`; on web it is the named Playwright flow. Non-UI work
-  names the unit or integration tests instead.
+  names the unit or integration tests instead. Config repos, markdown and docs work, and
+  one-off scripts are exempt under the testing standard in `CLAUDE.md` and mark R7 N/A.
 
 - **R8 Gate is set** — exactly one `gate:` label is present (`gate:machine`, `gate:human`, or
   `gate:mixed`), naming who can close the issue and whether an unattended loop may touch it.
