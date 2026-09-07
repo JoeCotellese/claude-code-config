@@ -172,6 +172,15 @@ the R2 acceptance criteria. On Apple platforms that is an AXe YAML under `script
 on web it is a named Playwright flow. The procedure below is written for the AXe case, which
 is the one with the most moving parts; the rules hold for either harness.
 
+**Scope.** R7 applies to shipping application code. Config repos, markdown and docs work, and
+one-off scripts are exempt under the testing standard in `CLAUDE.md`. When the exemption
+applies, mark R7 N/A and name which exemption you used. Check this before starting the
+procedure, not after: the exemption turns on the repo and the artifact, never on difficulty.
+
+FAIL example, over-application: #25 specified a 192-line markdown skill in the config repo.
+R7 ran without checking the exemption and produced a headless `claude -p` harness to drive a
+documentation file. The repo class made R7 N/A before difficulty ever entered the question.
+
 **Derive it here, before any code exists.** That ordering is the point: it forces the ACs to
 be testable and it gives `/implement` a target that was not written by the person trying to
 pass it.
@@ -388,7 +397,9 @@ and no issue amendment, the gate did not do its job.
   ranked by relevance" does not become "search returns results." Say it needs a definition of
   relevance and route out.
 - **Do not skip R7 because the feature is hard to test.** If the acceptance criteria cannot be
-  expressed as a test, they are not acceptance criteria, and the issue is not ready.
+  expressed as a test, they are not acceptance criteria, and the issue is not ready. Difficulty
+  is not an exemption. Repo class is: read R7's Scope note before applying R7 in a config,
+  docs, or scripts repo.
 
 ## Dependencies
 
