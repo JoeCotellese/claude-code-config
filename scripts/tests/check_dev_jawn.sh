@@ -299,6 +299,26 @@ else
 fi
 
 
+# --- Issue #63: every phase skill stays under its declared word ceiling ---
+# The ceiling is declared as `max_words:` in the skill's own frontmatter. The
+# measure is `wc -w` over the WHOLE file, frontmatter included; /retro's intake
+# budget rule and this assertion must agree on that or the ceiling means nothing.
+for s in $PHASE_SKILLS; do
+    f="$SKILLS/$s/SKILL.md"
+    [ -f "$f" ] || continue
+    declared=$(awk 'NR==1 && $0!="---"{exit} NR>1 && $0=="---"{exit} /^max_words:[[:space:]]*[0-9]+/{print $2}' "$f")
+    if [ -z "$declared" ]; then
+        bad "BUDGET $s declares no max_words in frontmatter"
+        continue
+    fi
+    actual=$(wc -w < "$f" | tr -d ' ')
+    if [ "$actual" -gt "$declared" ]; then
+        bad "BUDGET $s is $actual words, over its declared ceiling of $declared"
+    else
+        pass "BUDGET $s $actual/$declared words"
+    fi
+done
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."

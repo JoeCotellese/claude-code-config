@@ -1,5 +1,6 @@
 ---
 name: create-goal
+max_words: 1500
 effort: medium
 description: "Author a `/goal` agentic loop. Invoke with `/create-goal <what you want to run>` or when the user says 'create a goal', 'write a loop', 'make this run unattended', 'how do I loop this', 'what should my exit condition be'. Routes away first if the job actually wants /loop, a fresh-context Agent, or a skill. Then drives the exit condition to something a tool-less evaluator can judge, picks a cap, and prints a paste-ready /goal plus a loop card. Writes nothing to disk."
 ---

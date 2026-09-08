@@ -1,5 +1,6 @@
 ---
 name: retro
+max_words: 1900
 effort: medium
 description: "Loop repair after a failure. Invoke with `/retro` or when the user says 'why did that get through', 'retro this', 'fix the gate', 'that should have been caught'. Runs after a DoR failure, a blocking committee finding, or a failed Definition of Done: names the gate that should have caught it, amends the upstream skill or standard so it would, and records the entry. Without this the development loop is just a longer straight line."
 ---
@@ -105,32 +106,56 @@ Prefer, in order:
 Never delete or weaken a criterion to resolve a retro. If a criterion seems to be causing more
 friction than it catches, that is a conversation with the user, not an edit.
 
-### Step 5 — Land the amendment in the right repository
+### Step 5 — Decide the amendment's scope, then send it there
 
-The phase skills ship from the config repo as the dev-jawn plugin
-(`plugins/dev-jawn/skills/`), so **editing the skill edits the config repo**. That means the
-normal git rules apply and the amendment does not go on `main`.
+Two destinations, and the question that picks between them is the one Step 4's rule already
+asks: **would this failure recur on a different issue, in a different project?**
 
-```bash
-cd ~/git/claude-code-config
-git checkout -b chore/retro-<short-slug>
-# edit the skill, docs, or template
-```
+- **This project only** → write the amendment to `.dev-jawn/<skill>.md` in the repo you are
+  working in. This is the default when you are unsure.
+- **Anywhere** → file it as an issue against the repository that ships the plugin.
 
-Commit with the failure that motivated it in the body, so the next reader knows what the
-wording is defending against:
+**Never edit the plugin source.** Not the installed copy under
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, which the next version bump
+replaces wholesale and silently destroys anything written there. And not a local clone either,
+even when you are the maintainer and it is sitting right there. The maintainer path and the
+end-user path being the same path is the point.
 
-```
-Chore: Tighten <criterion> after #<N> escaped it
+#### Resolving the upstream repository
 
-<Issue #N passed R2 with "search returns relevant results", which is
-observable-sounding and untestable. Added it as a counter-example.>
-```
+`gh issue create --repo` needs an `owner/repo`, and no single file carries one. Three steps:
 
-Then `/submit` in the config repo. The amendment goes through review like any other change.
+1. The skill file's own path names its plugin: `plugins/<plugin>/skills/<skill>/SKILL.md`.
+2. `~/.claude/plugins/installed_plugins.json` keys plugins as `<plugin>@<marketplace>`. Read
+   the marketplace name out of that key.
+3. Look the marketplace up in `~/.claude/plugins/known_marketplaces.json` and derive
+   `owner/repo` from its `.source.source`:
+   - `github` — `.source.repo` is already `owner/repo`. Use it.
+   - `git` — parse `owner/repo` out of `.source.url`.
+   - `directory` — `git -C <.source.path> remote get-url origin`, then parse.
 
-**The project repo and the config repo are separate submissions.** Do not mix the fix for the
-issue and the fix for the gate into one branch.
+Then `gh issue create --repo <owner/repo>`, with the failure quoted, the gate named, and the
+amendment written out as the proposed wording.
+
+**If any step fails to resolve** — a marketplace not in the file, a `directory` source with no
+origin remote, no `gh` on the machine — do not guess and do not fall back to editing. Print
+the amendment in the transcript and end the retro with `dest=unresolved`, so the lesson is at
+least visible even though it could not be filed.
+
+#### The intake budget
+
+Each phase skill declares a `max_words:` ceiling in its frontmatter, and
+`scripts/tests/check_dev_jawn.sh` asserts it, so the limit is a test rather than an intention.
+An amendment that would push a skill past its ceiling does not simply land. It must **replace**
+a weaker counter-example on the same criterion, stay **local** only, or trigger a
+**consolidation** of that section first. State which of the three you chose in the issue you
+file.
+
+#### Local amendments are inert for now
+
+Nothing reads `.dev-jawn/` yet; issue **#64** is what gives the gates that ability. Until it
+lands, a repo-local amendment is a record and not a constraint, and the retro must say so
+rather than implying the gate now catches it.
 
 ### Step 6 — Record the entry
 
@@ -143,20 +168,24 @@ one-offs and including "no gate could have caught it".
 On its own line, so it is greppable and a goal evaluator can read it:
 
 ```
-RETRO: #347  gate=R2  cause=weak-criterion  amendment=skills/ready/SKILL.md  status=proposed
+RETRO: #347  gate=R2   cause=weak-criterion  scope=local     dest=.dev-jawn/ready.md
+RETRO: #347  gate=R2   cause=weak-criterion  scope=upstream  dest=https://github.com/o/r/issues/12
+RETRO: #347  gate=none cause=one-off         scope=none      dest=LEARNINGS.md
 ```
 
 - `gate` — the criterion or phase that should have caught it, or `none`.
 - `cause` — one of `missing-criterion`, `weak-criterion`, `skipped-phase`,
   `undocumented-standard`, `one-off`.
-- `amendment` — the file changed, or `none` for a one-off.
-- `status` — `proposed` until the config-repo PR merges, then `landed`.
+- `scope` — `local`, `upstream`, or `none`.
+- `dest` — the repo-local file, the filed issue's URL, `LEARNINGS.md` for a one-off, or
+  `unresolved` when the upstream repository could not be resolved.
 
 ## Success Condition
 
 The failure is quoted, a gate is named or explicitly ruled out, a `LEARNINGS.md` entry exists,
-and either an amendment is open for review in the config repo or the retro is recorded as a
-one-off. A retro that produces analysis and no artifact did not happen.
+and the amendment reached its destination: a repo-local file, an issue filed upstream, or a
+transcript entry when neither applied. A retro that produces analysis and no artifact did not
+happen.
 
 ## What this skill must not do
 
@@ -172,7 +201,7 @@ one-off. A retro that produces analysis and no artifact did not happen.
 
 - `learnings` skill for the `LEARNINGS.md` format
 - `glab` or `gh` when pulling the verdict from an issue
-- Write access to the config repo at `~/git/claude-code-config`
+- `gh` for filing an upstream issue, and read access to `~/.claude/plugins/*.json`
 
 ## Next Phase
 

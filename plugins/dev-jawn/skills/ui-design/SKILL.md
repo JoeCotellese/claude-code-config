@@ -1,5 +1,6 @@
 ---
 name: ui-design
+max_words: 1500
 effort: high
 description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target template rendered with fake data — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
 ---

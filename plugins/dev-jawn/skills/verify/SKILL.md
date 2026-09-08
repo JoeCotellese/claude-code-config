@@ -1,5 +1,6 @@
 ---
 name: verify
+max_words: 1700
 effort: medium
 description: "Definition of Done runner. Invoke with `/verify #<issue>` or when the user says 'run the DoD', 'is this done', 'check acceptance', 'did it pass'. Runs the unit suite and the acceptance test authored at /ready against the built app, reconciles every acceptance criterion to the channel that observes it, writes a results file, and prints a fixed DOD VERDICT line so a /goal evaluator can judge the outcome. Runs inside /implement's goal loop or standalone."
 ---
