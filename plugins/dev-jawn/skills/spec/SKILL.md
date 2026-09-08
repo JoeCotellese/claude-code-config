@@ -1,5 +1,6 @@
 ---
 name: spec
+max_words: 2950
 effort: xhigh
 description: "Feature specification phase. Invoke with `/spec <feature description>` to create an issue, or `/spec #<issue>` to repair one that failed the /ready Definition of Ready gate. Also triggers on 'new feature', 'plan feature', 'create spec', 'split this issue', 'fix issue #N'. Orchestrates product management, UX design, and architecture planning. Hands off to /ready."
 ---

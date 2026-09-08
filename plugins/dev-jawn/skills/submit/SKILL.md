@@ -1,5 +1,6 @@
 ---
 name: submit
+max_words: 2150
 effort: low
 description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs /code-review plus a fresh-context lens committee sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
 ---

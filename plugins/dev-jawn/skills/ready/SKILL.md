@@ -1,5 +1,6 @@
 ---
 name: ready
+max_words: 4200
 effort: high
 description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when the user says 'is this ready', 'DoR check', 'audit this issue', 'can we implement #N'. Audits an issue against eight readiness criteria, repairs what it can (rewrites vague acceptance criteria, names accessibility identifiers, derives the acceptance test), and routes what it cannot back to /spec or /ui-design. Prints a fixed DOR VERDICT line so a /goal evaluator can judge the outcome."
 ---

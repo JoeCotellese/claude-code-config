@@ -1,5 +1,6 @@
 ---
 name: implement
+max_words: 1750
 effort: xhigh
 description: "Feature implementation phase. Invoke with `/implement #<issue>` or when user says 'implement', 'work on issue #', 'start coding'. Clears context, fetches issue, enters plan mode, then implements with TDD under a goal whose exit condition is the Definition of Done. Runs /verify to close the loop and gates to /submit when it passes."
 ---
