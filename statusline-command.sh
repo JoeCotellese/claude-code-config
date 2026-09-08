@@ -32,7 +32,7 @@ if [ "$usage" != "null" ]; then
     size=$(echo "$input" | jq '.context_window.context_window_size')
     if [ "$size" != "0" ] && [ "$size" != "null" ]; then
         pct=$((current * 100 / size))
-        context_info=" $(printf '\033[33m%d%%\033[0m' "$pct")"
+        context_info="$(printf ' (\033[33m%d%%\033[0m)' "$pct")"
     fi
 fi
 
@@ -41,6 +41,17 @@ model=$(echo "$input" | jq -r '.model.display_name // empty')
 model_info=""
 [ -n "$model" ] && model_info=" $(printf '\033[36m%s\033[0m' "$model")"
 
+# Reasoning effort level (payload if present, else last assistant turn in the transcript)
+effort=$(echo "$input" | jq -r '[.effort, .model.effort, .reasoning_effort] | map(select(. != null)) | map(if type == "object" then (.level // .effort // empty) else . end) | first // empty')
+if [ -z "$effort" ]; then
+    transcript=$(echo "$input" | jq -r '.transcript_path // empty')
+    if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+        effort=$(tail -n 200 "$transcript" | jq -r 'select(.effort != null) | .effort | if type == "object" then (.level // empty) else . end' 2>/dev/null | tail -1)
+    fi
+fi
+effort_info=""
+[ -n "$effort" ] && effort_info=" level: $(printf '\033[34m%s\033[0m' "$effort")"
+
 # Build the status line with theme-aware ANSI colors (resolve through the terminal palette)
-printf '\033[32m%s\033[0m%s%s%s' \
-    "$dir" "$git_info" "$context_info" "$model_info"
+printf '\033[32m%s\033[0m%s%s%s%s' \
+    "$dir" "$git_info" "$model_info" "$context_info" "$effort_info"
