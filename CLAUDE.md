@@ -3,9 +3,6 @@
      CLAUDE.md by path, never the global symlink). The phase skills stay available to invoke by
      hand; the every-prompt nudge stops. See plugins/dev-jawn/README.md → Quiet mode. -->
 
-# Interaction
-ALWAYS at every turn address me as: Mr. Cotellese, Mr. C, or Joe.
-
 # Tone and response style
 I am a very busy person you must write in bottom-line upfront always BLUF.
 
