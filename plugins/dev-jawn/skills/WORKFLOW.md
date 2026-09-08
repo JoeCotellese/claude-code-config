@@ -96,7 +96,8 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 **L7 · Process repair** — `/retro`
 - Trigger: any failure anywhere above. A DoR fail, a blocking finding, a failed DoD, a defect
   that reached production.
-- Exit: an amendment open for review in the config repo, or a recorded one-off.
+- Exit: the amendment reached a destination — a repo-local file, an issue filed against
+  the repository that ships the plugin, or a recorded one-off.
 - Cap: the recurrence test. Amend only what would happen again; everything else gets a
   `LEARNINGS.md` line and stops.
 - **This loop does not help the issue in front of you.** It changes the gate so the next issue
@@ -309,8 +310,11 @@ When DoR fails, a committee blocks, or the DoD test fails, name the gate that sh
 caught it, amend that gate, and record the entry. Without this the loop is a longer straight
 line.
 
-The amendment lands in the **config repo**, on its own branch, because the phase skills are
-symlinked from there. It is a separate submission from the fix for the issue.
+Where the amendment goes is a scope decision, and `/retro` never edits the plugin source to
+make it. A lesson that recurs only in this project is written to `.dev-jawn/<skill>.md` in
+the repo you are working in. One that recurs anywhere is filed as an issue against the
+repository that ships the plugin, resolved from the plugin's marketplace entry. Either way
+it is separate from the fix for the issue.
 
 Amend only what would recur. A retro that files an amendment for every failure buries the
 rubric in special cases until nobody reads it, which is the same as having no rubric. A
