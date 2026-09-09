@@ -1,13 +1,13 @@
 ---
-name: subagent-spend
+name: token-spend
 effort: low
-description: Measure which models and effort levels Claude Code subagents actually ran on, and what they cost, from local JSONL transcripts. Use when the user asks "what model is my Explore agent running", "what are my subagents costing", "did that config change save anything", "baseline my token usage", or wants a before/after on CLAUDE_CODE_SUBAGENT_MODEL or a custom agent's model/effort.
+description: Inventory Claude Code token usage from local JSONL transcripts - by tool, by skill, by agent type, by model and effort. Use when the user asks "which tool is eating my context", "does this skill actually save tokens", "what model is my Explore agent running", "what are my subagents costing", "did that config change save anything", or wants a before/after on a skill, a hook, CLAUDE_CODE_SUBAGENT_MODEL, or a custom agent's model/effort.
 user_invocable: true
-trigger: /subagent-spend
-arguments: "[mark <name> | report [--since <name>] [--until <name>]]"
+trigger: /token-spend
+arguments: "[mark <name> | report [--since <name>] | tools [--since <name>]]"
 ---
 
-# Subagent Spend
+# Token Spend
 
 Claude Code logs every subagent turn locally. Each session writes
 `~/.claude/projects/<project>/<session>.jsonl`, and each subagent gets its own
@@ -21,7 +21,7 @@ really ran on rather than what people assume it runs on.
 Baseline before changing anything:
 
 ```bash
-python3 scripts/subagent_spend.py mark baseline
+python3 scripts/token_spend.py mark baseline
 ```
 
 That writes `~/.claude/spend-snapshots/baseline.json`: a UTC cutoff plus the
@@ -32,7 +32,7 @@ every `~/.claude/agents/*.md`, and the Claude Code version).
 Then change config, work for a while, and measure only what happened after:
 
 ```bash
-python3 scripts/subagent_spend.py report --since baseline
+python3 scripts/token_spend.py report --since baseline
 ```
 
 Other forms:
@@ -54,6 +54,50 @@ deduplicated by `uuid` so a resumed or forked session does not count twice. The
 That share is the number to look at first. `CLAUDE_CODE_SUBAGENT_MODEL`, agent
 `model`, and agent `effort` only touch the subagent slice; if subagents are 14%
 of your bill, a perfect subagent config change caps out at 14%.
+
+## Inventory by tool and skill
+
+```bash
+python3 scripts/token_spend.py tools --since baseline
+```
+
+One row per tool, per skill (`Skill:dev-jawn:ready`, body included - a skill's
+SKILL.md arrives as the user text right after its tool result), and per MCP tool,
+with `--by-model` to split each row by model and effort. Useful flags:
+`--session <substring>` to scope to a single transcript for an A/B, `--project`
+to scope to one repo, `--main-only` to exclude subagent transcripts.
+
+Two columns, and the second is the one that matters:
+
+- **added** - tokens the item put into context.
+- **carry** - those same tokens re-read on every later turn of that session.
+
+A 20K-token result on turn 3 of a 200-turn session is not a 20K-token decision;
+it is read ~197 more times. That is why `Read` dominates the ranking while `Edit`
+barely registers, and why a skill that loads 18K of instructions early costs more
+than its size suggests.
+
+**Attribution is character-based, not billed tokens.** A turn's
+`cache_creation_input_tokens` re-counts the whole prefix whenever the 5-minute
+cache TTL lapses, so billed input genuinely cannot be split across the items that
+caused it. The footer prints what the estimate covers against measured input for
+the same window - typically around a third; the remainder is system prompt, tool
+schemas, and cache re-creation, none of which belongs to any single tool. Use the
+ranking and the before/after delta, not the absolute dollars.
+
+## Testing whether a skill saves tokens
+
+Run the work once without the skill and once with it, then compare the same
+session-scoped inventory:
+
+```bash
+python3 scripts/token_spend.py tools --session <before-session-id>
+python3 scripts/token_spend.py tools --session <after-session-id>
+```
+
+Compare `added` and `carry` for the tools the skill was meant to displace (`Read`
+and `Bash`, usually) against the skill's own row. A skill that costs 18K to load
+and saves two 40K file reads wins; one that saves a single `Grep` does not.
 
 ## Reading the results
 

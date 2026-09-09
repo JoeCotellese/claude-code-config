@@ -221,6 +221,176 @@ def cmd_report(args):
         print(f"WARNING: no price for {sorted(UNPRICED)} - counted as $0")
 
 
+
+# --- Per-tool / per-skill attribution ------------------------------------
+
+CHARS_PER_TOKEN = 4  # only used to bound attribution, never to report a total
+OVERHEAD = "(system prompt, tools, unattributed)"
+CONVERSATION = "(conversation text: prompts and assistant output)"
+
+
+def block_chars(block):
+    if not isinstance(block, dict):
+        return len(str(block))
+    if block.get("type") == "text":
+        return len(block.get("text") or "")
+    content = block.get("content")
+    if isinstance(content, str):
+        return len(content)
+    return len(json.dumps(content or block, default=str))
+
+
+def walk_transcript(path):
+    """Yield (assistant_record, message, pending) per assistant turn.
+
+    `pending` is the list of (label, chars) that entered context since the
+    previous assistant turn: tool results labeled by their tool (Skill calls by
+    skill name, including the SKILL.md body that arrives as the next user text),
+    and conversation text.
+    """
+    tool_names, pending, out, last_skill = {}, [], [], None
+    with open(path, errors="replace") as fh:
+        for line in fh:
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            msg = rec.get("message")
+            if not isinstance(msg, dict):
+                continue
+            content = msg.get("content")
+            if msg.get("role") == "assistant" and msg.get("model"):
+                out.append((rec, msg, pending))
+                pending = []
+                for block in content or []:
+                    if isinstance(block, dict) and block.get("type") == "tool_use":
+                        name = block.get("name")
+                        if name == "Skill":
+                            name = "Skill:" + str((block.get("input") or {}).get("skill"))
+                        tool_names[block.get("id")] = name
+                pending.append((CONVERSATION, sum(block_chars(b) for b in content or [])))
+                continue
+            if isinstance(content, str):
+                pending.append((CONVERSATION, len(content)))
+                continue
+            for block in content or []:
+                if not isinstance(block, dict):
+                    continue
+                if block.get("type") == "tool_result":
+                    label = tool_names.get(block.get("tool_use_id"), "(unknown tool)")
+                    pending.append((label, block_chars(block)))
+                    last_skill = label if label.startswith("Skill:") else None
+                elif block.get("type") == "text":
+                    # A skill's body arrives as the user text right after its result.
+                    label = last_skill or CONVERSATION
+                    pending.append((label, block_chars(block)))
+                    last_skill = None
+    return out
+
+
+def attribute(path, since, until, rows, calls, measured):
+    """Estimate the context tokens each tool and skill contributes.
+
+    Attribution is character-based (`CHARS_PER_TOKEN`), not billed tokens: a
+    turn's `cache_creation_input_tokens` re-counts the whole prefix whenever the
+    cache TTL lapses, so billed input cannot be split across the items that
+    caused it. Measured totals are tracked alongside so the estimate's coverage
+    is visible in the footer.
+    """
+    turns = walk_transcript(path)
+    total_turns = len(turns)
+    for i, (rec, msg, pending) in enumerate(turns):
+        if not in_window(rec.get("timestamp"), since, until):
+            continue
+        u = msg.get("usage") or {}
+        model, effort = msg["model"], rec.get("effort")
+        measured["new"] += u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0)
+        measured["cache_read"] += u.get("cache_read_input_tokens", 0)
+        measured["output"] += u.get("output_tokens", 0)
+        remaining = total_turns - i - 1
+        for label, chars in pending:
+            if not chars:
+                continue
+            tok = chars / CHARS_PER_TOKEN
+            agg = rows[(label, model, effort)]
+            agg["added"] += tok
+            agg["carry"] += tok * remaining
+        for block in msg.get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "tool_use":
+                name = block.get("name")
+                if name == "Skill":
+                    name = "Skill:" + str((block.get("input") or {}).get("skill"))
+                calls[(name, model, effort)] += 1
+
+
+def new_attr():
+    return {"added": 0.0, "carry": 0.0}
+
+
+def attributed_cost(model, agg):
+    """Write the tokens in once, then re-read them on every later turn."""
+    inp = PRICES.get(normalize(model), (0.0, 0.0))[0]
+    return (agg["added"] * 1.25 * inp + agg["carry"] * 0.10 * inp) / 1_000_000
+
+
+def cmd_tools(args):
+    since, until = resolve(args.since), resolve(args.until)
+    rows = collections.defaultdict(new_attr)
+    calls = collections.Counter()
+    measured = collections.Counter()
+    paths = glob.glob(os.path.join(HOME, ".claude/projects/*/*.jsonl"))
+    if not args.main_only:
+        paths += glob.glob(os.path.join(HOME, ".claude/projects/*/*/subagents/agent-*.jsonl"))
+    if args.project:
+        paths = [p for p in paths if args.project in p]
+    if args.session:
+        paths = [p for p in paths if args.session in p]
+    for path in paths:
+        attribute(path, since, until, rows, calls, measured)
+    by_label = collections.defaultdict(new_attr)
+    label_models = collections.defaultdict(lambda: collections.defaultdict(new_attr))
+    for (label, model, effort), agg in rows.items():
+        for k in ("added", "carry"):
+            by_label[label][k] += agg[k]
+            label_models[label][model][k] += agg[k]
+    label_calls = collections.Counter()
+    for (name, _, _), n in calls.items():
+        label_calls[name] += n
+    if args.json:
+        print(json.dumps({"since": since, "until": until, "rows": [
+            {"label": l, "model": m, "effort": e, "added_tokens": round(a["added"]),
+             "carry_tokens": round(a["carry"]), "usd": round(attributed_cost(m, a), 2)}
+            for (l, m, e), a in sorted(rows.items())],
+            "calls": {f"{n}|{m}|{e}": c for (n, m, e), c in sorted(calls.items())}}, indent=2))
+        return
+    print(f"window: {since or 'all time'} -> {until or 'now'}")
+    print("added = tokens the item put into context; carry = those tokens re-read on later turns\n")
+    order = sorted(by_label, key=lambda l: -sum(
+        attributed_cost(m, a) for m, a in label_models[l].items()))
+    grand = 0.0
+    for label in order:
+        usd = sum(attributed_cost(m, a) for m, a in label_models[label].items())
+        grand += usd
+        n = label_calls.get(label)
+        per = f", {usd / n:.3f}/call" if n else ""
+        print(f"{label:<45} calls={n or '-':<6} added={by_label[label]['added']:>12,.0f} "
+              f"carry={by_label[label]['carry']:>14,.0f}  ${usd:.2f}{per}")
+        if args.by_model:
+            for model, agg in sorted(label_models[label].items(),
+                                     key=lambda kv: -attributed_cost(kv[0], kv[1])):
+                print(f"    {model:<24} added={agg['added']:>12,.0f} "
+                      f"carry={agg['carry']:>14,.0f}  ${attributed_cost(model, agg):.2f}")
+    attributed = sum(a["added"] for a in by_label.values())
+    print(f"\nTOTAL ${grand:.2f} over {attributed:,.0f} estimated context tokens")
+    print(f"measured in the same window: {measured['new']:,} new input tokens, "
+          f"{measured['cache_read']:,} cache reads, {measured['output']:,} output")
+    print(f"estimate covers {attributed / measured['new'] * 100 if measured['new'] else 0:.0f}% "
+          f"of measured new input; the rest is system prompt, tool schemas, and cache "
+          f"re-creation after a TTL lapse, none of which belongs to a single tool")
+    if UNPRICED:
+        print(f"WARNING: no price for {sorted(UNPRICED)} - counted as $0")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -232,6 +402,15 @@ def main():
     r.add_argument("--until", help="snapshot name or ISO-8601 UTC timestamp")
     r.add_argument("--json", action="store_true")
     r.set_defaults(func=cmd_report)
+    t = sub.add_parser("tools", help="attribute context tokens to tools and skills")
+    t.add_argument("--since")
+    t.add_argument("--until")
+    t.add_argument("--project", help="substring match on the project directory")
+    t.add_argument("--by-model", action="store_true", help="split each row by model")
+    t.add_argument("--main-only", action="store_true", help="skip subagent transcripts")
+    t.add_argument("--session", help="substring match on one session transcript filename")
+    t.add_argument("--json", action="store_true")
+    t.set_defaults(func=cmd_tools)
     args = p.parse_args()
     args.func(args)
 
