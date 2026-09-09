@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ABOUTME: Snapshots and reports Claude Code subagent model/effort/token spend from local JSONL transcripts.
 # ABOUTME: `mark` freezes a cutoff plus current config; `report --since` measures only turns after it.
-import argparse, collections, datetime as dt, glob, json, os, subprocess, sys
+import argparse, collections, csv, datetime as dt, glob, json, os, subprocess, sys
 
 HOME = os.path.expanduser("~")
 SNAP_DIR = os.path.join(HOME, ".claude", "spend-snapshots")
@@ -162,6 +162,19 @@ def config_state():
     }
 
 
+def write_csv(path, header, rows):
+    """Write to `path`, or to stdout when path is "-"."""
+    fh = sys.stdout if path == "-" else open(path, "w", newline="")
+    try:
+        w = csv.writer(fh)
+        w.writerow(header)
+        w.writerows(rows)
+    finally:
+        if fh is not sys.stdout:
+            fh.close()
+            print(f"wrote {len(rows)} rows to {path}")
+
+
 def cmd_mark(args):
     os.makedirs(SNAP_DIR, exist_ok=True)
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
@@ -190,6 +203,15 @@ def cmd_report(args):
         tgt = rows[(atype, model, effort)]
         for k in u:
             tgt[k] += u[k]
+    if args.csv:
+        write_csv(args.csv,
+                  ["window_since", "window_until", "agent", "model", "effort", "runs",
+                   "turns", "input_tokens", "cache_write_tokens", "cache_read_tokens",
+                   "output_tokens", "usd"],
+                  [[since or "", until or "", a, m, e or "", runs.get(a, 0), u["turns"],
+                    u["input"], u["cache_write"], u["cache_read"], u["output"],
+                    round(cost(m, u), 4)] for (a, m, e), u in sorted(rows.items())])
+        return
     if args.json:
         print(json.dumps({
             "since": since, "until": until,
@@ -333,6 +355,16 @@ def attributed_cost(model, agg):
     return (agg["added"] * 1.25 * inp + agg["carry"] * 0.10 * inp) / 1_000_000
 
 
+def kind_of(label):
+    if label.startswith("Skill:"):
+        return "skill"
+    if label.startswith("mcp__"):
+        return "mcp-tool"
+    if label.startswith("("):
+        return "non-tool"
+    return "tool"
+
+
 def cmd_tools(args):
     since, until = resolve(args.since), resolve(args.until)
     rows = collections.defaultdict(new_attr)
@@ -356,6 +388,15 @@ def cmd_tools(args):
     label_calls = collections.Counter()
     for (name, _, _), n in calls.items():
         label_calls[name] += n
+    if args.csv:
+        write_csv(args.csv,
+                  ["window_since", "window_until", "label", "kind", "model", "effort",
+                   "calls", "added_tokens", "carry_tokens", "usd"],
+                  [[since or "", until or "", l, kind_of(l), m, e or "",
+                    calls.get((l, m, e), 0), round(a["added"]), round(a["carry"]),
+                    round(attributed_cost(m, a), 4)]
+                   for (l, m, e), a in sorted(rows.items())])
+        return
     if args.json:
         print(json.dumps({"since": since, "until": until, "rows": [
             {"label": l, "model": m, "effort": e, "added_tokens": round(a["added"]),
@@ -401,6 +442,7 @@ def main():
     r.add_argument("--since", help="snapshot name or ISO-8601 UTC timestamp")
     r.add_argument("--until", help="snapshot name or ISO-8601 UTC timestamp")
     r.add_argument("--json", action="store_true")
+    r.add_argument("--csv", metavar="PATH", help='write CSV to PATH ("-" for stdout)')
     r.set_defaults(func=cmd_report)
     t = sub.add_parser("tools", help="attribute context tokens to tools and skills")
     t.add_argument("--since")
@@ -410,6 +452,7 @@ def main():
     t.add_argument("--main-only", action="store_true", help="skip subagent transcripts")
     t.add_argument("--session", help="substring match on one session transcript filename")
     t.add_argument("--json", action="store_true")
+    t.add_argument("--csv", metavar="PATH", help='write CSV to PATH ("-" for stdout)')
     t.set_defaults(func=cmd_tools)
     args = p.parse_args()
     args.func(args)

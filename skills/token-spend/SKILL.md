@@ -40,6 +40,10 @@ Other forms:
 - `report` with no window: all time.
 - `--since` / `--until` accept a snapshot name or a raw ISO-8601 UTC timestamp.
 - `--json` for machine-readable rows.
+- `--csv <path>` for a spreadsheet, or `--csv -` for stdout. Both `report` and
+  `tools` take it. Every row carries the window bounds, so two runs concatenate
+  into one before/after sheet; the `tools` CSV adds a `kind` column
+  (`tool`, `skill`, `mcp-tool`, `non-tool`) for pivoting.
 
 Output is grouped by agent type, then by model and effort: turns, input tokens,
 cache-write, cache-read, output tokens, dollars, plus runs and dollars per run.
