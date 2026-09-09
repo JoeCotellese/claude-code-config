@@ -44,6 +44,17 @@ Other forms:
 Output is grouped by agent type, then by model and effort: turns, input tokens,
 cache-write, cache-read, output tokens, dollars, plus runs and dollars per run.
 
+The first group is `main-session (not a subagent)` — the turns you drive
+yourself, read from the top-level session transcripts, counted per session
+instead of per run. Sidechain lines in those files are skipped (older Claude
+Code versions wrote subagent work into the parent transcript), and turns are
+deduplicated by `uuid` so a resumed or forked session does not count twice. The
+`TOTAL` line splits main-session from subagents and gives the subagent share.
+
+That share is the number to look at first. `CLAUDE_CODE_SUBAGENT_MODEL`, agent
+`model`, and agent `effort` only touch the subagent slice; if subagents are 14%
+of your bill, a perfect subagent config change caps out at 14%.
+
 ## Reading the results
 
 Three things to get right when reporting a before/after:

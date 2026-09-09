@@ -7,6 +7,7 @@ HOME = os.path.expanduser("~")
 SNAP_DIR = os.path.join(HOME, ".claude", "spend-snapshots")
 
 # $ per 1M tokens (input, output). Cache write = 1.25x input, cache read = 0.1x input.
+MAIN = "main-session (not a subagent)"
 UNPRICED = set()
 
 PRICES = {
@@ -72,10 +73,51 @@ def build_agent_index():
     return agent_type
 
 
+def add_turn(agg, rec, msg):
+    u = msg.get("usage") or {}
+    agg["turns"] += 1
+    agg["input"] += u.get("input_tokens", 0)
+    agg["cache_write"] += u.get("cache_creation_input_tokens", 0)
+    agg["cache_read"] += u.get("cache_read_input_tokens", 0)
+    agg["output"] += u.get("output_tokens", 0)
+
+
+def in_window(ts, since, until):
+    if since and (not ts or ts < since):
+        return False
+    if until and (not ts or ts >= until):
+        return False
+    return True
+
+
 def collect(since=None, until=None):
     agent_type = build_agent_index()
     by_key = collections.defaultdict(new_usage)
     sessions = collections.defaultdict(set)
+    seen = set()
+    # Main-loop turns: top-level session transcripts, excluding sidechain lines,
+    # which are subagent work written into the parent file by older versions.
+    for path in glob.glob(os.path.join(HOME, ".claude/projects/*/*.jsonl")):
+        with open(path, errors="replace") as fh:
+            for line in fh:
+                try:
+                    rec = json.loads(line)
+                except ValueError:
+                    continue
+                if rec.get("isSidechain"):
+                    continue
+                msg = rec.get("message")
+                if not isinstance(msg, dict) or not msg.get("model"):
+                    continue
+                if not in_window(rec.get("timestamp"), since, until):
+                    continue
+                uid = rec.get("uuid") or rec.get("requestId")
+                if uid:
+                    if uid in seen:
+                        continue
+                    seen.add(uid)
+                add_turn(by_key[(MAIN, msg["model"], rec.get("effort"))], rec, msg)
+                sessions[MAIN].add(rec.get("sessionId") or path)
     for path in glob.glob(os.path.join(HOME, ".claude/projects/*/*/subagents/agent-*.jsonl")):
         agent_id = os.path.basename(path)[len("agent-"):-len(".jsonl")]
         atype = agent_type.get(agent_id, "unknown")
@@ -85,22 +127,12 @@ def collect(since=None, until=None):
                     rec = json.loads(line)
                 except ValueError:
                     continue
-                ts = rec.get("timestamp")
-                if since and (not ts or ts < since):
-                    continue
-                if until and (not ts or ts >= until):
+                if not in_window(rec.get("timestamp"), since, until):
                     continue
                 msg = rec.get("message")
                 if not isinstance(msg, dict) or not msg.get("model"):
                     continue
-                u = msg.get("usage") or {}
-                key = (atype, msg["model"], rec.get("effort"))
-                agg = by_key[key]
-                agg["turns"] += 1
-                agg["input"] += u.get("input_tokens", 0)
-                agg["cache_write"] += u.get("cache_creation_input_tokens", 0)
-                agg["cache_read"] += u.get("cache_read_input_tokens", 0)
-                agg["output"] += u.get("output_tokens", 0)
+                add_turn(by_key[(atype, msg["model"], rec.get("effort"))], rec, msg)
                 sessions[atype].add(agent_id)
     return by_key, {k: len(v) for k, v in sessions.items()}
 
@@ -168,19 +200,23 @@ def cmd_report(args):
         return
     print(f"window: {since or 'all time'} -> {until or 'now'}\n")
     total = 0.0
-    for atype in sorted({k[0] for k in rows}):
+    for atype in sorted({k[0] for k in rows}, key=lambda a: (a != MAIN, a)):
         sub = {k: v for k, v in rows.items() if k[0] == atype}
         atotal = sum(cost(m, u) for (_, m, _), u in sub.items())
         total += atotal
         n = runs.get(atype, 0)
-        per = f", ${atotal / n:.4f}/run" if n else ""
-        print(f"{atype}  ({n} runs, ${atotal:.2f}{per})")
+        label = "sessions" if atype == MAIN else "runs"
+        per = f", ${atotal / n:.4f}/{label[:-1]}" if n else ""
+        print(f"{atype}  ({n} {label}, ${atotal:.2f}{per})")
         for (_, model, effort), u in sorted(sub.items(), key=lambda kv: -cost(kv[0][1], kv[1])):
             print(f"    {model:<20} effort={str(effort):<7} turns={u['turns']:<6} "
                   f"in={u['input']:<8} cw={u['cache_write']:<10} cr={u['cache_read']:<11} "
                   f"out={u['output']:<8} ${cost(model, u):.2f}")
         print()
-    print(f"TOTAL ${total:.2f}")
+    main_total = sum(cost(m, u) for (a, m, _), u in rows.items() if a == MAIN)
+    print(f"TOTAL ${total:.2f}  (main-session ${main_total:.2f}, "
+          f"subagents ${total - main_total:.2f}, "
+          f"{(total - main_total) / total * 100 if total else 0:.0f}% subagent)")
     if UNPRICED:
         print(f"WARNING: no price for {sorted(UNPRICED)} - counted as $0")
 
