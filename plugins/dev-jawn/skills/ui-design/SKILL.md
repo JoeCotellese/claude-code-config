@@ -2,14 +2,14 @@
 name: ui-design
 max_words: 1500
 effort: high
-description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target template rendered with fake data — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
+description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target view rendered with fake data — SwiftUI `#Preview` on Apple platforms, HTML on the web — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
 ---
 
 # UI/UX Design Phase
 
 Turn a filed spec into an **approved, clickable prototype before any backend work**.
 
-The prototype is the **real target template rendered with a fake/hardcoded context** —
+The prototype is the **real target view rendered with a fake/hardcoded context** —
 not a throwaway mock. `/implement` inherits it and does zero UI rework: it just swaps
 the fake context for real service calls.
 
@@ -34,9 +34,9 @@ Run it **only for features with a UI**. Backend/CLI-only work skips this phase
 
 ```
 Step 1: Fetch spec issue + create/switch the feature branch
-Step 2: Build the static prototype (real template + hardcoded fake context, throwaway view/URL)
+Step 2: Build the static prototype (real view + fake context: #Preview on Apple, HTML on web)
 Step 3: Iteration loop (passes sized by effort/): drive UI → design committee → present → decide
-Step 4: On decision — amend the issue (final UX + acceptance + screenshots), commit the template
+Step 4: On decision — amend the issue (final UX + acceptance + screenshots), commit the view
 Step 5: GATE → /implement
 ```
 
@@ -49,10 +49,10 @@ gh issue view $ISSUE_NUM --json title,body,labels    # or: glab issue view $ISSU
 ```
 
 Extract the **provisional UX**, **acceptance criteria**, and **architecture** (which
-template(s) and what data shape the design needs).
+view(s)/template(s) and what data shape the design needs).
 
 Create or switch to the **feature branch** — the same branch `/implement` will continue
-on, so the prototype template carries forward:
+on, so the prototype view carries forward:
 
 ```bash
 EXISTING=$(git branch -a | grep -E "(feature|fix)/${ISSUE_NUM}-" | head -1 | xargs)
@@ -61,23 +61,40 @@ EXISTING=$(git branch -a | grep -E "(feature|fix)/${ISSUE_NUM}-" | head -1 | xar
 
 ### Step 2: Build the Static Prototype
 
-Build the **real target template(s)** at their production path, plus a **throwaway view +
-URL** that renders them with a **hardcoded fake context**. Tag the view:
+Build the **real target view(s)** at their production path, fed by a **hardcoded fake
+context**. How it is wired in is platform-specific.
+
+**Apple platforms (iOS, iPadOS, watchOS, macOS)** — the real SwiftUI view driven by one
+**`#Preview` block per state** (empty, typical, stress) off a hardcoded fixture. No
+throwaway route: the previews *are* the harness, and they survive into `/implement`.
+Never mock an Apple screen in HTML.
+
+```swift
+// ponytail: prototype fixture — /implement swaps it for real service calls.
+#Preview("Members — empty") { MemberListView(members: []) }
+#Preview("Members — stress") { MemberListView(members: .fixtureMaxLongNames) }
+```
+
+**Web** — the real HTML template at its production path, plus a **throwaway view + URL**
+that renders it with the fake context. Tag the view:
 
 ```
 # ponytail: prototype view — /implement replaces the fake context with real service calls.
 ```
 
-- Web/Django: real template + a temporary function view + URL under a `_prototype/` prefix.
-- Web/JS: the real component with a mock-data fixture.
-- Non-web UI: build the real view with sample data using the platform's own preview.
+Django: put the URL under a `_prototype/` prefix. JS: the real component plus a mock-data
+fixture.
+
+**Any other platform** — the real view with sample data through that platform's own preview
+mechanism, never HTML.
 
 **Fake data must exercise real states**, not just the happy path — include the **empty
 state**, a **typical** case, and a **stress** case (e.g. the max count, long text, a failed
 item). A design that only looks good with three tidy rows is not approved.
 
-Bring the app up so the prototype is live (for this repo: `db` container + uvicorn), then
-commit: `prototype: <feature>`.
+On web, bring the app up so the prototype is live (for this repo: `db` container +
+uvicorn); on Apple platforms, confirm every `#Preview` renders. Then commit:
+`prototype: <feature>`.
 
 ### Step 3: Iteration Loop (sized by the effort label)
 
@@ -148,13 +165,14 @@ it does not decide whether the design is good.
 ### Step 4: On Decision — Finalize
 
 - **Amend the issue:** replace the provisional UX + acceptance criteria with what was
-  actually designed; attach/link the key screenshots; note the prototype template path and
-  the throwaway view that `/implement` will productionize.
+  actually designed; attach/link the key screenshots; note the view's path and what
+  `/implement` must productionize (the fake fixture, or the throwaway route).
 - **Clear the `needs-design` routing label** now that design is done, so it does not strand the
   issue behind a stale flag: `gh issue edit $ISSUE_NUM --remove-label needs-design` (or the
   `glab` equivalent). `/ui-design` is the single owner of clearing this label — no other phase
   removes it — which is what keeps it a reliable signal for the pull query.
-- Ensure the template + prototype view are **committed on the feature branch**.
+- Ensure the view (with its `#Preview` fixtures, or its template + prototype route) is
+  **committed on the feature branch**.
 
 ### Step 5: GATE — Ready to Implement
 
@@ -174,8 +192,9 @@ or repurposes the throwaway prototype route.
 
 ## Success Condition
 
-The prototype renders live in a browser (verified via Playwright screenshots across
-desktop + mobile widths and the empty/typical/stress states), an independent review context
+The prototype renders for real across the empty/typical/stress states — on web, live in a
+browser via Playwright screenshots at desktop + mobile widths; on Apple platforms, through
+every `#Preview` plus a simulator run on the final pass — an independent review context
 has pressure-tested it on its assigned lenses with no blocking findings left, and the user has
 explicitly approved a version. Only then does the phase gate to `/implement`.
 
