@@ -62,39 +62,33 @@ EXISTING=$(git branch -a | grep -E "(feature|fix)/${ISSUE_NUM}-" | head -1 | xar
 ### Step 2: Build the Static Prototype
 
 Build the **real target view(s)** at their production path, fed by a **hardcoded fake
-context**. How it is wired in is platform-specific.
+context**, rendered through **the preview idiom that stack already uses** — what a developer
+there reaches for unprompted. Never hand-roll a stand-in in some other
+technology: no HTML mock of a SwiftUI screen.
 
-**Apple platforms (iOS, iPadOS, watchOS, macOS)** — the real SwiftUI view driven by one
-**`#Preview` block per state** (empty, typical, stress) off a hardcoded fixture. No
-throwaway route: the previews *are* the harness, and they survive into `/implement`.
-Never mock an Apple screen in HTML.
+- **SwiftUI (iOS, iPadOS, watchOS, macOS)** — one `#Preview` per state off a hardcoded
+  fixture. No throwaway route; the previews *are* the harness and survive into `/implement`.
+- **Server-rendered web (Django, Rails)** — the real template plus a throwaway view + URL
+  under a `_prototype/` prefix.
+- **Component web (React, Vue, Svelte)** — the real component in the project's own story or
+  preview harness, else a mock-data fixture route.
+- **Anything else** — that stack's own preview, else the smallest throwaway host that loads
+  the real view.
+
+Tag whatever holds the fake data, so `/implement` can grep for what it must productionize:
 
 ```swift
-// ponytail: prototype fixture — /implement swaps it for real service calls.
+// prototype: fixture — /implement swaps it for real service calls.
 #Preview("Members — empty") { MemberListView(members: []) }
 #Preview("Members — stress") { MemberListView(members: .fixtureMaxLongNames) }
 ```
-
-**Web** — the real HTML template at its production path, plus a **throwaway view + URL**
-that renders it with the fake context. Tag the view:
-
-```
-# ponytail: prototype view — /implement replaces the fake context with real service calls.
-```
-
-Django: put the URL under a `_prototype/` prefix. JS: the real component plus a mock-data
-fixture.
-
-**Any other platform** — the real view with sample data through that platform's own preview
-mechanism, never HTML.
 
 **Fake data must exercise real states**, not just the happy path — include the **empty
 state**, a **typical** case, and a **stress** case (e.g. the max count, long text, a failed
 item). A design that only looks good with three tidy rows is not approved.
 
-On web, bring the app up so the prototype is live (for this repo: `db` container +
-uvicorn); on Apple platforms, confirm every `#Preview` renders. Then commit:
-`prototype: <feature>`.
+Confirm it actually renders — every `#Preview`, or a live URL with the app up (for this
+repo: `db` container + uvicorn). Then commit: `prototype: <feature>`.
 
 ### Step 3: Iteration Loop (sized by the effort label)
 
