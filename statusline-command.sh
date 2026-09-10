@@ -24,15 +24,53 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     git_info=" on $(printf '\033[35m%s\033[0m' "$branch")$(printf '\033[31m%s\033[0m' "$status")"
 fi
 
-# Context window percentage (using current_usage for active context)
+# Context heat: absolute size plus one fire per cost band.
+#
+# The percentage this replaces was a fraction of the 1M window, so the bands
+# that carry most of the spend rendered as a reassuring 15-30%. Absolute K maps
+# straight onto the thresholds instead. Bands come from measured September
+# spend: turns above 150K account for 68% of it, turns above 300K for 24%,
+# and a turn at 321K costs ~2.5x the same turn at 87K.
+#
+# Set STATUSLINE_NO_NERD=1 where a Nerd Font is not installed; the Private Use
+# Area glyphs below render as blank boxes in any other font.
 context_info=""
 usage=$(echo "$input" | jq '.context_window.current_usage')
 if [ "$usage" != "null" ]; then
     current=$(echo "$usage" | jq '.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
-    size=$(echo "$input" | jq '.context_window.context_window_size')
-    if [ "$size" != "0" ] && [ "$size" != "null" ]; then
-        pct=$((current * 100 / size))
-        context_info="$(printf ' (\033[33m%d%%\033[0m)' "$pct")"
+    if [ -n "$current" ] && [ "$current" != "null" ]; then
+        if [ "$current" -ge 300000 ]; then
+            heat=2
+        elif [ "$current" -ge 150000 ]; then
+            heat=1
+        else
+            heat=0
+        fi
+
+        if [ -n "${STATUSLINE_NO_NERD:-}" ]; then
+            # Geometric Shapes render in every font; fire does not.
+            glyphs=("" "◐" "●")
+            icon="${glyphs[$heat]}"
+        else
+            fire=$(printf '\357\201\255')  # U+F06D nf-fa-fire
+            icon=""
+            i=0
+            while [ "$i" -lt "$heat" ]; do
+                icon="$icon$fire"
+                i=$((i + 1))
+            done
+        fi
+
+        # Colour reinforces the count; the count carries the state on its own.
+        case "$heat" in
+            2) icon=$(printf '\033[31m%s\033[0m ' "$icon") ;;
+            1) icon=$(printf '\033[33m%s\033[0m ' "$icon") ;;
+            *) icon="" ;;
+        esac
+
+        # The number stays neutral so the calm state is visually quiet; the
+        # fire owns the one alarm channel rather than colouring both.
+        context_info="$(printf ' %s%dK' "$icon" "$((current / 1000))")"
     fi
 fi
 
