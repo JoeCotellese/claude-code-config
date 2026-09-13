@@ -426,7 +426,9 @@ Routing rules, first match wins:
 3. Everything applicable passes, feature has UI, design present → `route=/ui-design`
 4. Everything applicable passes, no UI → `route=/implement`
 
-Then print the criterion-by-criterion table as a list, and the `/goal` command for the routed
+Precede the verdict with Layer 1 of Phase closeout in `WORKFLOW.md`: whether the issue is
+ready, and each blocker described as the missing behavior, never as R4 or AC2. The per-criterion
+list is Layer 3, printed on request. Then print the `/goal` command for the routed
 phase so the user can paste it.
 
 ## Success Condition

@@ -265,16 +265,9 @@ glab mr create --title "<Type> #<issue>: <description>" --description "..."
 
 ### Step 8: Report PR and Enter Review Loop
 
-```
-✅ Pull Request Created (or exists)
-
-Branch: feature/<issue>-<description>
-PR URL: <url>
-
-Awaiting human review. Let me know when:
-- You have review feedback to address
-- The review is approved and ready to merge
-```
+Follow Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`. Layer 1: the PR link,
+what it ships in user terms, and any committee finding left open as non-blocking. Then say
+you are waiting for review feedback or approval.
 
 ### Step 9: Review Iteration Loop
 
@@ -291,12 +284,13 @@ When user reports review feedback:
 
 When user confirms review is approved:
 
+Use AskUserQuestion:
 ```
-✅ Review approved!
-
-Ready to merge and deploy?
-- Yes → I'll merge the PR and clean up
-- No → Keep PR open for now
+Merge #<issue>?
+- Merge (Recommended) → Squash-merge the PR and clean up
+- Tell me more → Layer 2
+- Keep it open → Leave the PR for now
+- Stop here → Pick it up later
 ```
 
 ### Step 11: Merge and Cleanup
@@ -329,15 +323,8 @@ git branch -d <branch-name>
 
 ### Step 13: Report Success
 
-```
-✅ Merged and deployed!
-
-Commit: <merged commit hash>
-PR: <pr_number> (closed)
-Branches cleaned up: ✓
-
-You're now on main with latest changes.
-```
+One or two sentences: what shipped to main, in user terms, and anything still open, such as
+a follow-up issue or a deploy that has not happened. Merging is not deploying.
 
 ## Error Handling
 

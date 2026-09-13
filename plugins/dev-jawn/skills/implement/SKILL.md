@@ -217,17 +217,15 @@ no matter how many times the loop runs:
 
 **CRITICAL**: STOP and ask user before proceeding to submit phase.
 
-Use AskUserQuestion:
+Report per Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`: what a user can now
+do, any caveat from the `DOD VERDICT`, and any change from the approved plan. Then
+AskUserQuestion:
 ```
-✅ Implementation complete!
-
-Branch: feature/<issue>-<description>
-Commits: <count> commits
-DoD: PASS — <criteria>/<criteria> criteria, results at <path>
-
-Ready for code review?
-- Yes → Continue to /submit
-- No → Continue working or run more tests
+Send #<issue> to code review?
+- Submit (Recommended) → Continue to /submit
+- Tell me more → Layer 2
+- Keep working → Stay on the branch
+- Stop here → Pick it up later
 ```
 
 **When user confirms "Yes":** Invoke the `submit` skill:

@@ -317,11 +317,9 @@ EOF
 
 ### Step 9: Report Success
 
-Return to user:
-- Issue URL (if created)
-- Issue number (e.g., #123)
-- Summary of what was planned
-- Value/Effort sizing applied
+Follow Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`. Layer 1 says what the
+feature will let a user do, its size in plain terms, and the issue link. The full issue
+contents are Layer 2 and 3, not the default.
 
 **Then IMMEDIATELY proceed to Step 10 (the final gate).**
 
@@ -340,13 +338,9 @@ accordingly.
 
 Use the AskUserQuestion tool to prompt:
 ```
-✅ Spec complete!
-
-Issue: #<issue_number>
-URL: <issue_url>
-
-Next is the Definition of Ready gate, which will derive the acceptance test.
-- Yes → Continue to /ready #<issue_number>
+Check #<issue_number> is ready to build?
+- Yes (Recommended) → Continue to /ready #<issue_number>
+- Tell me more → Layer 2
 - Refine spec → Let's adjust first
 - Stop here → I'll pick it up later
 ```

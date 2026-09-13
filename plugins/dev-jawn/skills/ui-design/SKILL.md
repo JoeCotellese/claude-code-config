@@ -170,14 +170,14 @@ it does not decide whether the design is good.
 
 ### Step 5: GATE — Ready to Implement
 
-Use **AskUserQuestion**:
+Report per Phase closeout (WORKFLOW.md), then **AskUserQuestion**:
 
 ```
-✅ Design approved for #<issue_number>.
-Prototype committed on <branch>. Ready to implement?
+Build #<issue_number>?
 - Yes → /implement #<issue_number>
-- Refine → more design iteration
-- Stop here → implement later
+- Tell me more → Layer 2
+- Refine → iterate
+- Stop here
 ```
 
 On **Yes**, invoke the `implement` skill: `skill="implement", args="#<issue_number>"`.

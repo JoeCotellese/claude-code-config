@@ -348,6 +348,62 @@ printed.
 `/retro` proposes an amendment to a standard you rely on across every project. It never lands
 one on its own.
 
+## Phase closeout
+
+Every phase ends with a report to the product owner, not to another developer. Joe reads it
+without the issue open, so it has to make sense on its own. It is layered: the first layer is
+no longer than the old status block, and anything deeper prints only when he asks.
+
+### Layer 1: always printed
+
+1. **Status, in at most three plain sentences.** Say where the feature stands, what a user can
+   now do (or what is broken, described as a user would notice it), and anything he would be
+   surprised to learn later: a caveat, a skipped check, a change from the plan.
+2. **The gate**, when the phase has one. A single-line AskUserQuestion question with fixed
+   options. Always include `Tell me more` and `Stop here`. Put the recommended option first.
+3. **The machine line last**, when the phase prints one (`DOR VERDICT`, `DOD VERDICT`,
+   `RETRO`). Its format is unchanged.
+
+A phase that routes on its own with nothing to decide (`/ready`, `/verify`, a failing loop
+iteration) prints Layer 1 without a gate and says whether it is continuing or stopping.
+
+### Layer 2: `Tell me more`
+
+What deserves his attention, one short paragraph each: every caveat or failure with why it
+matters and what the options are, and every change from the plan with its effect on users or
+cost. Then ask the same gate again, with `Show every check` replacing `Tell me more`.
+
+### Layer 3: `Show every check`
+
+One plain line per acceptance criterion: what it checks, in user terms, and whether it passed.
+End with the path to the results file or the issue comment that holds the evidence.
+
+### Rules for every layer
+
+- **Never refer to a criterion by its ID.** "AC4" means nothing without the issue open.
+  Describe the behavior, or quote the criterion's text.
+- **Say it in product terms.** File names, test names, commit counts, and branch names stay
+  out unless he asks. They live in the results file, the PR, and git.
+- **No emoji, no celebratory headers, no claims past what happened.** `/submit` merges; it
+  does not deploy.
+- **Unknowns are stated, not smoothed over.** "Checked on the simulator only" belongs in
+  Layer 1 if it could change his decision.
+
+Example, `/implement` passing with a caveat:
+
+```
+Spotlight search is built. Typing now shows matching recipes as you type.
+All 9 checks pass, with one caveat: speed was only measured on the simulator.
+
+Send it to code review?
+  1. Submit (Recommended)
+  2. Tell me more
+  3. Keep working
+  4. Stop here
+
+DOD VERDICT: #347  status=PASS-with-caveats  criteria=9/9  unit=green  acceptance=PASS  results=scripts/uitests/results/2026-09-13_1412_spotlight.md  route=/submit
+```
+
 ## Entry points
 
 - Fresh idea: `/spec <description>`

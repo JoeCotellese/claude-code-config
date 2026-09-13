@@ -319,6 +319,40 @@ for s in $PHASE_SKILLS; do
     fi
 done
 
+
+# --- Phase closeout: layered, plain-language reports written for a PM ---
+# The contract lives in WORKFLOW.md so skills point at it instead of each
+# carrying its own copy of the old emoji-header template.
+if grep -q '^## Phase closeout' "$SKILLS/WORKFLOW.md"; then
+    pass "CLOSEOUT WORKFLOW.md defines the phase closeout contract"
+else
+    bad "CLOSEOUT WORKFLOW.md has no '## Phase closeout' section"
+fi
+if grep -rlq --include=SKILL.md '✅' "$SKILLS" 2>/dev/null; then
+    bad "CLOSEOUT emoji status headers remain: $(grep -rl --include=SKILL.md '✅' "$SKILLS" | tr '\n' ' ')"
+else
+    pass "CLOSEOUT no emoji status headers in skills"
+fi
+for s in spec ready ui-design implement verify submit; do
+    if grep -q 'Phase closeout' "$SKILLS/$s/SKILL.md"; then
+        pass "CLOSEOUT $s points at the contract"
+    else
+        bad "CLOSEOUT $s does not point at the phase closeout contract"
+    fi
+done
+for s in spec ui-design implement submit; do
+    if grep -q 'Tell me more' "$SKILLS/$s/SKILL.md"; then
+        pass "CLOSEOUT $s gate offers Tell me more"
+    else
+        bad "CLOSEOUT $s gate has no Tell me more option"
+    fi
+done
+if grep -q 'Merged and deployed' "$SKILLS/submit/SKILL.md"; then
+    bad "CLOSEOUT /submit still claims a deploy it does not perform"
+else
+    pass "CLOSEOUT /submit does not claim a deploy"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."

@@ -167,7 +167,9 @@ Routing rules, first match wins:
 3. Any criterion failed → `route=/implement`
 4. Everything passed → `route=/submit`
 
-Then print the criterion-by-criterion list. Route 2 is the one that needs judgment: a failing
+Precede the verdict with Layer 1 of Phase closeout in `WORKFLOW.md`: each failure or caveat as
+a user would notice it, never by criterion ID. The per-criterion list stays in the results
+file. Route 2 is the one that needs judgment: a failing
 test is presumed right and the code presumed wrong. Only route to `/retro` when you can quote
 the AC and the assertion and show they disagree.
 
