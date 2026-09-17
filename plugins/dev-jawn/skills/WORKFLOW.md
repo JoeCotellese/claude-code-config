@@ -58,9 +58,9 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
   best version and let the user approve, take over, or defer.
 
 **L3 · TDD cycle** — `/implement`
-- Trigger: the next task in the approved plan.
-- Exit: the failing test passes and the refactor is clean.
-- Cap: none, and it needs none. It is per task, and the plan bounds the task list.
+- Trigger: the next acceptance criterion in the approved plan.
+- Exit: the failing test passes, the unit suite stays green, and the refactor is clean.
+- Cap: none, and it needs none. It is per criterion, and the issue bounds the criteria list.
 
 **L5 · Review committee** — `/submit`
 - Trigger: `/code-review` returns a correctness finding, or a lens returns a blocking finding.

@@ -112,18 +112,18 @@ Use the **EnterPlanMode** tool, then:
 3. Explore the codebase based on architecture from the issue
 4. **Check for an inherited prototype.** If `/ui-design` ran, the feature branch already holds the approved target view rendered with a fake context, tagged `prototype:` (a `#Preview` fixture, or a throwaway route). Treat that view as the UI starting point — **do not rebuild it**; the plan wires it to real services and removes or repurposes whatever carried the fake data.
 5. Identify files to create/modify
-6. Map each task to its TDD cycle (failing test → minimal code → refactor)
+6. Map each acceptance criterion to its TDD cycle (failing test → minimal code → refactor), and name any lower-level test Step 7 allows
 7. Write a step-by-step implementation plan
 
 **Plan should include:**
 - Files to create/modify (with full paths)
 - Order of implementation (dependencies first)
-- For each task: the test to write first, then the implementation
+- For each acceptance criterion: the test that observes it, written first, then the implementation
 - Key code patterns to follow from existing codebase
 - Acceptance criteria mapped to implementation tasks, including the `[test: <name>]` criteria — each one names a test that must exist by the end, and `/verify` fails the criterion if it is missing
 - The accessibility identifiers from the issue's contract, mapped to the views that must carry them
 
-**TDD is the default.** Every task in the plan should specify what test gets written first. If any task genuinely cannot be test-driven (e.g., pure UI layout, config-only changes, infrastructure wiring), it MUST be explicitly marked in the plan with a reason. These exceptions will be flagged to the user at the plan approval gate.
+**TDD is the default.** Every acceptance criterion in the plan should name the test written first. If any task genuinely cannot be test-driven (e.g., pure UI layout, config-only changes, infrastructure wiring), it MUST be explicitly marked in the plan with a reason. These exceptions will be flagged to the user at the plan approval gate.
 
 Write the plan to the plan file (path provided by plan mode).
 
@@ -159,15 +159,26 @@ Two things make this work, and both are easy to break:
 
 ### Step 7: Implementation Loop
 
-Execute the approved plan using TDD:
+Tests answer two questions: did the spec work, and did it break anything. A test per plan task
+answers neither and breaks on every refactor. Use TDD, one acceptance criterion at a time:
 
-1. Write a failing test for the first task
+1. Write or extend the failing test that observes the next acceptance criterion: the acceptance
+   test `/ready` committed, or the `[test: <name>]` the criterion names
 2. Run the test — confirm it fails
 3. Implement the minimal code to make it pass
 4. Run the test — confirm it passes
-5. Refactor if needed
-6. Commit (test and implementation together)
-7. Repeat for the next task
+5. Run the unit suite. A test that broke is a regression: fix the code, not the test
+6. Refactor if needed
+7. Commit (test and implementation together)
+8. Repeat for the next criterion
+
+**Add a lower-level test only when:**
+- **A bug gets fixed.** The test fails without the fix and passes with it.
+- **The criterion test cannot pinpoint the failure.** A red acceptance test that could mean
+  several internals (a race, a retry path) earns a unit or integration test on that piece.
+
+Never repeat what a criterion test already observes. Behavior no criterion needs is scope the
+issue never asked for: raise it with the user instead of building it.
 
 **TDD Exception Gate:** If you encounter a task where TDD is not feasible and it was not already flagged in the plan, you MUST stop and use **AskUserQuestion** before proceeding:
 

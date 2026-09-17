@@ -353,6 +353,34 @@ else
     pass "CLOSEOUT /submit does not claim a deploy"
 fi
 
+# --- Tests follow acceptance criteria, not plan tasks ---
+# A test per plan task pins internals and answers neither "did the spec work" nor
+# "did it break anything". Reverting the Step 7 rewrite flips these to FAIL.
+
+STEP7="$(awk '/^### Step 7/{on=1} /^### Step 8/{on=0} on' "$IMPL")"
+if echo "$STEP7" | grep -q 'failing test for the first task'; then
+    bad "TDD Step 7 still writes a test per plan task"
+else
+    pass "TDD Step 7 does not write a test per plan task"
+fi
+echo "$STEP7" | grep -qi 'acceptance criterion' \
+    && pass "TDD Step 7 drives each cycle from an acceptance criterion" \
+    || bad "TDD Step 7 does not drive cycles from acceptance criteria"
+echo "$STEP7" | grep -qi 'fails without the fix' \
+    && pass "TDD Step 7 requires a regression test per bug fix" \
+    || bad "TDD Step 7 has no regression test rule for bug fixes"
+echo "$STEP7" | grep -qi 'pinpoint' \
+    && pass "TDD Step 7 limits internal tests to what the criterion test cannot pinpoint" \
+    || bad "TDD Step 7 does not limit internal tests"
+if grep -q 'For each task: the test to write first' "$IMPL"; then
+    bad "TDD /implement plan still asks for a test per task"
+else
+    pass "TDD /implement plan does not ask for a test per task"
+fi
+awk '/^\*\*L3 /{on=1} /^\*\*L5 /{on=0} on' "$SKILLS/WORKFLOW.md" | grep -qi 'acceptance criterion' \
+    && pass "TDD WORKFLOW.md L3 is triggered by acceptance criteria" \
+    || bad "TDD WORKFLOW.md L3 is still triggered by plan tasks"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
