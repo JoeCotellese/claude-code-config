@@ -87,19 +87,6 @@ turn on:
 
 `/code-review ultra` is user-triggered and billed. Do not attempt to launch it from here.
 
-#### Skip an already-reviewed HEAD
-
-A second `/submit` on an open PR reads the SHA the last committee reviewed:
-
-```bash
-REVIEWED=$(gh pr view --json body --jq .body 2>/dev/null | grep -o 'blocking findings @ [0-9a-f]*' | awk '{print $NF}')
-```
-
-GitLab: `glab mr view -F json --jq .description`.
-
-Skip the committee only when `$REVIEWED` equals `git rev-parse HEAD` and the line's `/code-review` level matches the tier.
-Any later commit, review-loop fixes included, reruns the full committee. Say which happened.
-
 #### The generic sweep — always
 
 Invoke the built-in `code-review` skill against the branch diff at the level the tier names.
@@ -246,8 +233,7 @@ fi
 EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
 ```
 
-If PR exists and the committee ran, record the new SHA on its code review line
-(`gh pr edit --body`, or `glab mr update --description-file -`), then skip to Step 8.
+If PR exists, skip to Step 8 (review loop).
 
 ### Step 7: Create PR/MR
 
@@ -264,7 +250,7 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 ## Testing
 - [x] Unit tests pass
 - [x] Definition of Done: PASS — <results file path>
-- [x] Code review: `/code-review <level>` + <n> lenses, 0 blocking findings @ <sha>
+- [x] Code review: `/code-review <level>` + <n> lenses, 0 blocking findings
 
 ## Related Issues
 Fixes #<issue>
@@ -350,7 +336,6 @@ a follow-up issue or a deploy that has not happened. Merging is not deploying.
 | Tests fail | STOP - fix before submission |
 | Push rejected | Attempt rebase; if conflicts, STOP |
 | PR already exists | Skip creation, enter review loop |
-| PR body records the current HEAD at this tier | Skip Step 3, say so |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
