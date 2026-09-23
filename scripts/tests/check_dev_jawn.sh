@@ -299,6 +299,41 @@ else
 fi
 
 
+# --- A second /submit skips a committee that already reviewed this exact HEAD ---
+# The PR body's code review line is the record. It must name the reviewed SHA, or
+# fixes pushed from the review loop would ride through on an old pass.
+
+# The PR template records the reviewed SHA on the code review line.
+if grep -Eq 'Code review:.*0 blocking findings @ <sha>' "$SUBMIT"; then
+    pass "SKIP PR template records the reviewed SHA"
+else
+    bad "SKIP PR template code review line carries no SHA"
+fi
+
+# The existing-PR read happens before the committee runs, or it can skip nothing.
+read_line=$(grep -n 'REVIEWED=' "$SUBMIT" | head -1 | cut -d: -f1)
+sweep_line=$(grep -n 'skill="code-review"' "$SUBMIT" | head -1 | cut -d: -f1)
+if [ -n "$read_line" ] && [ -n "$sweep_line" ] && [ "$read_line" -lt "$sweep_line" ]; then
+    pass "SKIP reviewed SHA is read from the PR before the sweep"
+else
+    bad "SKIP no reviewed-SHA read before the code-review sweep"
+fi
+
+# Skip only on an exact HEAD match at the same tier.
+if grep -q 'git rev-parse HEAD' "$SUBMIT" && grep -Eiq 'skip.*only when.*HEAD.*tier' "$SUBMIT"; then
+    pass "SKIP requires an exact HEAD match and the same tier"
+else
+    bad "SKIP condition does not require both HEAD match and tier match"
+fi
+
+# A re-review on an existing PR rewrites the line, or the next /submit never skips.
+if grep -Eq 'gh pr edit.*--body' "$SUBMIT"; then
+    pass "SKIP re-review on an existing PR updates the recorded SHA"
+else
+    bad "SKIP re-review on an existing PR leaves a stale SHA in the body"
+fi
+
+
 # --- Issue #63: every phase skill stays under its declared word ceiling ---
 # The ceiling is declared as `max_words:` in the skill's own frontmatter. The
 # measure is `wc -w` over the WHOLE file, frontmatter included; /retro's intake
