@@ -309,6 +309,13 @@ if [ -n "$pr_line" ] && [ -n "$sweep_line" ] && [ "$pr_line" -lt "$sweep_line" ]
 else
     bad "RESUBMIT existing-PR check runs after the sweep; a second /submit re-reviews"
 fi
+# The resubmit skip drops only the committee and PR creation. Skipping further
+# leaves local fixes unpushed and new commits past the Definition of Done.
+if grep -Eq 'skip Step 3.*and Step 6' "$SUBMIT" && grep -Eq 'Steps 2, 4, and 5 still run' "$SUBMIT"; then
+    pass "RESUBMIT skips only the committee and PR creation"
+else
+    bad "RESUBMIT skip also bypasses the DoD, tests, or push"
+fi
 
 
 # --- Issue #63: every phase skill stays under its declared word ceiling ---

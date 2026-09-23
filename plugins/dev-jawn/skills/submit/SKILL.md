@@ -86,9 +86,10 @@ fi
 EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
 ```
 
-If a PR exists, skip to Step 7 (review loop). The committee reviewed this branch when the PR
-was opened; like a human reviewer, the loop confirms fixes to its findings rather than
-re-reviewing the whole branch.
+If a PR exists, skip Step 3 (committee) and Step 6 (create PR), then enter the review loop.
+Steps 2, 4, and 5 still run, so new commits pass the Definition of Done, the suite, and get pushed.
+The committee reviewed this branch when the PR was opened; like a human reviewer, the loop
+confirms fixes to its findings rather than re-reviewing the whole branch.
 
 ### Step 2: Confirm the Definition of Done Passed
 
@@ -337,7 +338,7 @@ a follow-up issue or a deploy that has not happened. Merging is not deploying.
 | Linting fails | STOP - fix before submission |
 | Tests fail | STOP - fix before submission |
 | Push rejected | Attempt rebase; if conflicts, STOP |
-| PR already exists | Skip the committee and creation, enter review loop |
+| PR already exists | Skip Steps 3 and 6, enter review loop |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
