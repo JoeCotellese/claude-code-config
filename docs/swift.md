@@ -68,6 +68,31 @@ struct User: Codable, Sendable, Identifiable, Hashable { }
 
 `Identifiable` for list items, `Hashable` for navigation destinations.
 
+## Core Data
+
+For projects on Core Data rather than SwiftData. The context's queue owns every
+managed object, and `perform` and `performAndWait` both take `@Sendable`
+closures, so:
+
+- In `async` code, `await context.perform { }`. `performAndWait` is for
+  synchronous callers only. In `async` code it blocks a cooperative thread
+- Inside the closure, only Core Data work: fetch, read entities, save
+- Return values out of the closure: structs, domain models, `NSManagedObjectID`.
+  Never return `NSManagedObject`s, and never mutate vars declared outside it
+- Business logic, logging, and network calls go after the closure returns, so
+  the closure never captures `self`
+
+```swift
+let wines = try await context.perform {
+    try context.fetch(WineEntity.fetchRequest()).map { $0.toWine() }
+}
+for wine in wines { try await sync(wine) }
+```
+
+A "capture of 'self' with non-Sendable type in a '@Sendable' closure" warning
+means logic leaked into the closure. Move it out. Don't reach for
+`@unchecked Sendable`.
+
 ## Testing
 
 Test production behavior through public APIs: user-facing behavior, edge cases,
