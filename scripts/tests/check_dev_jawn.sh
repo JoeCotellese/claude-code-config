@@ -299,6 +299,25 @@ else
 fi
 
 
+# --- A second /submit on an open PR goes to the review loop, not the committee ---
+# The committee reviews once, when the PR is created. Fixes are confirmed in the
+# review loop. That only holds if the existing-PR check runs before the sweep.
+pr_line=$(grep -n 'gh pr list --head' "$SUBMIT" | head -1 | cut -d: -f1)
+sweep_line=$(grep -n 'skill="code-review"' "$SUBMIT" | head -1 | cut -d: -f1)
+if [ -n "$pr_line" ] && [ -n "$sweep_line" ] && [ "$pr_line" -lt "$sweep_line" ]; then
+    pass "RESUBMIT existing-PR check runs before the code-review sweep"
+else
+    bad "RESUBMIT existing-PR check runs after the sweep; a second /submit re-reviews"
+fi
+# The resubmit skip drops only the committee and PR creation. Skipping further
+# leaves local fixes unpushed and new commits past the Definition of Done.
+if grep -Eq 'skip Step 3.*and Step 6' "$SUBMIT" && grep -Eq 'Steps 2, 4, and 5 still run' "$SUBMIT"; then
+    pass "RESUBMIT skips only the committee and PR creation"
+else
+    bad "RESUBMIT skip also bypasses the DoD, tests, or push"
+fi
+
+
 # --- Issue #63: every phase skill stays under its declared word ceiling ---
 # The ceiling is declared as `max_words:` in the skill's own frontmatter. The
 # measure is `wc -w` over the WHOLE file, frontmatter included; /retro's intake
