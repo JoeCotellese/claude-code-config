@@ -67,6 +67,29 @@ at the end. If all tests were written after all implementation, flag it to the u
 was not followed. This is a cheap deterministic read, so it runs on every issue regardless
 of the size gate. It is a flag, not a blocker.
 
+**Check for an existing PR.**
+
+```bash
+PLATFORM=$(bash scripts/detect_git_platform.sh)
+```
+
+**GitHub:**
+```bash
+EXISTING=$(gh pr list --head $(git branch --show-current) --json url --jq '.[0].url')
+if [ -n "$EXISTING" ]; then
+    echo "PR exists: $EXISTING"
+fi
+```
+
+**GitLab:**
+```bash
+EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
+```
+
+If a PR exists, skip to Step 7 (review loop). The committee reviewed this branch when the PR
+was opened; like a human reviewer, the loop confirms fixes to its findings rather than
+re-reviewing the whole branch.
+
 ### Step 2: Confirm the Definition of Done Passed
 
 Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
@@ -214,28 +237,7 @@ git rebase origin/main
 git push -u origin $(git branch --show-current)
 ```
 
-### Step 6: Detect Platform and Check for Existing PR
-
-```bash
-PLATFORM=$(bash scripts/detect_git_platform.sh)
-```
-
-**GitHub:**
-```bash
-EXISTING=$(gh pr list --head $(git branch --show-current) --json url --jq '.[0].url')
-if [ -n "$EXISTING" ]; then
-    echo "PR exists: $EXISTING"
-fi
-```
-
-**GitLab:**
-```bash
-EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
-```
-
-If PR exists, skip to Step 8 (review loop).
-
-### Step 7: Create PR/MR
+### Step 6: Create PR/MR
 
 **GitHub:**
 ```bash
@@ -263,13 +265,13 @@ EOF
 glab mr create --title "<Type> #<issue>: <description>" --description "..."
 ```
 
-### Step 8: Report PR and Enter Review Loop
+### Step 7: Report PR and Enter Review Loop
 
 Follow Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`. Layer 1: the PR link,
 what it ships in user terms, and any committee finding left open as non-blocking. Then say
 you are waiting for review feedback or approval.
 
-### Step 9: Review Iteration Loop
+### Step 8: Review Iteration Loop
 
 When user reports review feedback:
 
@@ -280,7 +282,7 @@ When user reports review feedback:
 5. Report: "Changes pushed. PR updated."
 6. Return to waiting for review outcome
 
-### Step 10: Gate to Merge
+### Step 9: Gate to Merge
 
 When user confirms review is approved:
 
@@ -293,7 +295,7 @@ Merge #<issue>?
 - Stop here → Pick it up later
 ```
 
-### Step 11: Merge and Cleanup
+### Step 10: Merge and Cleanup
 
 If user confirms merge:
 
@@ -311,7 +313,7 @@ gh pr merge --squash --delete-branch
 glab mr merge --squash --remove-source-branch
 ```
 
-### Step 12: Return to Main
+### Step 11: Return to Main
 
 ```bash
 git checkout main
@@ -321,7 +323,7 @@ git pull origin main
 git branch -d <branch-name>
 ```
 
-### Step 13: Report Success
+### Step 12: Report Success
 
 One or two sentences: what shipped to main, in user terms, and anything still open, such as
 a follow-up issue or a deploy that has not happened. Merging is not deploying.
@@ -335,7 +337,7 @@ a follow-up issue or a deploy that has not happened. Merging is not deploying.
 | Linting fails | STOP - fix before submission |
 | Tests fail | STOP - fix before submission |
 | Push rejected | Attempt rebase; if conflicts, STOP |
-| PR already exists | Skip creation, enter review loop |
+| PR already exists | Skip the committee and creation, enter review loop |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
 | No `DOD VERDICT` for the issue | Run `/verify` before submitting |
