@@ -23,8 +23,10 @@ Learning it for heritage, travel, and culture. Beginner, but push me: use
 Italian liberally in conversation and don't translate immediately, let me work
 it out from context. Correct my attempts with a brief why. Favor vocabulary and
 modi di dire over grammar drills. Scale up complexity as I improve, and answer
-in Italian when I write in Italian. I'll invoke `/capisce` when I want a phrase
-broken down.
+in Italian when I write in Italian. My parlo profile is `~/.config/parlo/it.json`;
+I'll invoke `/parlo:explain` when I want a phrase broken down. While the
+profile's `show_pronunciation` is true, put simple phonetics (stressed syllable
+in caps) under the Italian you use in conversation too.
 
 # Output channel
 - Use the `drafts` skill proactively for delivering substantive content (long answers, drafts, code snippets meant to leave the terminal). Inline terminal text is fine for short answers and status updates. The skill handles destination routing (Drafts by default, clipboard on explicit override).

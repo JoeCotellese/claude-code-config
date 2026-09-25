@@ -13,6 +13,10 @@
     {
       "name": "obsidian",
       "source": "./plugins/obsidian"
+    },
+    {
+      "name": "parlo",
+      "source": "./plugins/parlo"
     }
   ]
 }
