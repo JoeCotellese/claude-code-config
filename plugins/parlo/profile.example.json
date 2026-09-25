@@ -1,0 +1,253 @@
+{
+  "language": "Italian",
+  "code": "it",
+  "forvo": "it",
+  "level": "beginner",
+  "why": "Heritage, travel, and culture.",
+  "style": "Use the language liberally and don't translate right away. Favor vocabulary and idioms over grammar drills.",
+  "smem_deck_id": null,
+  "difficulty": {
+    "word_order": "Subject-verb-object like English. Object pronouns go before the verb.",
+    "noun_cases": "None. Nouns carry gender and number only.",
+    "new_sounds": "Double consonants, rolled r, gli, gn.",
+    "closest_known": "English shares much Latin vocabulary. Spanish is very close."
+  },
+  "sentences": [
+    {
+      "target": "Mi chiamo Joe e sono americano.",
+      "english": "My name is Joe and I'm American.",
+      "covers": [
+        "present",
+        "reflexive",
+        "essere"
+      ],
+      "parts": {
+        "subject": "(io)",
+        "verb": "mi chiamo / sono",
+        "object": "Joe / americano"
+      },
+      "swaps": [
+        {
+          "target": "Mi chiamo Maria e sono italiana.",
+          "english": "My name is Maria and I'm Italian."
+        }
+      ]
+    },
+    {
+      "target": "Vorrei un caffè, per favore.",
+      "english": "I would like a coffee, please.",
+      "covers": [
+        "conditional",
+        "polite request"
+      ],
+      "parts": {
+        "subject": "(io)",
+        "verb": "vorrei",
+        "object": "un caffè"
+      },
+      "swaps": [
+        {
+          "target": "Vorrei un bicchiere d'acqua, per favore.",
+          "english": "I would like a glass of water, please."
+        }
+      ]
+    },
+    {
+      "target": "Dov'è la stazione?",
+      "english": "Where is the station?",
+      "covers": [
+        "question word",
+        "essere"
+      ],
+      "parts": {
+        "subject": "la stazione",
+        "verb": "è",
+        "object": "(dove)"
+      },
+      "swaps": [
+        {
+          "target": "Dov'è il bagno?",
+          "english": "Where is the bathroom?"
+        }
+      ]
+    },
+    {
+      "target": "Non capisco. Può ripetere, per favore?",
+      "english": "I don't understand. Can you repeat, please?",
+      "covers": [
+        "negative",
+        "formal you",
+        "modal + infinitive"
+      ],
+      "parts": {
+        "subject": "(io) / (Lei)",
+        "verb": "non capisco / può ripetere",
+        "object": "-"
+      },
+      "swaps": [
+        {
+          "target": "Non parlo bene. Può parlare più lentamente?",
+          "english": "I don't speak well. Can you speak more slowly?"
+        }
+      ]
+    },
+    {
+      "target": "Ieri abbiamo mangiato in una trattoria a Napoli.",
+      "english": "Yesterday we ate at a trattoria in Naples.",
+      "covers": [
+        "past (passato prossimo)",
+        "we"
+      ],
+      "parts": {
+        "subject": "(noi)",
+        "verb": "abbiamo mangiato",
+        "object": "in una trattoria"
+      },
+      "swaps": [
+        {
+          "target": "Ieri ho visitato un museo a Roma.",
+          "english": "Yesterday I visited a museum in Rome."
+        }
+      ]
+    },
+    {
+      "target": "Domani andrò a trovare i miei cugini.",
+      "english": "Tomorrow I will go visit my cousins.",
+      "covers": [
+        "future",
+        "possessive"
+      ],
+      "parts": {
+        "subject": "(io)",
+        "verb": "andrò a trovare",
+        "object": "i miei cugini"
+      },
+      "swaps": [
+        {
+          "target": "Domani andremo al mare.",
+          "english": "Tomorrow we will go to the beach."
+        }
+      ]
+    },
+    {
+      "target": "Da bambino andavo spesso da mia nonna.",
+      "english": "As a child I often went to my grandmother's.",
+      "covers": [
+        "imperfect (habitual past)"
+      ],
+      "parts": {
+        "subject": "(io)",
+        "verb": "andavo",
+        "object": "da mia nonna"
+      },
+      "swaps": [
+        {
+          "target": "Da bambino giocavo a calcio ogni giorno.",
+          "english": "As a child I played soccer every day."
+        }
+      ]
+    },
+    {
+      "target": "Ti piace la cucina siciliana?",
+      "english": "Do you like Sicilian food?",
+      "covers": [
+        "piacere (reversed subject)",
+        "informal you",
+        "yes/no question"
+      ],
+      "parts": {
+        "subject": "la cucina siciliana",
+        "verb": "piace",
+        "object": "ti (to you)"
+      },
+      "swaps": [
+        {
+          "target": "Le piace questa città?",
+          "english": "Do you (formal) like this city?"
+        }
+      ]
+    }
+  ],
+  "essentials": {
+    "common": [
+      {
+        "target": "grazie",
+        "english": "thank you"
+      },
+      {
+        "target": "prego",
+        "english": "you're welcome / go ahead"
+      },
+      {
+        "target": "scusi",
+        "english": "excuse me (formal)"
+      },
+      {
+        "target": "allora",
+        "english": "so / well then"
+      },
+      {
+        "target": "ecco",
+        "english": "here it is / there you go"
+      },
+      {
+        "target": "magari",
+        "english": "maybe / I wish"
+      },
+      {
+        "target": "dai",
+        "english": "come on"
+      },
+      {
+        "target": "boh",
+        "english": "who knows"
+      }
+    ],
+    "verbs": [
+      {
+        "infinitive": "essere",
+        "english": "to be",
+        "present": [
+          "sono",
+          "sei",
+          "è",
+          "siamo",
+          "siete",
+          "sono"
+        ]
+      },
+      {
+        "infinitive": "avere",
+        "english": "to have",
+        "present": [
+          "ho",
+          "hai",
+          "ha",
+          "abbiamo",
+          "avete",
+          "hanno"
+        ]
+      },
+      {
+        "infinitive": "andare",
+        "english": "to go",
+        "present": [
+          "vado",
+          "vai",
+          "va",
+          "andiamo",
+          "andate",
+          "vanno"
+        ]
+      }
+    ],
+    "questions_negatives": "Questions keep statement word order; rising intonation makes the question. Negate with 'non' before the verb.",
+    "patterns": [
+      "Subject pronouns are usually dropped; the verb ending carries the person.",
+      "Adjectives usually follow the noun and agree in gender and number.",
+      "With piacere the thing liked is the subject: mi piace la pizza.",
+      "Past tense is avere/essere + past participle."
+    ]
+  },
+  "show_pronunciation": true
+}

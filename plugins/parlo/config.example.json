@@ -1,0 +1,7 @@
+{
+  "elevenlabs": {
+    "api_key": "op://Private/ElevenLabs/credential",
+    "voice_id": "<default voice id from elevenlabs.io/app/voice-library>",
+    "model_id": "eleven_multilingual_v2"
+  }
+}

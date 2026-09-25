@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "parlo",
+  "displayName": "parlo language learning",
+  "description": "Language learning built on 8-10 core sentences you remix, with smem spaced repetition for review. Language facts live in per-language profiles under ~/.config/parlo, not in the skills.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Joe Cotellese",
+    "email": "joe@cotellese.net"
+  },
+  "repository": "https://github.com/JoeCotellese/claude-code-config"
+}
