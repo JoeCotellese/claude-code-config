@@ -167,7 +167,7 @@ answers neither and breaks on every refactor. Use TDD, one acceptance criterion 
 2. Run the test — confirm it fails
 3. Implement the minimal code to make it pass
 4. Run the test — confirm it passes
-5. Run the unit suite. A test that broke is a regression: fix the code, not the test
+5. Run the touched code's tests. A broken test is a regression: fix the code, not the test
 6. Refactor if needed
 7. Commit (test and implementation together)
 8. Repeat for the next criterion

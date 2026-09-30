@@ -217,12 +217,18 @@ every submission takes another round on somebody's style preference.
 STOP.** Report and wait for fixes. A blocking finding that reveals a gap the Definition of
 Ready should have caught is also a `/retro`.
 
-### Step 4: Run Unit Tests
+### Step 4: Run Unit Tests and the Regression Sweep
 
-Re-run after the committee. `/verify` already ran the suite, but committee fixes landed since
-then, so this catches what those fixes broke.
+**Unit suite.** `/verify` already ran it. Re-run only when a committee fix changed non-test
+code since that run; a fix to docs, comments or tests alone leaves the verdict current.
 
-**If tests fail, STOP.** Report failures and wait for fixes.
+**Regression sweep.** Run the acceptance tests the issue lists under **Regression sweep**, each
+once. When the project's `AGENTS.md` or `CLAUDE.md` names a sweep command, use it; otherwise run
+them one by one. A test already red on main is not this branch's failure: file it as its own
+issue (or record it where the project's policy says) and continue. Never patch around it inside
+this issue's acceptance test.
+
+**If a test this branch broke fails, STOP.** Report failures and wait for fixes.
 
 ### Step 5: Push to Remote
 

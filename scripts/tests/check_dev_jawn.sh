@@ -400,6 +400,30 @@ awk '/^\*\*L3 /{on=1} /^\*\*L5 /{on=0} on' "$SKILLS/WORKFLOW.md" | grep -qi 'acc
     && pass "TDD WORKFLOW.md L3 is triggered by acceptance criteria" \
     || bad "TDD WORKFLOW.md L3 is still triggered by plan tasks"
 
+# --- One suite run per issue, no nested acceptance tests ---
+# The suite ran in /implement, /verify, inside the gate, and again at /submit, and gates
+# nested other gates. Reverting the rules flips these to FAIL.
+
+READY="$SKILLS/ready/SKILL.md"
+grep -q 'Regression sweep' "$READY" \
+    && pass "SUITE /ready moves stays-green criteria to a regression sweep" \
+    || bad "SUITE /ready still accepts stays-green criteria"
+grep -q "never another issue's acceptance test" "$READY" \
+    && pass "SUITE /ready forbids nested acceptance tests" \
+    || bad "SUITE /ready allows an acceptance test to nest others"
+STEP4="$(awk '/^### Step 4/{on=1} /^### Step 5/{on=0} on' "$SUBMIT")"
+echo "$STEP4" | grep -q 'Re-run only when a committee fix changed non-test' \
+    && pass "SUITE /submit re-runs the suite only after a code fix" \
+    || bad "SUITE /submit re-runs the suite unconditionally"
+echo "$STEP4" | grep -qi 'regression sweep' \
+    && pass "SUITE /submit runs the regression sweep once" \
+    || bad "SUITE /submit has no regression sweep"
+if awk '/^### Step 7/{on=1} /^### Step 8/{on=0} on' "$IMPL" | grep -q 'Run the unit suite'; then
+    bad "SUITE /implement Step 7 still runs the whole suite per criterion"
+else
+    pass "SUITE /implement Step 7 runs only the touched code's tests"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
