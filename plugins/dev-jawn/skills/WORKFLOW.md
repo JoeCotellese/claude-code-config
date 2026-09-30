@@ -59,7 +59,8 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 
 **L3 · TDD cycle** — `/implement`
 - Trigger: the next acceptance criterion in the approved plan.
-- Exit: the failing test passes, the unit suite stays green, and the refactor is clean.
+- Exit: the failing test passes, the tests for the touched code stay green, and the refactor
+  is clean. The whole suite waits for `/verify`.
 - Cap: none, and it needs none. It is per criterion, and the issue bounds the criteria list.
 
 **L5 · Review committee** — `/submit`

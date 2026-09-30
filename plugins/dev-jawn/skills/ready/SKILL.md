@@ -107,6 +107,10 @@ it. Each AC carries one of three tags:
   the reason is a property true by construction rather than a human judgment — the same channel,
   not a fourth tag, and `/verify` reconciles both as `[manual]`.
 
+**"Nothing else regresses" is not an acceptance criterion.** "The suite stays green" and "gate X
+stays green" observe other issues' work. List those acceptance tests in the DoD section under
+**Regression sweep** instead; `/verify` runs the suite once and `/submit` runs the sweep once.
+
 An untagged AC fails R2 even when its wording is precise. This is the most common way an issue
 looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
 surfaces at the end when the DoD test is written and covers three of five criteria.
@@ -297,6 +301,11 @@ test at the top of the TDD cycle, one level up.
 For non-UI work, R7 is satisfied by naming the unit or integration test targets instead, with
 the same one-to-one mapping to the ACs.
 
+**The acceptance test observes this issue's criteria and nothing else.** It runs its named
+tests by name, never the whole suite (`/verify` does) and never another issue's acceptance test
+(the `/submit` sweep does). FAIL example, periplus #416: its gate nested six others, one twice,
+so every `/implement` iteration paid for all of them.
+
 **Repairable.** This is the main artifact `/ready` produces.
 
 ### R8 — Gate is set
@@ -399,6 +408,7 @@ Post the repairs back so the issue becomes the artifact of record:
 - Rewritten user stories and observable acceptance criteria
 - The accessibility identifier contract
 - The path to the committed acceptance test
+- The regression sweep: the existing acceptance tests the change can break (R2)
 - The committee tier from the size gate
 - Any criterion that routed out, with what specifically is missing
 
