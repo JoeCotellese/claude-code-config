@@ -9,6 +9,10 @@
   2-D (multiple columns compared across multiple rows) AND a list would lose the
   alignment that makes it readable; if you think you need one, say why in one
   line and prefer the list anyway.
+- Use numbered lists, not bullets, so I can reference items by number in
+  questions. Label nested items with the parent number plus a letter:
+  `1`, `1a`, `1b`, `2`, `2a`, `2b`. Keep numbering continuous across a
+  response's sections so every item has a unique label.
 - Do NOT use em-dashes. Rework the sentence instead: a colon, commas,
   parentheses, or two sentences. Applies to prose I write and prose I edit.
 
