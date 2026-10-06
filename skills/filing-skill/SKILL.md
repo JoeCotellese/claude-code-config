@@ -117,14 +117,14 @@ After user confirms the renamed files look correct:
    - Simple year-based folders for tax organization
 
    **Personal filing (Hybrid approach):**
-   - Recent documents (last 2-3 years):
+   - Recent documents (dated in or after the cutoff year):
      - Directory: `~/OneDrive/Family Room/Active/`
      - Example: `~/OneDrive/Family Room/Active/2025-01-03_Medical_EOB_Dermatology_Joe.pdf`
    - Older documents:
      - Directory: `~/OneDrive/Family Room/Archive/{YYYY}/`
      - Example: `~/OneDrive/Family Room/Archive/2020/2020-05-15_Home_Invoice_Roof-Repair.pdf`
    - Extract year from date field to determine Active vs Archive
-   - Use current year minus 2 as the cutoff (documents from 2023+ go to Active, older go to Archive/YYYY)
+   - Cutoff year = current year minus 2. Documents dated in or after the cutoff year go to Active; older go to Archive/YYYY
 
    For both types:
    - Create directories if they don't exist
@@ -198,7 +198,7 @@ For flagged items, include:
    - Show rename summary
 4. **Step 4 - User verification:** Ask user to confirm renamed files look correct
 5. **Step 5 - Move files:** After confirmation, move to appropriate directories:
-   - First two → `~/OneDrive/Family Room/Active/` (recent, 2023+)
+   - First two → `~/OneDrive/Family Room/Active/` (on or after the cutoff year)
    - Third one → `~/OneDrive/Family Room/Archive/2019/` (older)
 6. Report final summary with any flagged items
 
@@ -217,7 +217,7 @@ For flagged items, include:
 ### Personal Filing (Rich for Searchability)
 - Format: `YYYY-MM-DD_Type_Subtype_Description[_Person].pdf`
 - Targets:
-  - Recent (2023+): `~/OneDrive/Family Room/Active/`
+  - Recent (cutoff year and later): `~/OneDrive/Family Room/Active/`
   - Older: `~/OneDrive/Family Room/Archive/{YYYY}/`
 - **See `references/personal-filing-taxonomy.md`** for complete taxonomy with examples
 - Quick summary:

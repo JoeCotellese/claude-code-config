@@ -1,7 +1,7 @@
 ---
 name: gnucash-import
 effort: low
-description: Process WSFS bank statement PDFs into QIF files for GnuCash import
+description: Process WSFS bank statement PDFs into QIF files for GnuCash import. Use when the user wants to import, convert, or categorize WSFS bank statements, generate a QIF for GnuCash, or reconcile a WSFS checking statement. Invoke with /gnucash-import followed by one or more PDF paths.
 user_invocable: true
 trigger: /gnucash-import
 arguments: "<pdf_path> [pdf_path...]"

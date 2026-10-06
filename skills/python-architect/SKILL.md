@@ -43,8 +43,9 @@ Invoke when:
 1. **Read design principles:**
    ```
    Read: ~/.claude/docs/django.md
+   Read: ~/.claude/docs/python.md
    ```
-   This contains the project's opinionated Django philosophy (DRY, service layer, composition over inheritance, KISS, etc.). All architectural recommendations must align with these principles.
+   django.md holds the Django philosophy (DRY, service layer, composition over inheritance, KISS, etc.); python.md holds tooling, typing, and layout standards (pyright, django-stubs, annotated signatures). Recommendations and scaffolding must align with both.
 
 2. **Search for architecture docs:**
    ```
@@ -99,12 +100,12 @@ When presented with a feature or problem:
 **View Patterns (prefer FBVs)**
 ```python
 # Good: Function-based view with clear flow
-def recipe_list(request):
+def recipe_list(request: HttpRequest) -> HttpResponse:
     recipes = Recipe.objects.published().select_related('author')
     return render(request, 'recipes/list.html', {'recipes': recipes})
 
 # Good: With HTMX partial
-def recipe_list(request):
+def recipe_list(request: HtmxHttpRequest) -> HttpResponse:
     recipes = Recipe.objects.published()
     template = 'recipes/_list.html' if request.htmx else 'recipes/list.html'
     return render(request, template, {'recipes': recipes})

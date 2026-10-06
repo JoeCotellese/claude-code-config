@@ -1,4 +1,3 @@
-
 ---
 name: ios-ui-tester
 effort: low
@@ -80,7 +79,7 @@ success_criteria:
 ## iOS Version Notes
 
 - **iOS 26+**: Search bars appear at the BOTTOM of the screen (y ~800+ on iPhone), not the top
-- **iOS 25 and earlier**: Search bars appear at the top after pull-to-refresh gesture
+- **iOS 18 and earlier**: Search bars appear at the top after pull-to-refresh gesture
 
 ## Default Simulator
 
@@ -298,7 +297,7 @@ xcrun simctl launch $UDID com.example.app
 
 ## Best Practices
 
-1. **Always get UDID first** - Never assume a simulator is running
+1. **Start from the default UDID** - Run `axe list-simulators` only when a command fails because it is not booted
 2. **Use gesture presets** - They handle coordinates automatically
 3. **Add delays for reliability** - Use `--post-delay` after taps that trigger navigation
 4. **Single quotes for text** - Avoid shell escaping issues
