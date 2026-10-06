@@ -237,10 +237,10 @@ Apple considers accessibility a core value. Apps that fail basic accessibility r
 ## Analytics Implementation
 
 ### Event Naming Convention
-- User actions: `action_verb_noun` (e.g., `tapped_share_button`)
-- Screen views: `viewed_screen_name` (e.g., `viewed_recipe_detail`)
-- Conversions: `completed_flow_name` (e.g., `completed_onboarding`)
-- State changes: `changed_state_property` (e.g., `enabled_notifications`)
+- User actions: `object_action` (e.g., `share_button_tapped`)
+- Screen views: `screen_name_viewed` (e.g., `recipe_detail_viewed`)
+- Conversions: `flow_name_completed` (e.g., `onboarding_completed`)
+- State changes: `state_property_changed` (e.g., `notifications_enabled`)
 
 ### Apple Privacy Compliance
 - [ ] No cross-app tracking without ATT consent

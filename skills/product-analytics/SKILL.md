@@ -78,7 +78,7 @@ See [analytics-architecture.md](references/analytics-architecture.md) for langua
 
 ## PostHog MCP Tools
 
-Load tools via MCPSearch before use:
+Load tools via ToolSearch (e.g. `+posthog`) before use:
 - `posthog__event-definitions-list` - List events
 - `posthog__insight-create-from-query` - Create insight
 - `posthog__dashboard-create` - Create dashboard

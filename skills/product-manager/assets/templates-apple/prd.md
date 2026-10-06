@@ -133,9 +133,9 @@ And no content is clipped or hidden
 
 | Event Name | Trigger | Properties | Purpose |
 |------------|---------|------------|---------|
-| `viewed_feature_screen` | User enters feature | screen_name | Track engagement |
-| `tapped_primary_action` | User completes action | action_type, success | Track conversions |
-| `completed_feature_flow` | User finishes flow | duration, steps | Track success rate |
+| `feature_screen_viewed` | User enters feature | screen_name | Track engagement |
+| `primary_action_tapped` | User completes action | action_type, success | Track conversions |
+| `feature_flow_completed` | User finishes flow | duration, steps | Track success rate |
 
 ### Success Metrics
 
