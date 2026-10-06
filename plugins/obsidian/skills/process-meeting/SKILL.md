@@ -160,7 +160,7 @@ Only for **hard deadlines** — conferences, launches, contractual dates.
 **Notes created:**
 - [Title](obsidian://open?vault=...) — <topic count> topics
 
-**Todoist tasks created:** <count>
+**Tasks created:** <count> Todoist, <count> Notion
 **Calendar events:** <count> (or "iMCP offline — <count> deadlines need manual entry")
 
 **Suggested Permanent Notes:**
@@ -202,7 +202,7 @@ ls "$HOME/Library/Group Containers/group.com.apple.VoiceMemos.shared/Recordings/
 Run mlx-whisper via the helper script:
 
 ```bash
-~/.claude/skills/process-meeting/scripts/transcribe-voice.sh \
+${CLAUDE_PLUGIN_ROOT}/skills/process-meeting/scripts/transcribe-voice.sh \
   "<input.m4a>" \
   /tmp/voice-staging/
 ```
@@ -261,6 +261,6 @@ Same as Google Meet Stage 6. Voice memos rarely contain hard deadlines, but if o
 **Notes created:**
 - [Title](obsidian://open?vault=...) — <path>
 
-**Todoist tasks created:** <count>
+**Tasks created:** <count> Todoist, <count> Notion
 **Calendar events:** <count>
 ```

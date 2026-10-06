@@ -226,8 +226,8 @@ never said routes to `/retro`, because then the gate is wrong rather than the co
 
 ### `/spec <description>` — human gated
 
-Unchanged in shape: product-manager, then ux-designer, then a gate, then the architect,
-sizing, and issue creation. Two additions:
+Product-manager, then ux-designer, then a gate, then the architect, sizing, and issue
+creation. Two rules carry the Definition of Ready upstream:
 
 - Acceptance criteria must be written in the observable form R2 requires.
 - The UX section names the `accessibilityIdentifier` for every element an AC references.
@@ -299,8 +299,9 @@ The **lenses** run in fresh contexts and cover what `/code-review` structurally 
   `effort/M` and up.
 - Lens C, test adequacy: would each test still fail if the fix were reverted. `effort/L` only.
 
-Lens A and Lens C ship as agent definitions under `plugins/dev-jawn/agents/`, each carrying
-its own `effort: high`, so committee depth does not follow `/submit`'s orchestration effort.
+Lens A and Lens C ship as agent definitions under `plugins/dev-jawn/agents/`, each pinning
+`model: opus`, so committee depth does not follow `/submit`'s orchestration effort or the
+session's `/model`. Agents take no `effort:` key.
 
 Blocking findings stop the submission; non-blocking ones are logged and dropped. After the MR
 exists, `/loop` handles polling for CI and review comments.
@@ -353,17 +354,17 @@ one on its own.
 
 Every phase ends with a report to the product owner, not to another developer. Joe reads it
 without the issue open, so it has to make sense on its own. It is layered: the first layer is
-no longer than the old status block, and anything deeper prints only when he asks.
+short enough to read at a glance, and anything deeper prints only when he asks.
 
 ### Layer 1: always printed
 
-1. **Status, in at most three plain sentences.** Say where the feature stands, what a user can
+1. **Status, in a few plain sentences he can read at a glance.** Say where the feature stands, what a user can
    now do (or what is broken, described as a user would notice it), and anything he would be
    surprised to learn later: a caveat, a skipped check, a change from the plan.
 2. **The gate**, when the phase has one. A single-line AskUserQuestion question with fixed
    options. Always include `Tell me more` and `Stop here`. Put the recommended option first.
 3. **The machine line last**, when the phase prints one (`DOR VERDICT`, `DOD VERDICT`,
-   `RETRO`). Its format is unchanged.
+   `RETRO`), in exactly the format its skill defines.
 
 A phase that routes on its own with nothing to decide (`/ready`, `/verify`, a failing loop
 iteration) prints Layer 1 without a gate and says whether it is continuing or stopping.

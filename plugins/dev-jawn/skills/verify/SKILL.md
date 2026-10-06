@@ -45,7 +45,7 @@ All three hold:
    reporting on it is a FAIL, not a skip. This is the check that catches a green suite that
    simply never exercised half the feature.
 
-Caveats do not lower the bar. A run may report `PASS (with caveats)` only when every criterion
+Caveats do not lower the bar. A run may report `status=PASS-with-caveats` only when every criterion
 passed and the caveat is about the *run* (a flaky simulator boot, a retried step), never about
 a criterion that went unobserved.
 
@@ -55,7 +55,7 @@ a criterion that went unobserved.
 
 ```bash
 ISSUE_NUM="${1:-$(git branch --show-current | grep -oE '[0-9]+' | head -1)}"
-glab issue view $ISSUE_NUM                          # GitLab (ClipDish default)
+glab issue view $ISSUE_NUM                          # GitLab
 gh issue view $ISSUE_NUM --json title,body,labels   # GitHub
 ```
 
@@ -89,6 +89,8 @@ Always run the script. Do not guess from context. The domain picks both commands
   `/ready` question, not a `/verify` one.
 - **`unknown`** — STOP and ask which harness to run. Do not fall back to "run the tests I can
   find" and report a verdict on it.
+- **`ambiguous:<a>,<b>`**: stop and ask which harness this issue's criteria belong to. Do
+  not pick one by precedence.
 
 ### Step 3 — Run the unit suite
 
@@ -203,7 +205,7 @@ with no results file did not verify anything.
 
 ## Dependencies
 
-- `glab` (ClipDish default) or `gh`
+- `gh` or `glab`, whichever the remote uses
 - `${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh` for platform detection
 - `ios-ui-tester` skill for the AXe harness on `swift` projects
 - Playwright MCP for web acceptance flows

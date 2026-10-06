@@ -2,7 +2,7 @@
 name: ui-design
 max_words: 1500
 effort: high
-description: "UI/UX design phase between spec and implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target view rendered with fake data — SwiftUI `#Preview` on Apple platforms, HTML on the web — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
+description: "UI/UX design phase between /ready and /implement. Invoke with `/ui-design #<issue>` or when the user says 'design the UI', 'prototype this', 'let's design #N'. Builds a static prototype (the real target view rendered with fake data — SwiftUI `#Preview` on Apple platforms, HTML on the web — not a throwaway mock), drives it in a browser with Playwright or through the platform's own preview, pressure-tests it with a fresh-context design committee on fixed lenses sized by the effort label, iterates until only non-blocking findings remain, then amends the issue and gates to /implement. UI features only."
 ---
 
 # UI/UX Design Phase
@@ -13,14 +13,14 @@ The prototype is the **real target view rendered with a fake/hardcoded context**
 not a throwaway mock. `/implement` inherits it and does zero UI rework: it just swaps
 the fake context for real service calls.
 
-This phase sits between `/spec` and `/implement`:
+This phase sits between `/ready` and `/implement`:
 
 ```
-/spec  →  /ui-design  →  /implement  →  /submit
+/spec  →  /ready  →  /ui-design  →  /implement  →  /submit
 ```
 
-Run it **only for features with a UI**. Backend/CLI-only work skips this phase
-(`/spec` → `/implement` directly).
+Run it **only for features with a UI**, when `/ready` routes here. Backend/CLI-only work
+skips it: `/ready` routes it to `/implement`.
 
 ## Usage
 
@@ -56,7 +56,7 @@ on, so the prototype view carries forward:
 
 ```bash
 EXISTING=$(git branch -a | grep -E "(feature|fix)/${ISSUE_NUM}-" | head -1 | xargs)
-[ -n "$EXISTING" ] && git checkout "$EXISTING" || bash ../implement/scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-desc>
+[ -n "$EXISTING" ] && git checkout "$EXISTING" || bash ${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-desc>
 ```
 
 ### Step 2: Build the Static Prototype
@@ -87,8 +87,8 @@ Tag whatever holds the fake data, so `/implement` can grep for what it must prod
 state**, a **typical** case, and a **stress** case (e.g. the max count, long text, a failed
 item). A design that only looks good with three tidy rows is not approved.
 
-Confirm it actually renders — every `#Preview`, or a live URL with the app up (for this
-repo: `db` container + uvicorn). Then commit: `prototype: <feature>`.
+Confirm it actually renders — every `#Preview`, or a live URL with the app up (the
+project's own dev-server command). Then commit: `prototype: <feature>`.
 
 ### Step 3: Iteration Loop (sized by the effort label)
 
@@ -197,7 +197,7 @@ explicitly approved a version. Only then does the phase gate to `/implement`.
 - `gh` / `glab` (issue read + amend)
 - Playwright MCP (drive the prototype in a browser) or `mcp__xcode__RenderPreview` on Apple platforms
 - Agent tool (fresh-context design committee)
-- `../implement/scripts/create_feature_branch.sh` (shared branch naming)
+- `${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh` (shared branch naming)
 
 ## Next Phase
 

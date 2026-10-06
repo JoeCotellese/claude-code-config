@@ -1,1 +1,1 @@
-Invoke the git-submit skill on this branch
+Invoke the dev-jawn:submit skill on this branch

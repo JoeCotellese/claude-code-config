@@ -29,7 +29,7 @@ Read [references/vault-standards.md](references/vault-standards.md) for Obsidian
 
 3. **Clean the transcript with the bundled script** — Run:
    ```bash
-   python3 /Users/joec/.claude/skills/video-to-zettelkasten/scripts/clean-vtt.py /tmp/yt-zk-<id>.en.vtt
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/video-to-zettelkasten/scripts/clean-vtt.py /tmp/yt-zk-<id>.en.vtt
    ```
    This writes a cleaned `.txt` next to the `.vtt` and prints the word count. Then **use the Read tool** on the cleaned `.txt` file — do not pipe it through `cat`/`sed`/`head`.
 

@@ -54,26 +54,18 @@ Repair mode: see [Repair Mode](#repair-mode) below.
 
 ## Workflow Steps
 
-Execute these steps sequentially. Steps flow automatically EXCEPT at gates (Steps 4 and 10) where you MUST stop and ask the user.
+Execute these steps in order. They flow on their own except at the gates (Steps 4 and 10), where you stop and ask the user.
 
 ### Step 1: Detect Project Domain
 
-Analyze the codebase to determine the primary technology:
-
 ```bash
-# Check for Swift/iOS project
-if ls *.xcodeproj >/dev/null 2>&1 || ls *.xcworkspace >/dev/null 2>&1; then
-    DOMAIN="swift"
-# Check for Python
-elif ls *.py >/dev/null 2>&1 || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
-    DOMAIN="python"
-else
-    DOMAIN="unknown"
-fi
-echo "$DOMAIN"
+DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh)
 ```
 
-Store the result for architect selection in Step 4.
+It prints `swift`, `python`, `cpp-qt`, `ambiguous:<a>,<b>`, or `unknown`. On `ambiguous`,
+ask which architect the feature needs.
+
+Store the result for architect selection in Step 5.
 
 ### Step 2: Product Requirements (PM Phase)
 
@@ -139,14 +131,14 @@ rg -o 'accessibilityIdentifier\("([^"]+)"\)' -r '$1' --no-filename --glob '*.swi
 ```
 
 Reuse an identifier when the element already ships. Name new ones in the local style
-(lowerCamelCase in this codebase: `settingsNavigationLink`, `recipeList`,
-`spotlightSearchToggle`). Output them as a list of identifier and element pairs.
+the project's existing identifiers use (for example lowerCamelCase: `settingsNavigationLink`).
+Output them as a list of identifier and element pairs.
 
 **Collect output as:** `UX_OUTPUT`
 
 ### Step 4: GATE - Review Requirements & UX
 
-**CRITICAL**: STOP and ask user before proceeding to architecture.
+Stop and ask the user before architecture.
 
 Use the AskUserQuestion tool to prompt:
 ```
@@ -161,7 +153,7 @@ Ready to proceed to architecture design?
 - Refine UX → Let's adjust the UX design
 ```
 
-**DO NOT continue to architecture until user explicitly confirms.**
+Continue to architecture only on an explicit yes.
 
 ### Step 5: Architecture (Architect Phase)
 
@@ -171,6 +163,7 @@ Select architect based on DOMAIN from Step 1 (detected earlier):
 |--------|-----------|
 | swift | Invoke `swift-architect` skill |
 | python | Invoke `python-architect` skill |
+| cpp-qt | Invoke `cpp-qt-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
 **Prompt the architect with:**
@@ -192,7 +185,7 @@ Provide:
 
 **Collect output as:** `ARCH_OUTPUT`
 
-**After architecture is complete, AUTOMATICALLY proceed to sizing.**
+Then go straight to sizing.
 
 ### Step 6: Value/Effort Sizing
 
@@ -267,7 +260,7 @@ The other routing labels — `unattended` (safe for the loop to pull with no hum
 `blocked` (cannot proceed yet), `needs-design` (must go through `/ui-design` first) — are set by
 `/ready` and the design phase, not here. `/spec` sets only `gate:`.
 
-**Then AUTOMATICALLY proceed to create the issue.**
+Then create the issue.
 
 ### Step 7: Detect Git Platform
 
@@ -321,11 +314,11 @@ Follow Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`. Layer 1 say
 feature will let a user do, its size in plain terms, and the issue link. The full issue
 contents are Layer 2 and 3, not the default.
 
-**Then IMMEDIATELY proceed to Step 10 (the final gate).**
+Then go to Step 10, the final gate.
 
 ### Step 10: GATE - Ready for Next Phase
 
-**CRITICAL**: STOP and ask user before proceeding.
+Stop and ask the user before going on.
 
 **The next phase is always `/ready`**, whether or not the feature has a UI. `/ready` audits the
 issue against the Definition of Ready, derives the acceptance test, and routes to `/ui-design`
@@ -345,7 +338,7 @@ Check #<issue_number> is ready to build?
 - Stop here → I'll pick it up later
 ```
 
-**DO NOT invoke the next phase until the user explicitly confirms "Yes".**
+Invoke the next phase only after the user picks "Yes".
 
 **When user confirms "Yes":** print the `/goal` command for the user to paste, rather than
 invoking the skill directly. `/ready` is designed to run unattended and the goal is what makes
