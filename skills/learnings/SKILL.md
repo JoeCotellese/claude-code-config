@@ -110,9 +110,9 @@ Do not overwrite existing files. If either exists, report and skip that step.
 
 ## Review Workflow (`/learnings review`)
 
-1. Parse `LEARNINGS.md`. Move entries in `## Active` older than 90 days to `## Archived` (newest archived first).
+1. Parse `LEARNINGS.md`. Move entries in `## Active` older than `archive_after_days` (from `.learnings.toml`, default 90) to `## Archived` (newest archived first).
 2. Scan remaining Active entries for semantic duplicates per `references/dedup-rules.md`. Present clusters to the user; let them merge or keep.
-3. If Active exceeds 100 entries, warn and suggest manual curation.
+3. If Active exceeds `max_active` (from `.learnings.toml`, default 100), warn and suggest manual curation.
 
 ## Guardrails
 

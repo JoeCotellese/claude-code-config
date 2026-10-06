@@ -73,7 +73,10 @@ The script will:
 uv tool install ruff
 ```
 
-### 3. Load Django Design Principles (if applicable)
+### 3. Load Python and Django Standards
+
+Read `~/.claude/docs/python.md` and review against it: annotated signatures,
+`X | None` rather than `Optional[X]`, pyright-clean code, `uv` for tooling.
 
 If the code under review is part of a Django project, read the design principles:
 
@@ -118,7 +121,7 @@ Check `references/security-checks.md` for:
 - **Information disclosure**: Verbose errors, logging sensitive data
 - **DoS**: ReDoS patterns, unbounded resource consumption
 
-**CRITICAL**: Flag any of these immediately:
+Report any of these at Critical severity:
 - User input in SQL queries (must use parameterized queries)
 - `eval()` or `exec()` on untrusted data
 - `pickle.loads()` or `yaml.load()` on untrusted data

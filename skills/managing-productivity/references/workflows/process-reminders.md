@@ -8,10 +8,10 @@
 
 ## Process
 
-1. **Fetch incomplete reminders from Todo List:**
+1. **Fetch incomplete reminders from the "Todo" list:**
    ```
    mcp__iMCP__reminders_fetch with:
-     lists: ["Todo List"],
+     lists: ["Todo"],
      completed: false
    ```
 
@@ -138,9 +138,7 @@
 
 ## Marking Reminders Complete
 
-**Limitation:** iMCP does not currently support marking reminders as complete programmatically. After processing, remind the user to manually mark items complete in the Reminders app.
-
-**Workaround:** Keep a list of processed reminder names and present them at the end for batch completion by the user.
+Collect each processed reminder's `identifier` and complete them in one call with `mcp__iMCP__reminders_complete` (`identifiers`: array of UUID strings).
 
 ## Integration with Full Inbox Processing
 

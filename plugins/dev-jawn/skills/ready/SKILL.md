@@ -45,8 +45,8 @@ the verdict.
 ### The observation test
 
 R2 and R7 both turn on one question: can the observation actually be **made**, and made
-**twice**? Observable in principle is not observable. Five amendments reduced to skipping it, so it is
-stated once here and cited rather than re-argued at each site.
+**twice**? Observable in principle is not observable. The test is stated once here and cited
+from each criterion.
 
 - **reachable** — something can drive the system into the asserted state. Name the command or
   gesture; "the state exists" is not an answer.
@@ -159,8 +159,8 @@ rg -o 'accessibilityIdentifier\("([^"]+)"\)' -r '$1' --no-filename | sort -u
 ```
 
 Reuse an existing identifier when the element already ships. Name new ones in the same style
-as their neighbors (this codebase uses lowerCamelCase, for example `settingsNavigationLink`,
-`spotlightSearchToggle`, `recipeList`).
+as their neighbors in the project (for example lowerCamelCase: `settingsNavigationLink`,
+`recipeList`).
 
 Write the contract into the issue as a list of identifier and element pairs. `/implement` is
 bound by it: a view that ships without these identifiers fails its own DoD test.
@@ -341,7 +341,7 @@ outside the Definition of Ready and outside the pull query.
 ### Step 1 — Fetch the issue
 
 ```bash
-glab issue view $ISSUE_NUM                       # GitLab (ClipDish default)
+glab issue view $ISSUE_NUM                       # GitLab
 gh issue view $ISSUE_NUM --json title,body,labels  # GitHub
 ```
 
@@ -463,7 +463,7 @@ and no issue amendment, the gate did not do its job.
 
 ## Dependencies
 
-- `glab` (ClipDish default) or `gh`
+- `gh` or `glab`, whichever the remote uses
 - `ios-ui-tester` skill for the AXe test schema and conventions
 - `${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh` for branch naming
 

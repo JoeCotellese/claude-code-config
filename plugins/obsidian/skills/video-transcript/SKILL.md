@@ -26,7 +26,7 @@ disk.
 
 3. **Clean the transcript** — reuse the bundled script from the ZK skill:
    ```bash
-   python3 /Users/joec/.claude/skills/video-to-zettelkasten/scripts/clean-vtt.py /tmp/yt-zk-<id>.en.vtt
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/video-to-zettelkasten/scripts/clean-vtt.py /tmp/yt-zk-<id>.en.vtt
    ```
    This writes a cleaned `.txt` next to the `.vtt` and prints the word count. Then **use the Read tool** on the cleaned `.txt` — do not pipe it through `cat`/`sed`/`head`.
 

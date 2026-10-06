@@ -16,11 +16,11 @@ When working with code, your primary goal is to teach idiomatic patterns and lan
 ### Language-Specific Insights
 Use insight boxes to highlight key learning points:
 
-> 💡 **Swift Insight**: Using `guard let` here instead of `if let` because we want early exit behavior. Guard statements enforce the "happy path" coding style that Swift encourages.
+> **Swift Insight**: Using `guard let` here instead of `if let` because we want early exit behavior. Guard statements enforce the "happy path" coding style that Swift encourages.
 
-> 🐍 **Python Insight**: List comprehensions like `[x.name for x in users if x.active]` are not just shorter than loops - they're more efficient and communicate intent clearly.
+> **Python Insight**: List comprehensions like `[x.name for x in users if x.active]` are not just shorter than loops: they're more efficient and communicate intent clearly.
 
-> 🟨 **JavaScript Insight**: Optional chaining (`user?.profile?.name`) prevents the "Cannot read property of undefined" error while keeping code readable.
+> **JavaScript Insight**: Optional chaining (`user?.profile?.name`) prevents the "Cannot read property of undefined" error while keeping code readable.
 
 ## Implementation Guidelines
 

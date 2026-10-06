@@ -123,7 +123,7 @@ mcp__iMCP__events_create({
 
 **Event structure**:
 - `calendar`: "Personal" (as configured)
-- `title`: Task name from next-actions.md
+- `title`: Task name from Todoist Next Actions
 - `start`/`end`: ISO 8601 datetime
 - `notes`: Include @context, #energy, #time tags, and Obsidian link if applicable
 - `availability`: Always "busy" for time blocking
@@ -241,7 +241,7 @@ Given a list of calendar events for a day:
 
 1. **Fetch calendar events** for relevant time period
 2. **Calculate free blocks** (see algorithm above)
-3. **Read tasks** from `5_GTD/next-actions.md`
+3. **Read tasks** from Todoist Next Actions (`mcp__todoist__find-tasks`, projectId `6fHPx2qmvwhq5x4X`)
 4. **Filter tasks** by:
    - Context (@computer, @phone, etc.) - user-specified
    - Energy level (#energy-high/medium/low) - user-specified
@@ -264,7 +264,7 @@ Given a list of calendar events for a day:
 
 **Task filtering**:
 ```
-From next-actions.md @computer section:
+From Todoist Next Actions labeled @computer:
 1. "Update EyeGuide video API" @computer #energy-high #time-2h ✓ Fits
 2. "Look at Shopify APIs" @computer #energy-high #time-1h ✓ Fits
 3. "Begin documenting NG Analytics" @computer #energy-high #time-30m ✓ Fits
@@ -320,7 +320,7 @@ Automatically suggest time blocking for:
 
 ### Creating Effective Calendar Events
 
-**Event title**: Use task name exactly as in next-actions.md
+**Event title**: Use the Todoist task name exactly
 
 **Event notes format**:
 ```
@@ -359,7 +359,7 @@ obsidian://open?vault=obsidian-vault&file=4_Projects/EyeGuide
 
 ### Matching Deep Work to Tasks
 
-1. Read all #energy-high tasks from next-actions.md
+1. Read all #energy-high tasks from Todoist Next Actions
 2. Sort by #time tag (longest first)
 3. Match longest tasks to longest/best time blocks
 4. Present pairings to user with rationale
@@ -470,7 +470,7 @@ Total free time: 8 hours with 2 prime deep work blocks
    - Key attendees/companies mentioned
    - Related keywords
 
-2. **Search next actions**: Look in `5_GTD/next-actions.md` for tasks mentioning:
+2. **Search next actions**: Search Todoist (`searchText`) for tasks mentioning:
    - Event title
    - Event date
    - Attendees
@@ -552,7 +552,7 @@ Calendar event: [Event Title] on [Date]
 ## Related
 ```
 
-2. **Add first next action** to `5_GTD/next-actions.md` with:
+2. **Add first next action** to Todoist Next Actions with:
    - Task description
    - Inferred context (@computer for most prep work)
    - Suggested energy/time metadata
@@ -706,12 +706,12 @@ open "x-fantastical3://show/calendar"
 ## Apple Reminders Integration
 
 ### Overview
-Apple Reminders integration via iMCP enables processing of Siri-captured tasks alongside Obsidian inbox items.
+Apple Reminders integration via iMCP enables processing of Siri-captured tasks alongside the Todoist Inbox.
 
 ### Use Case: Siri Quick Capture
 **User workflow:**
 1. Throughout day: "Hey Siri, remind me to [task]"
-2. Tasks accumulate in "Todo List" reminder list
+2. Tasks accumulate in the "Todo" reminder list
 3. During inbox processing: Fetch and process all reminders
 4. Convert to GTD next actions, projects, or someday/maybe
 
@@ -724,13 +724,13 @@ Apple Reminders integration via iMCP enables processing of Siri-captured tasks a
 **Basic usage**:
 ```
 mcp__iMCP__reminders_fetch({
-  lists: ["Todo List"],
+  lists: ["Todo"],
   completed: false
 })
 ```
 
 **Parameters**:
-- `lists`: Array of list names, use `["Todo List"]` as default
+- `lists`: Array of list names, use `["Todo"]` as default
 - `completed`: Set to `false` to get only incomplete reminders
 - `query`: Optional text search within reminder titles
 - `start`/`end`: Optional date range filtering
@@ -739,21 +739,21 @@ mcp__iMCP__reminders_fetch({
 
 **Tool**: `mcp__iMCP__reminders_lists`
 
-Use this on first run or if "Todo List" not found:
+Use this on first run or if "Todo" not found:
 ```
 mcp__iMCP__reminders_lists()
 ```
 
-Returns all reminder lists. Verify "Todo List" exists or ask user which list to use.
+Returns all reminder lists. Verify "Todo" exists or ask user which list to use.
 
 **3. Creating Reminders (Rarely Used)**
 
 **Tool**: `mcp__iMCP__reminders_create`
 
-Generally prefer Obsidian Quick Capture (Workflow 3), but available if needed:
+Generally prefer Todoist Quick Capture (Workflow 3), but available if needed:
 ```
 mcp__iMCP__reminders_create({
-  list: "Todo List",
+  list: "Todo",
   title: "Task description",
   notes: "Additional details",
   due: "2025-11-15T09:00:00Z"  // Optional (UTC)
@@ -762,12 +762,12 @@ mcp__iMCP__reminders_create({
 
 ### Inbox Processing with Reminders
 
-**Modified Workflow 2 Process:**
+**Workflow 2 Process:**
 
 1. **Gather from both sources**:
-   - Obsidian: Read `1_inbox/` files with `#task/inbox` tag
-   - Reminders: Fetch incomplete from "Todo List"
-   - Combine and count: "Found 4 Obsidian items + 3 reminders (7 total)"
+   - Todoist Inbox: `mcp__todoist__find-tasks` with projectId `6CrffChVJmwxG79h`
+   - Reminders: Fetch incomplete from "Todo"
+   - Combine and count: "Found 4 Todoist items + 3 reminders (7 total)"
 
 2. **Process each item** through standard GTD workflow:
    - Present with suggested rewrite
@@ -776,10 +776,7 @@ mcp__iMCP__reminders_create({
    - Clean up source
 
 3. **Source cleanup**:
-   - **Obsidian items**: Delete file from `1_inbox/`
-   - **Reminders**: Cannot be marked complete via iMCP
-     - Inform user: "Processed '[title]' - please mark complete via Reminders app or Siri"
-     - Provide Siri command: "Mark [title] as complete in Todo List"
+   - **Reminders**: Mark complete with `mcp__iMCP__reminders_complete` (see Completing Reminders below)
 
 ### Completing Reminders
 
@@ -826,40 +823,6 @@ All reminders marked complete in Apple Reminders.
 ✗ Don't skip reminders - they're captured intentions
 ✗ Don't leave processed reminders incomplete in Apple Reminders
 ✗ Don't forget to collect identifiers during processing for batch completion
-
-## Integration with GTD Workflows
-
-### Workflow 1: "What Should I Be Working On?"
-- **Before**: Asked user for available time
-- **Now**: Automatically checks calendar, calculates free blocks
-- **Benefit**: Suggestions always fit real available time
-
-### Workflow 2: "Process Inbox"
-- **Before**: Only processed Obsidian `1_inbox/` files
-- **Now**: Fetches Apple Reminders "Todo List" + Obsidian inbox
-- **Benefit**: Unified GTD processing for all capture sources
-
-### Workflow 6: "Schedule Time for Task"
-- **New workflow**: Creates calendar events for tasks
-- **Links**: Obsidian ↔ Calendar for seamless flow
-- **Tracks**: Adds 📅 emoji or note to next-actions.md
-
-### Workflow 7: "Find Deep Work Time"
-- **New workflow**: Proactive deep work scheduling
-- **Scans**: Whole week for optimal blocks
-- **Matches**: Longest tasks to best time slots
-
-### Workflow 8: "What's My Day Look Like?"
-- **New workflow**: Daily overview with task suggestions
-- **Shows**: Events + free blocks + recommendations
-- **Helps**: Morning planning and daily prioritization
-
-### Workflow 9: "Prep for Upcoming Events"
-- **New workflow**: Proactive meeting preparation
-- **Scans**: Next 7 days for events needing prep
-- **Identifies**: Meetings without preparation tasks
-- **Creates**: Projects and next actions for event prep
-- **Schedules**: Optional time blocking for preparation work
 
 ## Reclaim.ai Integration
 

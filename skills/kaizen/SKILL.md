@@ -1,3 +1,8 @@
+---
+name: kaizen
+description: Review the current Claude Code session for tool misuse, missing documentation, contradictory instructions, and skill gaps, then propose concrete edits to CLAUDE.md and skills. Also audits durable config against Claude Code's own system prompts to find redundant or overriding rules. Invoke with /kaizen or /kaizen prompts, or when the user says 'review this session for improvements' or 'audit my config against the system prompts'.
+---
+
 # Kaizen - Continuous Improvement Skill
 
 ## Description
@@ -17,8 +22,8 @@ It also has a **system-prompt redundancy audit** mode (`/kaizen prompts`) that i
 
 Look for patterns where Claude used suboptimal tools:
 
-- **File operations via Bash**: Using `cat`, `head`, `tail`, `sed`, `awk`, `echo >` instead of Read/Edit/Write tools
-- **Search via Bash**: Using `grep`, `rg`, `find`, `fd` commands instead of Grep/Glob tools
+- **Tooling against CLAUDE.md preferences**: e.g. text search where CLAUDE.md prefers LSP, or a search tool other than the one CLAUDE.md names for that job (fd, ast-grep, rg, jq)
+- **Fragile shell edits**: multi-line or exact replacements done with sed/heredocs where Edit would be safer
 - **Missing parallelization**: Sequential tool calls that could have been parallel
 - **Wrong agent type**: Using general Task agent when a specialized agent (Explore, Plan) would be better
 - **Excessive searching**: Multiple search rounds when the target could be documented
@@ -140,8 +145,8 @@ Would you like me to implement these changes?
 
 When reviewing the session, systematically check:
 
-- [ ] Were Read/Edit/Write tools used instead of Bash for file operations?
-- [ ] Were Grep/Glob tools used instead of shell commands for searching?
+- [ ] Did tool choices follow the CLAUDE.md tooling preferences (LSP, fd, ast-grep, rg, jq)?
+- [ ] Were fragile multi-line edits done with Edit rather than shell text munging?
 - [ ] Were independent tool calls made in parallel?
 - [ ] Was the Explore agent used for open-ended codebase questions?
 - [ ] Did Claude have to ask clarifying questions that could be pre-documented?
@@ -157,9 +162,9 @@ When reviewing the session, systematically check:
 
 ```
 #### Tool Misuse
-- Used `cat package.json | jq '.scripts'` via Bash instead of Read tool
-- Line 47 of session: Should have used Read tool then parsed in response
-- Recommendation: Add reminder to CLAUDE.md: "Use Read tool for JSON files, parse content in response rather than piping through jq"
+- Ran three sequential independent Bash reads that could have been one parallel batch
+- Line 47 of session: the reads had no dependencies on each other
+- Recommendation: none to CLAUDE.md (harness already covers parallel calls); note as a one-off
 ```
 
 ### Example: Missing Documentation Finding

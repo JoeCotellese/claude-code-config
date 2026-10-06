@@ -11,47 +11,47 @@ For every feature, define events across these categories:
 ### User Actions
 Track user-initiated interactions.
 
-**Naming pattern**: `action_verb_noun`
+**Naming pattern**: `object_action`, past tense (matches product-analytics `references/event-taxonomy.md`)
 
 | Example | Trigger |
 |---------|---------|
-| `tapped_share_button` | User taps share icon |
-| `clicked_signup_button` | User clicks signup CTA |
-| `submitted_search_query` | User submits search |
-| `swiped_recipe_card` | User swipes to dismiss |
+| `share_button_tapped` | User taps share icon |
+| `signup_button_clicked` | User clicks signup CTA |
+| `search_query_submitted` | User submits search |
+| `recipe_card_swiped` | User swipes to dismiss |
 
 ### Screen/Page Views
 Track navigation and content consumption.
 
-**Naming pattern**: `viewed_screen_name`
+**Naming pattern**: `screen_name_viewed`
 
 | Example | Trigger |
 |---------|---------|
-| `viewed_recipe_detail` | Recipe detail page loads |
-| `viewed_settings` | Settings screen opens |
-| `viewed_search_results` | Search results displayed |
+| `recipe_detail_viewed` | Recipe detail page loads |
+| `settings_viewed` | Settings screen opens |
+| `search_results_viewed` | Search results displayed |
 
 ### Conversions
 Track completion of key user flows.
 
-**Naming pattern**: `completed_flow_name`
+**Naming pattern**: `flow_name_completed`
 
 | Example | Trigger |
 |---------|---------|
-| `completed_onboarding` | User finishes onboarding flow |
-| `completed_purchase` | Purchase transaction succeeds |
-| `completed_signup` | Account creation succeeds |
+| `onboarding_completed` | User finishes onboarding flow |
+| `purchase_completed` | Purchase transaction succeeds |
+| `signup_completed` | Account creation succeeds |
 
 ### State Changes
 Track important system or user state transitions.
 
-**Naming pattern**: `changed_state_property` or `enabled/disabled_feature`
+**Naming pattern**: `state_property_changed` or `feature_enabled/disabled`
 
 | Example | Trigger |
 |---------|---------|
-| `enabled_notifications` | User turns on notifications |
-| `logged_out` | User signs out |
-| `upgraded_plan` | User upgrades subscription tier |
+| `notifications_enabled` | User turns on notifications |
+| `user_logged_out` | User signs out |
+| `plan_upgraded` | User upgrades subscription tier |
 
 ---
 
@@ -70,7 +70,7 @@ Every event should include relevant context:
 Add context relevant to the event:
 
 ```
-event: tapped_share_button
+event: share_button_tapped
 properties:
   content_id: "recipe_123"
   content_type: "recipe"

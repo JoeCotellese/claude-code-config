@@ -98,13 +98,13 @@ if [ -n "$EXISTING_BRANCH" ]; then
     git checkout "$EXISTING_BRANCH"
     echo "Switched to existing branch: $EXISTING_BRANCH"
 else
-    bash scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-description>
+    bash ${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/create_feature_branch.sh $ISSUE_NUM feature <brief-description>
 fi
 ```
 
 ### Step 4: Enter Plan Mode
 
-**CRITICAL**: Enter plan mode to create an implementation plan before writing code.
+Enter plan mode and write the implementation plan before any code.
 
 Use the **EnterPlanMode** tool, then:
 1. If implementing a Django feature, read `~/.claude/docs/django.md` for design principles to align against
@@ -131,7 +131,7 @@ Write the plan to the plan file (path provided by plan mode).
 
 Use **ExitPlanMode** to present the plan for user approval.
 
-**DO NOT write any code until user approves the plan.**
+Write no code until the user approves the plan.
 
 If user requests changes → update the plan and re-present.
 If user approves → proceed to Step 6.
@@ -180,10 +180,10 @@ answers neither and breaks on every refactor. Use TDD, one acceptance criterion 
 Never repeat what a criterion test already observes. Behavior no criterion needs is scope the
 issue never asked for: raise it with the user instead of building it.
 
-**TDD Exception Gate:** If you encounter a task where TDD is not feasible and it was not already flagged in the plan, you MUST stop and use **AskUserQuestion** before proceeding:
+**TDD Exception Gate:** If a task turns out not to be test-drivable and the plan did not already flag it, stop and use **AskUserQuestion** before proceeding:
 
 ```
-⚠️ TDD Exception
+TDD exception
 
 Task: <description of the task>
 Reason TDD isn't feasible: <explanation>
@@ -194,7 +194,7 @@ Proceed without TDD for this task?
 - No → Let's discuss an alternative
 ```
 
-**Do NOT silently skip TDD.** Writing all tests at the end is not acceptable without explicit human acknowledgment.
+Writing all tests at the end needs the user's explicit agreement.
 
 **Commit format:**
 ```bash
@@ -226,7 +226,7 @@ no matter how many times the loop runs:
 
 ### Step 9: GATE - Ready for Review
 
-**CRITICAL**: STOP and ask user before proceeding to submit phase.
+Stop and ask the user before the submit phase.
 
 Report per Phase closeout in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`: what a user can now
 do, any caveat from the `DOD VERDICT`, and any change from the approved plan. Then
@@ -239,14 +239,14 @@ Send #<issue> to code review?
 - Stop here → Pick it up later
 ```
 
-**When user confirms "Yes":** Invoke the `submit` skill:
+**When the user picks "Submit":** Invoke the `submit` skill:
 ```
 Skill tool: skill="submit"
 ```
 
 ## Commit Quality Standards
 
-Every commit MUST:
+Every commit (commit_msg_hook.sh enforces these):
 1. Start with a type prefix (Fix, Add, Update, etc.)
 2. Reference the issue number (#123)
 3. Have subject under 72 characters
@@ -259,7 +259,7 @@ See `references/commit_message_format.md` for examples.
 Install hooks to enforce standards (once per repo):
 
 ```bash
-bash scripts/setup_git_hooks.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/setup_git_hooks.sh
 ```
 
 ## Error Handling

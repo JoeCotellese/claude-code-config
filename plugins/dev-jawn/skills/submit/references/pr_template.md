@@ -13,9 +13,8 @@ Use this structure when creating pull requests with `gh pr create`:
 
 ## Testing
 - [ ] Unit tests pass
-- [ ] Integration tests pass
-- [ ] E2E tests pass (if applicable)
-- [ ] Manual testing completed
+- [ ] Definition of Done: PASS — <results file path>
+- [ ] Code review: `/code-review <level>` + <n> lenses, 0 blocking findings
 - [ ] No new warnings or errors
 
 ## Related Issues

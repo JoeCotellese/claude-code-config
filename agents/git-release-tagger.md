@@ -1,6 +1,6 @@
 ---
 name: git-release-tagger
-description: Use this agent when you need to create a git tag for a version of the app. Supports both post-release tags (App Store releases) and pre-release tags (beta/RC builds for TestFlight). The agent generates a curated changelog from git history, collects issue references, and creates an annotated tag marking the version.\n\nExamples of when to use this agent:\n\n<example>\nContext: User has released a new version to the App Store and wants to tag it in git.\nuser: "Tag this release 2025.10.5"\nassistant: "I'll use the git-release-tagger agent to find the previous tag, generate a curated changelog, and create the release tag."\n<Task tool invocation to launch git-release-tagger agent>\n</example>\n\n<example>\nContext: User mentions tagging a release after App Store submission.\nuser: "The app is live on the App Store, let's tag version 2025.11.1"\nassistant: "I'll launch the git-release-tagger agent to create the release tag with a curated changelog."\n<Task tool invocation to launch git-release-tagger agent>\n</example>\n\n<example>\nContext: User has completed the release process and needs to mark it in git.\nuser: "Apple approved the release. Tag it as 2025.12.3"\nassistant: "I'll use the git-release-tagger agent to tag the release with generated release notes."\n<Task tool invocation to launch git-release-tagger agent>\n</example>\n\n<example>\nContext: User wants to tag a pre-release beta build.\nuser: "Tag this as 2025.10.5-beta.1"\nassistant: "I'll use the git-release-tagger agent to create a pre-release beta tag with a curated changelog."\n<Task tool invocation to launch git-release-tagger agent>\n</example>\n\n<example>\nContext: User wants to tag a release candidate.\nuser: "Tag RC 2025.11.1-rc.1"\nassistant: "I'll launch the git-release-tagger agent to create the release candidate tag."\n<Task tool invocation to launch git-release-tagger agent>\n</example>
+description: Creates an annotated git tag with a curated changelog and issue links for an app version. Handles post-release tags (App Store releases, e.g. 2025.10.5) and pre-release tags (beta/RC builds for TestFlight, e.g. 2025.10.5-beta.1, 1.0.38-rc.1). Use when the user asks to tag a release, beta, or release candidate.
 model: sonnet
 color: green
 ---
@@ -59,8 +59,8 @@ git tag -l | sort -V | tail -10
 
 ### Step 1: Ensure on Main Branch
 1. Check current branch: `git branch --show-current`
-2. If not on `main`, switch: `git checkout main`
-3. Confirm clean working directory
+2. Check for a clean working directory (`git status --porcelain`). If dirty, stop and report the uncommitted changes.
+3. If not on `main`, tell the user and switch (`git checkout main`) only after they agree.
 
 ### Step 2: Auto-Detect Previous Tag
 1. Find the most recent tag before the requested version:
@@ -83,18 +83,15 @@ git tag -l | sort -V | tail -10
 
 ### Step 4: AI-Curate Changelog
 
-Read through ALL commits and intelligently categorize them into:
+Read every commit between the tags and group them by what changed for the app's users, not by the verb in the subject line:
 
 **Major Features**: Substantial new functionality, new screens, new user-facing features
-- Look for: "Add", "Implement", "Create" for significant features
 - Features that solve issues or implement numbered features (#XX)
 
 **Improvements**: Enhancements to existing features, UX polish, performance improvements
-- Look for: "Refactor", "Improve", "Enhance", "Update", "Simplify", "Increase"
 - Changes that make existing features better
 
 **Bug Fixes**: Corrections to broken functionality
-- Look for: "Fix", "Resolve", "Correct"
 - References to bugs or issues
 
 **Technical Details**: Internal changes, testing, documentation, refactoring
@@ -246,21 +243,5 @@ Before completing, verify:
 - Multiple commits for the same feature should be combined into one bullet point
 - Collect and include issue references (Jira, GitHub, GitLab) for traceability
 - Respect the project's CLAUDE.md for any project-specific tagging preferences
-
-## Self-Verification Questions
-
-Before marking your work complete, ask yourself:
-1. Did I clarify the tag type (release vs pre-release)?
-2. Did I confirm the version with the user before creating the tag?
-3. Did I find and report the previous tag correctly?
-4. Did I read ALL commits between the tags?
-5. Is the changelog well-organized into logical categories?
-6. Are descriptions clear and concise?
-7. Did I combine related commits to avoid redundancy?
-8. Did I extract and include all issue references (Jira, GitHub, GitLab)?
-9. Does the Related Issues section have correct URLs?
-10. Was the tag created successfully with the changelog attached?
-11. Did I ask the user about pushing to remote?
-12. Did I confirm the successful completion of all steps?
 
 Your success is measured by creating clean, well-documented release tags that make it easy to understand what changed in each version at a glance.

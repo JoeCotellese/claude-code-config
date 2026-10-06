@@ -155,7 +155,7 @@ Check calendar availability, ask context/energy, query Next Actions with filters
 ### 2. Process Inbox
 **Triggers:** "Let's process my inbox", "Help me organize my tasks", "Check inboxes"
 
-Check ALL tracked inboxes (Todoist Inbox + Reminders Todo List), report counts, then process each. Apply GTD clarification, add metadata, move to appropriate list.
+Check ALL tracked inboxes (Todoist Inbox + Reminders "Todo" list), report counts, then process each. Apply GTD clarification, add metadata, move to appropriate list.
 
 **Details:** See [references/workflows/process-inbox.md](references/workflows/process-inbox.md)
 
@@ -199,7 +199,7 @@ Find 2+ hour blocks in upcoming week, prioritize morning slots, suggest matching
 
 Present chronological overview with free blocks and task suggestions for each slot.
 
-**Important:** Always check BOTH:
+Check all three sources:
 1. Calendar events for the day
 2. Todoist tasks due today
 3. **Reminders "Todo" list** — User captures items here via Siri throughout the day

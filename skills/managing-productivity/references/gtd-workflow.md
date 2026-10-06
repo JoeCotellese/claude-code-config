@@ -4,7 +4,7 @@ This reference provides the detailed decision tree for processing inbox items ac
 
 ## Processing Questions (In Order)
 
-For each item in the inbox ("Todo List"), ask these questions in sequence:
+For each item in the inbox (the Reminders "Todo" list), ask these questions in sequence:
 
 ### 1. What is it?
 Understand the nature of the captured item. Ask the user to explain if unclear from the title alone.

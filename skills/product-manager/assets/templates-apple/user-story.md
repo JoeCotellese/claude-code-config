@@ -107,9 +107,9 @@ Define the accessibility tier and specific requirements (see `references/platfor
 
 ### Analytics Events
 
-- `tapped_share_button` - Fires when user taps share icon on recipe detail (properties: recipe_id, recipe_category)
-- `completed_share` - Fires when share completes successfully (properties: recipe_id, share_destination, method)
-- `cancelled_share` - Fires when user dismisses share sheet without sharing (properties: recipe_id)
+- `share_button_tapped` - Fires when user taps share icon on recipe detail (properties: recipe_id, recipe_category)
+- `share_completed` - Fires when share completes successfully (properties: recipe_id, share_destination, method)
+- `share_cancelled` - Fires when user dismisses share sheet without sharing (properties: recipe_id)
 
 ### Edge Cases & Error Handling
 

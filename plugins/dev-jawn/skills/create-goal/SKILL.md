@@ -108,7 +108,7 @@ learn nothing from it.
 Always both. Never turns alone.
 
 - **Turn limit.** Ask how many attempts before they would want to look themselves. Estimate
-  turns as attempts times turns-per-attempt, plus two. The existing loops sit at 4 to 8.
+  turns as attempts times turns-per-attempt, plus two. The existing loops sit at 4 to 12.
 - **Circuit breaker.** The same failure N runs in a row stops the loop. Default N to 3,
   following L4 in `WORKFLOW.md`. Without this, a turn cap just buys more repetitions of one
   mistake.
@@ -179,9 +179,9 @@ All three are real loops in this config, worth reading when an example helps mor
   `route=/implement`; exit is `status=PASS`; cap is the turn limit plus a three-strike circuit
   breaker. The only loop that runs fully unattended, which is why `/verify` is forbidden from
   editing code: that would close the loop by removing the signal rather than by satisfying it.
-- **`/ready`**, at `${CLAUDE_PLUGIN_ROOT}/skills/ready/SKILL.md:34`. Shows a goal whose condition is a
+- **`/ready`**, the Usage section of `${CLAUDE_PLUGIN_ROOT}/skills/ready/SKILL.md`. Shows a goal whose condition is a
   string match on `DOR VERDICT: #<N>` with an explicit list of acceptable statuses and routes.
-- **`/verify`**, at `${CLAUDE_PLUGIN_ROOT}/skills/verify/SKILL.md:178`. Same shape, 4 turns, and it accepts
+- **`/verify`**, "Running under a goal" in `${CLAUDE_PLUGIN_ROOT}/skills/verify/SKILL.md`. Same shape, 4 turns, and it accepts
   `PASS-with-caveats` as an exit. Worth copying when a loop has a legitimate partial success.
 
 ## What this skill must not do

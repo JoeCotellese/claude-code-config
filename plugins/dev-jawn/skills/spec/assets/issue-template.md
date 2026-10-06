@@ -47,4 +47,4 @@
 
 ---
 
-> Planned with `/workflow:plan` using Claude Code
+> Planned with `/spec` using Claude Code

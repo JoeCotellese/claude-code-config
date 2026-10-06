@@ -107,9 +107,9 @@ Reference: `references/analytics-framework.md`
 
 #### Define Accessibility Requirements
 For every feature, specify accessibility requirements using a tiered approach:
-- **Tier 1 (Required)**: Screen reader labels, minimum targets, text scaling, color independence
-- **Tier 2 (Expected)**: Motion preferences, high contrast, grouped actions
-- **Tier 3 (Excellence)**: Full keyboard navigation, audio descriptions, customization
+- **Tier 1 (Required)**: Screen reader labels, keyboard access, minimum targets, text scaling, color independence, reading order, focus management, error identification
+- **Tier 2 (Expected)**: Motion preferences, high contrast, bold text, grouped actions, state announcements
+- **Tier 3 (Excellence)**: Full keyboard shortcuts, audio descriptions, haptics, customization
 
 Reference: `references/accessibility-framework.md`
 
@@ -245,25 +245,6 @@ Always state which reference is being loaded so the user understands the context
 - **Require accessibility**: Every feature must define its accessibility tier
 - **Include internationalization** by default
 - **Document decisions**: Rationale matters as much as outcomes
-
----
-
-## When to Use This Skill
-
-### Strategic Triggers
-- "Help me prioritize [list of features]"
-- "Should we build X or Y first?"
-- "Run a scoring session with me"
-- "I need to make a tradeoff decision"
-- "How should we allocate resources between these options?"
-
-### Tactical Triggers
-- "I want to add [feature] to our app"
-- "Should we use [approach A] or [approach B]?" (business analysis)
-- "We need better [user outcome]" (break down into stories)
-- "How should we measure success?" (define analytics)
-- "What's the MVP for [feature]?" (prioritize and scope)
-- "Write requirements for [feature]"
 
 ---
 

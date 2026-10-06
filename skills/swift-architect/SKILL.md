@@ -124,23 +124,24 @@ When consulting on architecture, provide:
 @Observable
 @MainActor
 final class RecipeListViewModel {
-    private(set) var recipes: [Recipe] = []
-    private(set) var isLoading = false
+    enum ViewState {
+        case idle, loading, loaded([Recipe]), error(Error)
+    }
 
-    private let repository: RecipeRepositoryProtocol
+    private(set) var state: ViewState = .idle
 
-    init(repository: RecipeRepositoryProtocol) {
+    private let repository: RecipeFetching
+
+    init(repository: RecipeFetching) {
         self.repository = repository
     }
 
     func loadRecipes() async {
-        isLoading = true
-        defer { isLoading = false }
-
+        state = .loading
         do {
-            recipes = try await repository.fetchAll()
+            state = .loaded(try await repository.fetchAll())
         } catch {
-            // Handle error
+            state = .error(error)
         }
     }
 }

@@ -70,7 +70,7 @@ of the size gate. It is a flag, not a blocker.
 **Check for an existing PR.**
 
 ```bash
-PLATFORM=$(bash scripts/detect_git_platform.sh)
+PLATFORM=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_git_platform.sh)
 ```
 
 **GitHub:**
@@ -166,7 +166,7 @@ DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.
 echo "Detected domain: $DOMAIN"
 ```
 
-**IMPORTANT:** Always run the detection script. Do NOT guess the domain from context.
+Use the script's answer rather than inferring the domain, because it reports `ambiguous` where a guess would silently pick one.
 
 - `swift` → `swift-swiftui-reviewer` agent — concurrency and main-actor safety
 - `python` → `python-code-reviewer` skill
@@ -332,7 +332,7 @@ git branch -d <branch-name>
 
 ### Step 12: Report Success
 
-One or two sentences: what shipped to main, in user terms, and anything still open, such as
+Briefly: what shipped to main, in user terms, and anything still open, such as
 a follow-up issue or a deploy that has not happened. Merging is not deploying.
 
 ## Error Handling

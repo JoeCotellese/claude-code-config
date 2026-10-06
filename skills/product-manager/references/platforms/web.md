@@ -278,7 +278,7 @@ if ('IntersectionObserver' in window) {
 | Category | Pattern | Example |
 |----------|---------|---------|
 | Page views | `page_viewed` | `page_viewed` with `path: "/dashboard"` |
-| User actions | `{action}_{object}` | `clicked_signup_button` |
+| User actions | `{object}_{action}` | `signup_button_clicked` |
 | Conversions | `{goal}_completed` | `checkout_completed` |
 | Errors | `{context}_error` | `form_validation_error` |
 
