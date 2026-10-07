@@ -1,0 +1,26 @@
+# ABOUTME: Project definition for toggl-heartbeat, the Claude Code to Toggl time tracker.
+# ABOUTME: Stdlib-only at runtime; dev tools are pytest, ruff, and pyright.
+
+[project]
+name = "toggl-heartbeat"
+version = "0.1.0"
+description = "Turn Claude Code hook heartbeats into billable Toggl time entries"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+toggl-heartbeat = "toggl_heartbeat.cli:main"
+
+[dependency-groups]
+dev = ["pytest", "ruff", "pyright"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-W error"

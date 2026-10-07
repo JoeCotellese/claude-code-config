@@ -1,0 +1,14 @@
+# ABOUTME: Example config for toggl-heartbeat; copy to ~/.config/toggl-heartbeat/config.toml.
+# ABOUTME: Rules map a directory prefix to a Toggl project; the longest matching prefix wins.
+
+workspace_id = 76595
+# Keychain, not `op read`: op times out waiting for authorization under launchd.
+token_command = ["security", "find-generic-password", "-s", "toggl-heartbeat", "-a", "api_token", "-w"]
+idle_minutes = 10        # a gap longer than this ends a block
+grace_minutes = 1        # added after a block's last heartbeat
+billable = false         # billable flags need a paid Toggl plan
+fallback_project_id = 144596551  # Development (Me): any directory no rule matches
+
+[[rule]]
+prefix = "~/git-wavely"
+project_id = 215557949   # General (WavelyDX)
