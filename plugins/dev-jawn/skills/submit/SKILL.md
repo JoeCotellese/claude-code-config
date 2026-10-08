@@ -96,7 +96,7 @@ confirms fixes to its findings rather than re-reviewing the whole branch.
 Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
 and the results file it names.
 
-If there is none, run `/verify` before going further. Submitting work whose acceptance test was
+If there is none, run `/dod` before going further. Submitting work whose acceptance test was
 never run puts the whole judgment on the reviewers, which is what the loop exists to avoid.
 
 ### Step 3: Run the Code Review Committee
@@ -219,7 +219,7 @@ Ready should have caught is also a `/retro`.
 
 ### Step 4: Run Unit Tests and the Regression Sweep
 
-**Unit suite.** `/verify` already ran it. Re-run only when a committee fix changed non-test
+**Unit suite.** `/dod` already ran it. Re-run only when a committee fix changed non-test
 code since that run; a fix to docs, comments or tests alone leaves the verdict current.
 
 **Regression sweep.** Run the acceptance tests the issue lists under **Regression sweep**, each
@@ -347,7 +347,7 @@ a follow-up issue or a deploy that has not happened. Merging is not deploying.
 | PR already exists | Skip Steps 3 and 6, enter review loop |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
-| No `DOD VERDICT` for the issue | Run `/verify` before submitting |
+| No `DOD VERDICT` for the issue | Run `/dod` before submitting |
 | Blocking committee finding | STOP - fix, then re-run that lens only |
 | `/code-review` correctness finding | STOP - fix, then re-run `/code-review` |
 | `/code-review` reports an empty diff or no diff to review | STOP - the sweep reviewed nothing; fix the target and re-run |

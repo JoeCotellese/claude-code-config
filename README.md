@@ -7,13 +7,13 @@ from idea to merged code, with reverse edges so a problem routes back to the pha
 it instead of getting patched downstream.
 
 ```
-/spec → /ready → /ui-design → /implement → /verify → /submit → merged
+/spec → /ready → /ui-design → /implement → /dod → /submit → merged
                                                   ↘ /retro ↗
 ```
 
 Two gates make it work. The **Definition of Ready** (`/ready`) refuses to let an issue into
 implementation until its acceptance criteria are observable and an acceptance test exists. The
-**Definition of Done** (`/verify`) refuses to call it finished until that test passes and every
+**Definition of Done** (`/dod`) refuses to call it finished until that test passes and every
 criterion has something reporting on it.
 
 **→ [`plugins/dev-jawn/skills/WORKFLOW.md`](plugins/dev-jawn/skills/WORKFLOW.md)** documents the
@@ -166,7 +166,7 @@ together, the Definition of Ready, and the Definition of Done.
 | **ready** | Definition of Ready gate — audits eight criteria, repairs what it can, derives the acceptance test, prints `DOR VERDICT` |
 | **ui-design** | Builds the real view as a prototype, drives it, and runs a fresh-context design committee. UI features only |
 | **implement** | TDD implementation under a goal whose exit condition is the Definition of Done |
-| **verify** | Definition of Done runner — unit suite plus the acceptance test, reconciles every criterion to its channel, prints `DOD VERDICT` |
+| **dod** | Definition of Done runner — unit suite plus the acceptance test, reconciles every criterion to its channel, prints `DOD VERDICT` |
 | **submit** | Code review committee, then PR/MR, review iteration, and merge |
 | **retro** | Reverse edge — names the gate that missed a failure and amends it |
 

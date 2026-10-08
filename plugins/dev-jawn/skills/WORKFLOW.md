@@ -13,7 +13,7 @@ flowchart TD
     ready["/ready<br/>goal"]
     design["/ui-design<br/>gate"]
     impl["/implement<br/>goal"]
-    verify["/verify"]
+    dod["/dod"]
     submit["/submit<br/>gate"]
     merged(["merged"])
     retro["/retro<br/>gate"]
@@ -22,15 +22,15 @@ flowchart TD
     ready -->|UI| design
     ready -->|no UI| impl
     design --> impl
-    impl --> verify
-    verify -->|PASS| submit
+    impl --> dod
+    dod -->|PASS| submit
     submit --> merged
-    verify -.->|"gate wrong"| retro
+    dod -.->|"gate wrong"| retro
 
     ready -.->|L1| spec
     design -.->|L2| design
     impl -.->|L3| impl
-    verify -.->|L4| impl
+    dod -.->|L4| impl
     submit -.->|L5| impl
     submit -.->|L6| submit
     retro -.->|L7| ready
@@ -60,7 +60,7 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 **L3 · TDD cycle** — `/implement`
 - Trigger: the next acceptance criterion in the approved plan.
 - Exit: the failing test passes, the tests for the touched code stay green, and the refactor
-  is clean. The whole suite waits for `/verify`.
+  is clean. The whole suite waits for `/dod`.
 - Cap: none, and it needs none. It is per criterion, and the issue bounds the criteria list.
 
 **L5 · Review committee** — `/submit`
@@ -78,12 +78,12 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 - Exit: a later `/ready` run prints `status=PASS`.
 - Cap: human. `/spec` is gated, so this loop cannot spin unattended.
 
-**L4 · Definition of Done** — `/implement` → `/verify` → `/implement`
+**L4 · Definition of Done** — `/implement` → `/dod` → `/implement`
 - Trigger: `DOD VERDICT` with `route=/implement`.
 - Exit: `status=PASS` or `status=PASS-with-caveats`.
 - Cap: the goal's turn limit, plus a circuit breaker — if the same criterion fails three runs
   in a row, stop and report. The problem is not the implementation at that point.
-- This is the only loop that runs fully unattended, which is why `/verify` is forbidden from
+- This is the only loop that runs fully unattended, which is why `/dod` is forbidden from
   editing code or the acceptance test. Both would close the loop by removing the signal.
 
 **L6 · Human review** — after the MR exists
@@ -113,7 +113,7 @@ closes L3 but the code.
 
 Four different mechanisms, no overlap. Picking the wrong one is the most common mistake.
 
-- **Skills** carry the standards. `/ready` holds the Definition of Ready rubric, `/verify`
+- **Skills** carry the standards. `/ready` holds the Definition of Ready rubric, `/dod`
   holds the Definition of Done procedure. They document what good looks like. They do not
   contain iteration counters.
 - **`/goal`** drives phase interiors. It re-runs a turn until a condition holds, so a phase
@@ -204,7 +204,7 @@ it like `bug` or `documentation`: a category, not a gate.
 
 ## Definition of Done
 
-Three things hold, and `/verify` is what establishes them:
+Three things hold, and `/dod` is what establishes them:
 
 - The unit suite is green, with pristine output.
 - The acceptance test written at `/ready` passes against the built app.
@@ -212,7 +212,7 @@ Three things hold, and `/verify` is what establishes them:
   reporting on it is a FAIL, not a skip. This is the check that catches a green suite that
   never exercised half the feature.
 
-`/verify` detects the platform, runs the right harness, writes
+`/dod` detects the platform, runs the right harness, writes
 `scripts/uitests/results/YYYY-MM-DD_HHMM_<name>.md`, and prints:
 
 ```
@@ -274,7 +274,7 @@ You approve each pass. Taste is not delegated.
 
 Plan mode and plan approval are still a human gate. After the plan is approved, the
 implementation runs under a goal whose exit condition is a `DOD VERDICT` line with
-`status=PASS`. `/verify` runs inside that loop and produces it.
+`status=PASS`. `/dod` runs inside that loop and produces it.
 
 Two rules hold no matter how many times the loop runs: the acceptance test is never edited to
 make it pass, and no unit test is weakened. Both are the same failure — removing the only
@@ -344,7 +344,7 @@ Nothing crosses these without you.
 - `/implement` after plan: plan approved?
 - `/submit` after review: merge?
 
-`/ready` and `/verify` have no gate. Each one passes, repairs, or routes, and every outcome is
+`/ready` and `/dod` have no gate. Each one passes, repairs, or routes, and every outcome is
 printed.
 
 `/retro` proposes an amendment to a standard you rely on across every project. It never lands
@@ -366,7 +366,7 @@ short enough to read at a glance, and anything deeper prints only when he asks.
 3. **The machine line last**, when the phase prints one (`DOR VERDICT`, `DOD VERDICT`,
    `RETRO`), in exactly the format its skill defines.
 
-A phase that routes on its own with nothing to decide (`/ready`, `/verify`, a failing loop
+A phase that routes on its own with nothing to decide (`/ready`, `/dod`, a failing loop
 iteration) prints Layer 1 without a gate and says whether it is continuing or stopping.
 
 ### Layer 2: `Tell me more`
@@ -423,4 +423,4 @@ Joe said to skip the gate.
 ## Standalone utilities
 
 - `/git-analysis` — repository health, not part of the loop.
-- `/verify #N` — run the DoD test on demand, outside `/implement`.
+- `/dod #N` — run the DoD test on demand, outside `/implement`.

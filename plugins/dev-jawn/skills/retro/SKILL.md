@@ -12,7 +12,7 @@ This one moves the *process* forward, by asking what let the defect through and 
 instead of only fixing the defect.
 
 ```
-/spec  →  /ready  →  /ui-design  →  /implement  →  /verify  →  /submit
+/spec  →  /ready  →  /ui-design  →  /implement  →  /dod  →  /submit
    ▲         ▲            ▲                            │
    └─────────┴────────────┴──────── /retro ◄───────────┘
               amends the gate that missed it
@@ -24,7 +24,7 @@ Run it when:
   issue that was not ready.
 - A `/ui-design` or `/submit` committee returns a blocking finding — a review caught something
   the builder should have been told about up front.
-- `/verify` prints a `DOD VERDICT` with `route=/retro` — the acceptance test and the
+- `/dod` prints a `DOD VERDICT` with `route=/retro` — the acceptance test and the
   acceptance criteria disagree, so the gate itself is wrong.
 - A defect reaches production. The gate that should have caught it is further back, but the
   procedure is the same.

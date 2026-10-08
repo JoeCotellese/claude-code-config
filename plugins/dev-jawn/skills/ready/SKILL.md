@@ -105,11 +105,11 @@ it. Each AC carries one of three tags:
   is genuinely manual; "`contentDescription` contains no newlines and is under two sentences" is
   the proxy that guards it between manual checks. Qualify it as **`[manual: structural]`** when
   the reason is a property true by construction rather than a human judgment — the same channel,
-  not a fourth tag, and `/verify` reconciles both as `[manual]`.
+  not a fourth tag, and `/dod` reconciles both as `[manual]`.
 
 **"Nothing else regresses" is not an acceptance criterion.** "The suite stays green" and "gate X
 stays green" observe other issues' work. List those acceptance tests in the DoD section under
-**Regression sweep** instead; `/verify` runs the suite once and `/submit` runs the sweep once.
+**Regression sweep** instead; `/dod` runs the suite once and `/submit` runs the sweep once.
 
 An untagged AC fails R2 even when its wording is precise. This is the most common way an issue
 looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
@@ -123,7 +123,7 @@ FAIL example, WPD-2606 AC5: "Screenshots of all 11 Commercial screens across fou
 classes, automated via the AXe harness." Screens enumerated, harness built, devices installed,
 and three states unreachable: one lives only until the device calibrates, which is server-side
 and outlives a reinstall, and two sit behind an unidentified control. The only criterion to fail
-at `/verify`, after the code was written and correct.
+at `/dod`, after the code was written and correct.
 
 Size the evidence against the change, too. A 44-shot four-device sweep is release-qualification
 work; demanding it for a 30-point margin change on two screens costs more than the change and
@@ -302,7 +302,7 @@ For non-UI work, R7 is satisfied by naming the unit or integration test targets 
 the same one-to-one mapping to the ACs.
 
 **The acceptance test observes this issue's criteria and nothing else.** It runs its named
-tests by name, never the whole suite (`/verify` does) and never another issue's acceptance test
+tests by name, never the whole suite (`/dod` does) and never another issue's acceptance test
 (the `/submit` sweep does). FAIL example, periplus #416: its gate nested six others, one twice,
 so every `/implement` iteration paid for all of them.
 
@@ -470,7 +470,7 @@ and no issue amendment, the gate did not do its job.
 ## Next Phase
 
 Whatever `route=` says. `/spec` to fix the specification, `/ui-design` to design it,
-`/implement` to build it. `/implement` closes with `/verify`, which runs the test committed
+`/implement` to build it. `/implement` closes with `/dod`, which runs the test committed
 here and prints the `DOD VERDICT` line that answers this gate.
 
 When a criterion fails in a way that means an earlier phase should have caught it, that is a

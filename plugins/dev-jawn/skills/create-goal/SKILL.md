@@ -177,11 +177,11 @@ All three are real loops in this config, worth reading when an example helps mor
 
 - **Definition of Done**, L4 in `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`. Trigger is a `DOD VERDICT` with
   `route=/implement`; exit is `status=PASS`; cap is the turn limit plus a three-strike circuit
-  breaker. The only loop that runs fully unattended, which is why `/verify` is forbidden from
+  breaker. The only loop that runs fully unattended, which is why `/dod` is forbidden from
   editing code: that would close the loop by removing the signal rather than by satisfying it.
 - **`/ready`**, the Usage section of `${CLAUDE_PLUGIN_ROOT}/skills/ready/SKILL.md`. Shows a goal whose condition is a
   string match on `DOR VERDICT: #<N>` with an explicit list of acceptable statuses and routes.
-- **`/verify`**, "Running under a goal" in `${CLAUDE_PLUGIN_ROOT}/skills/verify/SKILL.md`. Same shape, 4 turns, and it accepts
+- **`/dod`**, "Running under a goal" in `${CLAUDE_PLUGIN_ROOT}/skills/dod/SKILL.md`. Same shape, 4 turns, and it accepts
   `PASS-with-caveats` as an exit. Worth copying when a loop has a legitimate partial success.
 
 ## What this skill must not do
