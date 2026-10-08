@@ -1,31 +1,31 @@
 ---
-name: verify
+name: dod
 max_words: 1700
 effort: medium
-description: "Definition of Done runner. Invoke with `/verify #<issue>` or when the user says 'run the DoD', 'is this done', 'check acceptance', 'did it pass'. Runs the unit suite and the acceptance test authored at /ready against the built app, reconciles every acceptance criterion to the channel that observes it, writes a results file, and prints a fixed DOD VERDICT line so a /goal evaluator can judge the outcome. Runs inside /implement's goal loop or standalone."
+description: "Definition of Done runner. Invoke with `/dod #<issue>` or when the user says 'run the DoD', 'is this done', 'check acceptance', 'did it pass'. Runs the unit suite and the acceptance test authored at /ready against the built app, reconciles every acceptance criterion to the channel that observes it, writes a results file, and prints a fixed DOD VERDICT line so a /goal evaluator can judge the outcome. Runs inside /implement's goal loop or standalone."
 ---
 
 # Definition of Done Runner
 
 Closes the loop `/ready` opened. `/ready` wrote the acceptance test before any code existed;
-`/verify` runs it against what was built and prints a verdict a goal evaluator can read.
+`/dod` runs it against what was built and prints a verdict a goal evaluator can read.
 
 ```
-/ready  →  /implement  →  /verify  →  /submit
+/ready  →  /implement  →  /dod  →  /submit
              ▲              │
              └──────────────┘
                 FAIL routes back
 ```
 
-This skill **runs and reports. It does not fix.** A `/verify` run that edits product code to
+This skill **runs and reports. It does not fix.** A `/dod` run that edits product code to
 make its own test pass has destroyed the only objective signal in the loop. When something
 fails, print the verdict and route back to `/implement`.
 
 ## Usage
 
 ```
-/verify #<issue_number>
-/verify                    # infers the issue from the branch name
+/dod #<issue_number>
+/dod                    # infers the issue from the branch name
 ```
 
 Normally called inside `/implement`'s goal loop. Standalone use is fine: run the DoD on demand
@@ -86,7 +86,7 @@ Always run the script. Do not guess from context. The domain picks both commands
   UI; for non-UI work the named integration tests are the acceptance channel.
 - **`cpp-qt`** — unit: `ctest --test-dir build`. Acceptance: the project's GUI test target if
   one exists; otherwise the `[ui]` criteria are `[manual]` and must carry proxies, which is a
-  `/ready` question, not a `/verify` one.
+  `/ready` question, not a `/dod` one.
 - **`unknown`** — STOP and ask which harness to run. Do not fall back to "run the tests I can
   find" and report a verdict on it.
 - **`ambiguous:<a>,<b>`**: stop and ask which harness this issue's criteria belong to. Do
@@ -97,7 +97,7 @@ Always run the script. Do not guess from context. The domain picks both commands
 Run it first. It is cheaper than the acceptance harness and its failures are more diagnostic.
 
 Capture the failure count and the output. **If the suite fails, still run the acceptance
-harness** unless the build itself is broken. One `/verify` run that reports both failures
+harness** unless the build itself is broken. One `/dod` run that reports both failures
 saves a round trip over two runs that each report one.
 
 ### Step 4 — Run the acceptance harness

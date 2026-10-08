@@ -15,7 +15,7 @@ cd "$REPO_ROOT"
 PLUGIN="plugins/dev-jawn"
 SKILLS="$PLUGIN/skills"
 HOOK="$PLUGIN/hooks/workflow-policy.sh"
-PHASE_SKILLS="spec ready ui-design implement verify submit retro create-goal"
+PHASE_SKILLS="spec ready ui-design implement dod submit retro create-goal"
 
 fail=0
 pass() { printf 'PASS  %s\n' "$1"; }
@@ -352,7 +352,7 @@ if grep -rlq --include=SKILL.md '✅' "$SKILLS" 2>/dev/null; then
 else
     pass "CLOSEOUT no emoji status headers in skills"
 fi
-for s in spec ready ui-design implement verify submit; do
+for s in spec ready ui-design implement dod submit; do
     if grep -q 'Phase closeout' "$SKILLS/$s/SKILL.md"; then
         pass "CLOSEOUT $s points at the contract"
     else
@@ -422,6 +422,24 @@ if awk '/^### Step 7/{on=1} /^### Step 8/{on=0} on' "$IMPL" | grep -q 'Run the u
     bad "SUITE /implement Step 7 still runs the whole suite per criterion"
 else
     pass "SUITE /implement Step 7 runs only the touched code's tests"
+fi
+
+# --- DoD skill name: no collision with Claude Code's built-in /verify ---
+# An unprefixed /verify resolves to the bundled runtime-verification skill, not
+# dev-jawn's DoD runner, so the DoD skill is named dod and nothing points at verify.
+[ -d "$SKILLS/verify" ] \
+    && bad "DOD skills/verify still exists; it collides with the built-in /verify" \
+    || pass "DOD no skills/verify directory"
+grep -q '^name: dod$' "$SKILLS/dod/SKILL.md" 2>/dev/null \
+    && pass "DOD skill frontmatter is name: dod" \
+    || bad "DOD skills/dod/SKILL.md missing or not named dod"
+VERIFY_REFS="$(grep -rnE '(^|[^a-z-])/verify([^a-z-]|$)|skill="verify"|skills/verify|^name: verify' \
+    "$PLUGIN" README.md 2>/dev/null)"
+if [ -n "$VERIFY_REFS" ]; then
+    bad "DOD references to the verify skill remain:"
+    printf '%s\n' "$VERIFY_REFS"
+else
+    pass "DOD no references to the verify skill in $PLUGIN or README.md"
 fi
 
 echo

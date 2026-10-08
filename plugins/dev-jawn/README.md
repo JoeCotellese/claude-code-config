@@ -1,7 +1,7 @@
 # dev-jawn
 
 A phased development loop packaged as a Claude Code plugin: `/spec` → `/ready` → `/ui-design` →
-`/implement` → `/verify` → `/submit`, with `/retro` as the reverse edge. The loop itself is
+`/implement` → `/dod` → `/submit`, with `/retro` as the reverse edge. The loop itself is
 documented in **[skills/WORKFLOW.md](skills/WORKFLOW.md)** — read that for the Definition of
 Ready, the Definition of Done, and the seven loops.
 

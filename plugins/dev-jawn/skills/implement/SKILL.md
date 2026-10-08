@@ -2,7 +2,7 @@
 name: implement
 max_words: 1750
 effort: xhigh
-description: "Feature implementation phase. Invoke with `/implement #<issue>` or when user says 'implement', 'work on issue #', 'start coding'. Clears context, fetches issue, enters plan mode, then implements with TDD under a goal whose exit condition is the Definition of Done. Runs /verify to close the loop and gates to /submit when it passes."
+description: "Feature implementation phase. Invoke with `/implement #<issue>` or when user says 'implement', 'work on issue #', 'start coding'. Clears context, fetches issue, enters plan mode, then implements with TDD under a goal whose exit condition is the Definition of Done. Runs /dod to close the loop and gates to /submit when it passes."
 ---
 
 # Feature Implementation Phase
@@ -10,7 +10,7 @@ description: "Feature implementation phase. Invoke with `/implement #<issue>` or
 Guide the development process from issue to tested, reviewable code.
 
 The issue arrives from `/ready` carrying an acceptance test that was committed **before any
-code existed** and currently fails. That test is the target. The plan makes it pass; `/verify`
+code existed** and currently fails. That test is the target. The plan makes it pass; `/dod`
 decides whether it did.
 
 ## Usage
@@ -41,12 +41,12 @@ Step 4: Enter plan mode → write implementation plan
 Step 5: GATE              ← "Plan approved?"   (human)
 Step 6: Set the goal      ← exit condition = Definition of Done
 Step 7: Implement (TDD)   ┐
-Step 8: /verify           ┴── unattended under the goal, loops on FAIL
+Step 8: /dod              ┴── unattended under the goal, loops on FAIL
 Step 9: GATE              ← "Ready for review?"  (human)
 ```
 
 Steps 7 and 8 run **unattended under a goal**. Plan approval and the submit gate stay
-human. The loop is closed by `/verify`'s printed `DOD VERDICT` line, not by your own judgment
+human. The loop is closed by `/dod`'s printed `DOD VERDICT` line, not by your own judgment
 that the work looks finished.
 
 ## Workflow Steps
@@ -120,7 +120,7 @@ Use the **EnterPlanMode** tool, then:
 - Order of implementation (dependencies first)
 - For each acceptance criterion: the test that observes it, written first, then the implementation
 - Key code patterns to follow from existing codebase
-- Acceptance criteria mapped to implementation tasks, including the `[test: <name>]` criteria — each one names a test that must exist by the end, and `/verify` fails the criterion if it is missing
+- Acceptance criteria mapped to implementation tasks, including the `[test: <name>]` criteria — each one names a test that must exist by the end, and `/dod` fails the criterion if it is missing
 - The accessibility identifiers from the issue's contract, mapped to the views that must carry them
 
 **TDD is the default.** Every acceptance criterion in the plan should name the test written first. If any task genuinely cannot be test-driven (e.g., pure UI layout, config-only changes, infrastructure wiring), it MUST be explicitly marked in the plan with a reason. These exceptions will be flagged to the user at the plan approval gate.
@@ -144,7 +144,7 @@ this for the user to set rather than setting it yourself:
 ```
 /goal Issue #<N> is implemented and the transcript contains a line beginning
 "DOD VERDICT: #<N>" with status=PASS or status=PASS-with-caveats. On a verdict with
-route=/implement, fix what the criterion-by-criterion list names and run /verify again.
+route=/implement, fix what the criterion-by-criterion list names and run /dod again.
 On route=/retro or route=/ready, stop and report the route. Stop after 12 turns.
 ```
 
@@ -210,7 +210,7 @@ EOF
 
 ### Step 8: Run the Definition of Done
 
-Invoke the `verify` skill: `skill="verify", args="#<issue_number>"`.
+Invoke the `dod` skill: `skill="dev-jawn:dod", args="#<issue_number>"`.
 
 It runs the unit suite and the acceptance test, reconciles every acceptance criterion to the
 channel that observes it, writes a results file, and prints the `DOD VERDICT` line the goal is
@@ -220,7 +220,7 @@ On `route=/implement`, go back to Step 7 and fix what the criterion list names. 
 no matter how many times the loop runs:
 
 - **Do not edit the acceptance test to make it pass.** If the test genuinely asserts something
-  the acceptance criteria never said, `/verify` routes to `/retro` and this phase stops. That
+  the acceptance criteria never said, `/dod` routes to `/retro` and this phase stops. That
   judgment is not yours to make mid-loop.
 - **Do not weaken a unit test or delete an assertion.** Same rule as everywhere else.
 
@@ -271,7 +271,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/implement/scripts/setup_git_hooks.sh
 | Tests failing | Fix before gating to submit |
 | No acceptance test on the branch | The issue never passed `/ready`. STOP and route to `/ready` — do not write one now, because a test written by the implementer proves nothing |
 | Same criterion fails 3 runs in a row | STOP. Report to the user; the loop is not converging |
-| `/verify` routes to `/retro` | STOP. The gate is wrong, not the code |
+| `/dod` routes to `/retro` | STOP. The gate is wrong, not the code |
 
 ## Resources
 
