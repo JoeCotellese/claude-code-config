@@ -219,8 +219,11 @@ Ready should have caught is also a `/retro`.
 
 ### Step 4: Run Unit Tests and the Regression Sweep
 
-**Unit suite.** `/dod` already ran it. Re-run only when a committee fix changed non-test
-code since that run; a fix to docs, comments or tests alone leaves the verdict current.
+**Unit suite.** `/dod` already ran it. Re-run only when a committee fix changed non-test code,
+and scoped: drive it test-first with the project's single-test command (`CLAUDE.md` names
+one, else `-only-testing:` or a test path), then run a build plus
+the tests covering the touched files. Run the full suite only when the fix changes shared
+behavior beyond an added case or field, or a reviewer asks.
 
 **Regression sweep.** Run the acceptance tests the issue lists under **Regression sweep**, each
 once. When the project's `AGENTS.md` or `CLAUDE.md` names a sweep command, use it; otherwise run
