@@ -317,6 +317,26 @@ else
     bad "RESUBMIT skip also bypasses the DoD, tests, or push"
 fi
 
+# --- Issue #101: a committee fix reruns scoped tests, not the whole suite ---
+# Step 4's unscoped "re-run the unit suite" sent a one-enum fix through two full
+# suites as its TDD red step. Pull Step 4 out and check it scopes the reruns.
+STEP4=$(awk '/^### Step 4:/{on=1} /^### Step 5:/{on=0} on' "$SUBMIT")
+if printf '%s\n' "$STEP4" | grep -Eqi 'test-first' && printf '%s\n' "$STEP4" | grep -Eqi 'single-test command'; then
+    pass "SCOPE committee fixes are driven test-first with the single-test command"
+else
+    bad "SCOPE Step 4 does not drive committee fixes test-first with scoped runs"
+fi
+if printf '%s\n' "$STEP4" | grep -Eqi 'build' && printf '%s\n' "$STEP4" | grep -Eqi 'tests covering the touched files'; then
+    pass "SCOPE a committee fix is checked by a build plus the touched files' tests"
+else
+    bad "SCOPE Step 4 does not limit the post-fix check to a build plus touched tests"
+fi
+if printf '%s\n' "$STEP4" | grep -Eqi 'full suite only when'; then
+    pass "SCOPE Step 4 names when the full suite reruns"
+else
+    bad "SCOPE Step 4 reruns the full suite on any non-test change"
+fi
+
 
 # --- Issue #63: every phase skill stays under its declared word ceiling ---
 # The ceiling is declared as `max_words:` in the skill's own frontmatter. The
