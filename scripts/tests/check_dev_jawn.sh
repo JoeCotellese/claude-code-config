@@ -337,6 +337,76 @@ else
     bad "SCOPE Step 4 reruns the full suite on any non-test change"
 fi
 
+# --- Issue #103: code-review findings are triaged by severity and proven by a red test ---
+# Blocking on every correctness finding halted submissions on unreachable bugs and let
+# fixes land with no test showing the bug existed. Triage lives in its own reference.
+TRIAGE="$SKILLS/submit/references/finding-triage.md"
+if [ -f "$TRIAGE" ]; then
+    pass "TRIAGE finding-triage.md exists"
+else
+    bad "TRIAGE $TRIAGE missing"
+fi
+TRIAGE_TXT="$(cat "$TRIAGE" 2>/dev/null)"
+for sev in S1 S2 S3; do
+    printf '%s\n' "$TRIAGE_TXT" | grep -Eq "\*\*$sev\*\*" \
+        && pass "TRIAGE defines severity $sev" \
+        || bad "TRIAGE does not define severity $sev"
+done
+if printf '%s\n' "$TRIAGE_TXT" | grep -q 'failure_scenario' \
+    && printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'unfixed branch' \
+    && printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'before any fix'; then
+    pass "TRIAGE requires a test from failure_scenario run on the unfixed branch before any fix"
+else
+    bad "TRIAGE has no reproduction gate on the unfixed branch"
+fi
+if printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'passes on the unfixed branch.*false positive' \
+    && printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'delete the test'; then
+    pass "TRIAGE a test passing on the unfixed branch is a false positive, logged, dropped, test deleted"
+else
+    bad "TRIAGE does not drop false positives and delete their tests"
+fi
+if printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'S1 before S2' \
+    && printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'red, fix, green' \
+    && printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'scoped Step 4 rerun'; then
+    pass "TRIAGE fixes S1 before S2 with red, fix, green, then the scoped Step 4 rerun"
+else
+    bad "TRIAGE fix loop lacks severity order or the red-fix-green-rerun sequence"
+fi
+if printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'S1 that cannot be expressed as a test.*(stop|ask)'; then
+    pass "TRIAGE an untestable S1 stops and asks the user"
+else
+    bad "TRIAGE has no escape hatch for an untestable S1"
+fi
+if printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'Lens A and Lens C.*out of scope'; then
+    pass "TRIAGE names Lens A and Lens C as out of scope"
+else
+    bad "TRIAGE does not exclude Lens A and Lens C"
+fi
+STEP3=$(awk '/^### Step 3:/{on=1} /^### Step 4:/{on=0} on' "$SUBMIT")
+printf '%s\n' "$STEP3" | grep -q 'finding-triage.md' \
+    && pass "TRIAGE /submit Step 3 points to finding-triage.md" \
+    || bad "TRIAGE /submit Step 3 does not point to finding-triage.md"
+# Sentences wrap, so judge the STOP rule one paragraph at a time, not one line.
+STEP3_PARAS=$(printf '%s\n' "$STEP3" | awk 'BEGIN{RS=""} {gsub(/\n/, " "); print}')
+STOP_PARAS=$(printf '%s\n' "$STEP3_PARAS" | grep -E '\*\*[^*]*STOP')
+if printf '%s\n' "$STOP_PARAS" | grep -Eqi 'code-review.*correctness|correctness.*code-review'; then
+    bad "TRIAGE Step 3 still STOPs on any /code-review correctness finding"
+else
+    pass "TRIAGE Step 3 STOP no longer covers /code-review correctness findings"
+fi
+printf '%s\n' "$STOP_PARAS" | grep -q 'Lens A or Lens C' \
+    && pass "TRIAGE Step 3 STOP names Lens A and Lens C blocking findings" \
+    || bad "TRIAGE Step 3 STOP does not name Lens A and Lens C"
+for f in "$SUBMIT" "$SKILLS/submit/references/pr_template.md"; do
+    if grep -q '0 blocking findings' "$f"; then
+        bad "TRIAGE $(basename "$f") Testing still reports only '0 blocking findings'"
+    elif grep -Eqi 'confirmed findings fixed' "$f" && grep -Eqi 'false positives dropped' "$f"; then
+        pass "TRIAGE $(basename "$f") Testing reports confirmed fixes and dropped false positives"
+    else
+        bad "TRIAGE $(basename "$f") Testing does not report confirmed fixes and false positives"
+    fi
+done
+
 
 # --- Issue #63: every phase skill stays under its declared word ceiling ---
 # The ceiling is declared as `max_words:` in the skill's own frontmatter. The
