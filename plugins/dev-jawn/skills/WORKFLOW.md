@@ -65,8 +65,8 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 
 **L5 · Review committee** — `/submit`
 - Trigger: `/code-review` returns a correctness finding, or a lens returns a blocking finding.
-- Exit: zero correctness findings from `/code-review` and zero blocking findings across the
-  lenses the size gate turned on.
+- Exit: every correctness and Lens B blocking finding is fixed behind a red test or dropped
+  per `submit/references/finding-triage.md`, and Lens A and Lens C return zero blocking findings.
 - Cap: the `effort/` tier again. Non-blocking findings are logged to the issue and dropped, so
   the loop cannot be kept alive by style preferences.
 
@@ -287,8 +287,8 @@ opened. Two parts:
 
 The **generic sweep** is the built-in `/code-review` skill, run at the level the size gate
 names. It owns correctness bugs and reuse/simplification/efficiency cleanups, so dev-jawn
-does not hand-maintain a bug-hunting prompt. Its correctness findings block; the rest are
-logged and dropped.
+does not hand-maintain a bug-hunting prompt. Its correctness findings go through
+`submit/references/finding-triage.md`; the rest are logged and dropped.
 
 The **lenses** run in fresh contexts and cover what `/code-review` structurally cannot:
 
