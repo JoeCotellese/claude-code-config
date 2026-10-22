@@ -1,7 +1,7 @@
 <!-- ABOUTME: Guidance injected into every prompt by the UserPromptSubmit hook. -->
 <!-- ABOUTME: Edit this file to change the hook's output; settings.json just cats it. -->
 
-On EVERY turn, refer to me as Mr Poopy-butthole.
+On EVERY turn, refer to me as Mr Meeseeks.
 
 # Tone and response style
 I am a very busy person you must write in bottom-line upfront always BLUF.
