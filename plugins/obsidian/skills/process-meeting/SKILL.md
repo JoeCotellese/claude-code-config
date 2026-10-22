@@ -143,6 +143,8 @@ Common fields for every task:
 
 **Other tasks → Todoist** via Todoist MCP `add-tasks`, destination **inbox** (no projectId), with `dueString` when a timeframe was mentioned.
 
+**If a destination's MCP is not connected, do not substitute another task tool** (no Reclaim, Toggl, or similar). Leave the tasks in the note's Action Items section and tell the user which tasks still need to be created and where.
+
 ## Stage 6: Calendar (iMCP)
 
 Only for **hard deadlines** — conferences, launches, contractual dates.
