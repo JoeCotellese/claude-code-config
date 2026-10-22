@@ -405,7 +405,30 @@ for f in "$SUBMIT" "$SKILLS/submit/references/pr_template.md"; do
     else
         bad "TRIAGE $(basename "$f") Testing does not report confirmed fixes and false positives"
     fi
+    TESTING_LINE=$(grep -Ei -A2 'confirmed findings fixed' "$f")
+    if printf '%s\n' "$TESTING_LINE" | grep -qi 'severity' && printf '%s\n' "$TESTING_LINE" | grep -q 'S3'; then
+        pass "TRIAGE $(basename "$f") Testing reports severity and S3 findings"
+    else
+        bad "TRIAGE $(basename "$f") Testing omits severity or S3 findings"
+    fi
 done
+WORKFLOW="$SKILLS/WORKFLOW.md"
+if grep -Eqi 'zero correctness findings|Its correctness findings block' "$WORKFLOW"; then
+    bad "TRIAGE WORKFLOW.md still says every /code-review correctness finding blocks"
+elif grep -q 'finding-triage.md' "$WORKFLOW"; then
+    pass "TRIAGE WORKFLOW.md L5 and generic sweep defer to finding-triage.md"
+else
+    bad "TRIAGE WORKFLOW.md does not point to finding-triage.md"
+fi
+printf '%s\n' "$STEP3_PARAS" | grep -Eq 'Lens B blocking findings follow `finding-triage.md`' \
+    && pass "TRIAGE Step 3 routes only Lens B blocking findings to triage" \
+    || bad "TRIAGE Step 3 does not say which Lens B findings go to triage"
+printf '%s\n' "$TRIAGE_TXT" | grep -Eqi 'Lens B.*findings that Lens B marks blocking' \
+    && pass "TRIAGE scope limits Lens B to its blocking findings" \
+    || bad "TRIAGE scope does not limit Lens B to its blocking findings"
+awk '/^### references\//{on=1; next} /^#/{on=0} on' "$SUBMIT" | grep -q 'finding-triage.md' \
+    && pass "TRIAGE /submit Resources lists finding-triage.md" \
+    || bad "TRIAGE /submit Resources does not list finding-triage.md"
 
 
 # --- Issue #63: every phase skill stays under its declared word ceiling ---

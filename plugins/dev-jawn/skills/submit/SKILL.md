@@ -171,11 +171,8 @@ Use the script's answer rather than inferring the domain, because it reports `am
 - `unknown` → no dedicated reviewer exists. Say so in one line and continue the committee.
 - `ambiguous:<a>,<b>` → STOP, ask which reviewer the diff wants.
 
-**`unknown` is not a blocker.** Lens B adds language-specific depth on top of a committee
-that already works without it: `/code-review` covers correctness, Lens A covers the
-acceptance criteria, Lens C covers test adequacy. When no reviewer exists for the language,
-the honest move is to name the gap and keep going, not to halt a submission that already
-passed the Definition of Done. Print one line and move to the blocking triage:
+**`unknown` is not a blocker.** `/code-review`, Lens A, and Lens C still run, so name
+the gap and keep going. Print one line and move to the blocking triage:
 
 ```
 Lens B skipped: no dedicated reviewer for this domain. Platform safety is uncovered on this PR.
@@ -210,7 +207,7 @@ test it names.
 submission. Non-blocking findings get logged to the issue and dropped — without that rule
 every submission takes another round on somebody's style preference.
 
-Lens B findings follow `finding-triage.md` too.
+Lens B blocking findings follow `finding-triage.md` too; its non-blocking findings are logged and dropped.
 
 **If Lens A or Lens C returns a blocking finding, STOP.** Report and wait for fixes. A gap
 the Definition of Ready should have caught is also a `/retro`.
@@ -260,7 +257,7 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 ## Testing
 - [x] Unit tests pass
 - [x] Definition of Done: PASS — <results file path>
-- [x] Code review: `/code-review <level>` + <n> lenses; confirmed findings fixed: <tests>; false positives dropped: <n>
+- [x] Code review: `/code-review <level>` + <n> lenses; confirmed findings fixed: <severity, test>; false positives dropped: <n>; S3 logged: <n>
 
 ## Related Issues
 Fixes #<issue>
@@ -372,6 +369,7 @@ depth up, which is why it is a dependency here and not an optimization.
 
 ### references/
 - `pr_template.md` - PR format examples
+- `finding-triage.md` - severity triage and fix loop for Step 3 findings
 
 ## Phase Complete
 

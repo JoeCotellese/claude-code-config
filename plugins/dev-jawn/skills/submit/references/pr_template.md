@@ -17,6 +17,7 @@ Use this structure when creating pull requests with `gh pr create`:
 - [ ] Code review: `/code-review <level>` + <n> lenses
   - Confirmed findings fixed: <severity, reproduction test name> each
   - False positives dropped: <n>, logged to the issue
+  - S3 findings logged and dropped: <n>
 - [ ] No new warnings or errors
 
 ## Related Issues

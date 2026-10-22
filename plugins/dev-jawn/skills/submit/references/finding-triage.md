@@ -11,7 +11,8 @@ In scope:
 
 1. `/code-review` findings with `category: correctness`. Every other `/code-review` category
    (simplification, efficiency, and the rest) is non-blocking: log it to the issue and drop it.
-2. Lens B (platform safety) findings.
+2. Lens B (platform safety) findings that Lens B marks blocking. Its non-blocking findings are
+   logged to the issue and dropped.
 
 Lens A and Lens C are out of scope and keep their own handling. Lens A is covered by the
 acceptance test, and Lens C's findings are about the tests themselves, so a reproduction test
