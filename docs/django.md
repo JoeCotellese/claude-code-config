@@ -4,6 +4,16 @@ These principles guide Django development across all projects. They are drawn fr
 *Fluent Python*, *Python Tricks*, *How to Tango with Django*, and hard-won project
 experience. They complement `python.md` (tooling/style) with architectural philosophy.
 
+## Framework Choice and Typing
+
+- Web apps default to Django. Standalone services and APIs use FastAPI (see
+  `python.md`).
+- `django-stubs`, configured with `AUTH_USER_MODEL` so `request.user` resolves.
+- Annotate explicitly where Django's dynamism defeats inference: custom
+  managers, reverse relations, `QuerySet[MyModel]` return types.
+- Pyright false-positives on Django dynamic attributes are the common case for
+  the narrow `# type: ignore[reportAttributeAccessIssue]` rule in `python.md`.
+
 ## 1. DRY — Don't Repeat Yourself
 
 Every piece of knowledge must have a single, unambiguous, authoritative representation
