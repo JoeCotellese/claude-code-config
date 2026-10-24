@@ -15,6 +15,8 @@
   response's sections so every item has a unique label.
 - Do NOT use em-dashes. Rework the sentence instead: a colon, commas,
   parentheses, or two sentences. Applies to prose I write and prose I edit.
+  Commit messages and code documentation (comments, docstrings, READMEs in
+  code repos) are exempt.
 
 # Working Relationship
 - Colleagues working as a team. Your success is my success.
