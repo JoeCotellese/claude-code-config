@@ -175,7 +175,6 @@ together, the Definition of Ready, and the Definition of Done.
 | Skill | Description |
 |-------|-------------|
 | **kaizen** | Continuous improvement practices |
-| **learnings** | Curate durable project learnings into a shared, opt-in `LEARNINGS.md` |
 | **managing-productivity** | Hybrid GTD + Energy/Time filtering system in Todoist with calendar integration |
 | **product-manager** | Unified PM skill for prioritization (RICE, Kano, MoSCoW) and specifications (PRDs, user stories) across platforms |
 

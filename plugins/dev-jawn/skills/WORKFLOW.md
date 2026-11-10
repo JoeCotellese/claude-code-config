@@ -100,7 +100,7 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 - Exit: the amendment reached a destination — a repo-local file, an issue filed against
   the repository that ships the plugin, or a recorded one-off.
 - Cap: the recurrence test. Amend only what would happen again; everything else gets a
-  `LEARNINGS.md` line and stops.
+  one-line auto memory note and stops.
 - **This loop does not help the issue in front of you.** It changes the gate so the next issue
   does not repeat it. Skipping it is what turns the whole thing back into a straight line.
 
@@ -320,7 +320,7 @@ it is separate from the fix for the issue.
 
 Amend only what would recur. A retro that files an amendment for every failure buries the
 rubric in special cases until nobody reads it, which is the same as having no rubric. A
-genuine one-off gets a `LEARNINGS.md` line and nothing more.
+genuine one-off gets a one-line auto memory note and nothing more.
 
 ## Size gating
 

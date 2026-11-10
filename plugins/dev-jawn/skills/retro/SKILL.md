@@ -46,7 +46,7 @@ rubric in special cases until nobody reads it, which is the same outcome as havi
 
 Ask: would this same failure happen again on a different issue, in a different project, with a
 different feature? If yes, amend. If no, record the entry and stop. A one-off gets a line in
-`LEARNINGS.md` and nothing more, and that is a complete, successful retro.
+auto memory and nothing more, and that is a complete, successful retro.
 
 ## Workflow
 
@@ -72,7 +72,7 @@ Every failure escaped a specific gate. Name the one, not the list:
   than a rubric one.
 
 If you cannot name a gate, say so. "Nothing in the process could have caught this" is a real
-and acceptable answer, and it stops here with a `LEARNINGS.md` entry.
+and acceptable answer, and it stops here with an auto memory entry.
 
 ### Step 3 — Classify the cause
 
@@ -159,8 +159,8 @@ rather than implying the gate now catches it.
 
 ### Step 6 — Record the entry
 
-Append to the project's `LEARNINGS.md` using the `learnings` skill, which owns the format and
-the deduplication. One line, dated, symbol-prefixed. This happens for every retro including
+Save one line to Claude Code's auto memory for this project: the date, the issue, the failure,
+and the gate (or `none`). Skip it if an existing memory line already says the same thing. This happens for every retro including
 one-offs and including "no gate could have caught it".
 
 ### Step 7 — Print the retro line
@@ -170,19 +170,19 @@ On its own line, so it is greppable and a goal evaluator can read it:
 ```
 RETRO: #347  gate=R2   cause=weak-criterion  scope=local     dest=.dev-jawn/ready.md
 RETRO: #347  gate=R2   cause=weak-criterion  scope=upstream  dest=https://github.com/o/r/issues/12
-RETRO: #347  gate=none cause=one-off         scope=none      dest=LEARNINGS.md
+RETRO: #347  gate=none cause=one-off         scope=none      dest=memory
 ```
 
 - `gate` — the criterion or phase that should have caught it, or `none`.
 - `cause` — one of `missing-criterion`, `weak-criterion`, `skipped-phase`,
   `undocumented-standard`, `one-off`.
 - `scope` — `local`, `upstream`, or `none`.
-- `dest` — the repo-local file, the filed issue's URL, `LEARNINGS.md` for a one-off, or
+- `dest` — the repo-local file, the filed issue's URL, `memory` for a one-off, or
   `unresolved` when the upstream repository could not be resolved.
 
 ## Success Condition
 
-The failure is quoted, a gate is named or explicitly ruled out, a `LEARNINGS.md` entry exists,
+The failure is quoted, a gate is named or explicitly ruled out, an auto memory entry exists,
 and the amendment reached its destination: a repo-local file, an issue filed upstream, or a
 transcript entry when neither applied. A retro that produces analysis and no artifact did not
 happen.
@@ -199,7 +199,6 @@ happen.
 
 ## Dependencies
 
-- `learnings` skill for the `LEARNINGS.md` format
 - `glab` or `gh` when pulling the verdict from an issue
 - `gh` for filing an upstream issue, and read access to `~/.claude/plugins/*.json`
 
