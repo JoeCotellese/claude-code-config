@@ -203,5 +203,9 @@ check "AC24a gap rule handles deferred answers" "echo \"\$step2\" | grep -q 'Def
 check "AC24b deferred follow-up is listed under Non-goals" "echo \"\$step2\" | grep -A3 'Deferred answers' | grep -q 'Non-goals'"
 check "AC24c sizing proposes a split past about 15 criteria" "echo \"\$step4s\" | grep -q 'about 15 criteria'"
 
+# AC25 — the policy hook's /ready rule names the chore and bug lane.
+HOOK="$PLUGIN/hooks/workflow-policy.sh"
+check "AC25 hook lets chores and small bug fixes skip /ready" "grep 'Do NOT skip /ready' '$HOOK' | grep -q 'chores and small bug fixes'"
+
 if [ "$fail" -eq 0 ]; then printf '\nRESULT: PASS\n'; else printf '\nRESULT: FAIL\n'; fi
 exit "$fail"

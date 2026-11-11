@@ -27,7 +27,7 @@ read -r -d '' POLICY <<EOF || true
 # Git Workflow (CRITICAL) — provided by the dev-jawn plugin
 - NEVER commit directly to main/master branch. Always create a feature branch first.
 - When the user says "implement", "work on issue", "fix", or mentions an issue number, invoke a phase skill IMMEDIATELY, before writing any code. Pick by the issue's stage: label, which names whose turn it is: nothing filed, no stage: label, stage:spec or stage:human -> /spec #N, which runs each next owner (/ui-design, /ready, /architecture) itself; stage:build -> /implement #N; code already written -> /submit.
-- Do NOT skip /ready because the issue looks complete. Judging whether it is complete is the gate's job, not yours. Skip it only when told to.
+- Do NOT skip /ready because the issue looks complete. Judging whether it is complete is the gate's job, not yours. Only chores and small bug fixes skip it, through /spec's lane to stage:build, or when told to.
 - Those are phases of a loop: /spec -> /ui-design -> /ready -> /architecture -> /implement -> /dod -> /submit, with /retro as the reverse edge when something gets through a gate it should not have. Read ${WORKFLOW} when entering the loop at any phase or when a phase routes work backwards. It holds the Definition of Ready, the Definition of Done, and the seven loops with their exit conditions.
 - Branch naming: <prefix>/<issue>-<desc>. See ~/.claude/docs/source-control.md for the full prefix set (feature, fix, hotfix, chore, docs, test, refactor).
 - All changes must go through PRs for review.
