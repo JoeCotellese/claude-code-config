@@ -32,8 +32,8 @@ else
 fi
 has_label() { [ "$GH_OK" -eq 1 ] && printf '%s\n' "$LABELS" | grep -qxF "$1"; }
 
-# AC1 — the six routing labels exist in the repo.
-for L in gate:machine gate:human gate:mixed unattended blocked needs-design; do
+# AC1 — the five routing labels exist in the repo (needs-design retired: the stage label says it).
+for L in gate:machine gate:human gate:mixed unattended blocked; do
     if has_label "$L"; then pass "AC1 routing label present: $L"
     elif [ "$GH_OK" -eq 0 ]; then bad "AC1 cannot verify label '$L' (gh unavailable)"
     else bad "AC1 routing label missing: $L"; fi
@@ -71,12 +71,11 @@ else
     bad "AC5 R8 gate-is-set criterion missing from ready and/or WORKFLOW"
 fi
 
-# AC6 — /ui-design clears the needs-design label on its final approved pass.
-if grep -qiE 'needs-design' "$UIDESIGN" \
-   && grep -qiE '(remove|clear|delete).{0,40}needs-design|needs-design.{0,40}(remove|clear|delete)' "$UIDESIGN"; then
-    pass "AC6 ui-design clears needs-design on final pass"
+# AC6 — needs-design is retired: /ui-design neither sets nor clears it.
+if grep -qiE 'needs-design' "$UIDESIGN"; then
+    bad "AC6 ui-design still mentions needs-design"
 else
-    bad "AC6 ui-design does not state it clears needs-design"
+    pass "AC6 ui-design no longer handles needs-design"
 fi
 
 # AC7 — WORKFLOW documents the routing axis + pull query, and marks polish a work-type tag.
@@ -97,7 +96,7 @@ if [ ! -x "$MANIFEST" ]; then
 else
     missing=""
     for L in value/S value/M value/L effort/S effort/M effort/L effort/XL \
-             gate:machine gate:human gate:mixed unattended blocked needs-design polish; do
+             gate:machine gate:human gate:mixed unattended blocked polish; do
         grep -qF "$L" "$MANIFEST" || missing="$missing $L"
     done
     if [ -n "$missing" ]; then bad "AC8 manifest omits labels:$missing"

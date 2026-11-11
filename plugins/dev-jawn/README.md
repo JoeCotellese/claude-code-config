@@ -27,11 +27,9 @@ next item it can actually finish.
   required by the Definition of Ready (R8). Set at `/spec`.
 - `unattended` — safe for the loop to pull with no human and no hardware. Set by `/ready`.
 - `blocked` — a dependency must clear first. Set and cleared as dependencies move.
-- `needs-design` — must go through `/ui-design` first. Cleared by `/ui-design` on its final
-  approved pass (single owner, so it never goes stale).
 
-**Not an axis:** `polish` is a work-type tag (cosmetic refinement), like `bug` or
-`documentation`. It is outside the Definition of Ready and outside the pull query.
+**Not an axis:** `polish`, `chore` and `bug` are work-type tags, like `documentation`. `chore`
+and `bug` send an issue from `/spec` straight to `stage:build`. It is outside the Definition of Ready and outside the pull query.
 
 ### The next-item pull query
 

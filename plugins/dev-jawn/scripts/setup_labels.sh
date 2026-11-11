@@ -32,8 +32,18 @@ LABELS=(
   "gate:mixed|5319e7|Both machine and human steps to close"
   "unattended|0e8a16|Safe for the loop to pull with no human/hardware"
   "blocked|b60205|Cannot proceed until a dependency clears"
-  "needs-design|d876e3|Routes through /ui-design before it can be built"
   "polish|fbca04|Work-type tag: cosmetic refinement (not a gate, not priority)"
+  "chore|cfd3d7|Work-type tag: no behavior change; /spec files it straight to stage:build"
+  "bug|d73a4a|Work-type tag: small fix restoring intended behavior; /spec files it to stage:build"
+  # Stage axis — where the issue is in the loop, so any session can resume it. Exactly one per
+  # open issue, naming whose turn it is (State machine in WORKFLOW.md). Closed means done.
+  "stage:spec|ededed|/spec's turn: requirements"
+  "stage:design|d4c5f9|/ui-design's turn: design, or record that none is needed"
+  "stage:human|f9d0c4|The user's turn: a question, a design checkpoint, or a PR"
+  "stage:ready|c5def5|/ready's turn: are requirements and design sufficient?"
+  "stage:architecture|c2e0c6|/architecture's turn: technical notes"
+  "stage:build|bfd4f2|The build run's turn"
+  "stage:review|fef2c0|Reserved: stakeholder review after done (not built yet)"
 )
 
 if [ "$DRY_RUN" -eq 0 ] && ! git rev-parse --git-dir >/dev/null 2>&1; then
