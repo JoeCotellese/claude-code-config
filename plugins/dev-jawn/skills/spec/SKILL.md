@@ -9,7 +9,7 @@ description: "Specification phase: requirements and design. Invoke with `/spec <
 
 The spec is everything an unattended build needs: requirements **and** design. The human
 writes the requirements and guardrails here; the design step and `/ready` then run on their
-own. Requirements and design can happen in one session or separate ones.
+own.
 
 ```
 /spec: requirements + guardrails (with the user) → /ui-design → /ready → /architecture (unattended)
@@ -109,8 +109,7 @@ Output format: Feature brief (not full PRD unless complex)
 ```
 
 **Every Then must be observable by a command or test.** It names an app state, a stored
-record, a response, or a message a test can assert against. This is what lets `/ready` turn
-the criteria into the goal an unattended build runs against; a criterion nothing can check
+record, a response, or a message a test can assert against. A criterion nothing can check
 means the issue can never be Done.
 
 - Observable: "Given a recipe already saved, when the user saves it again, then no duplicate
@@ -129,6 +128,9 @@ task: it can be completed while the feature does not work. Put tasks under their
 password, wrong input, no permission, empty state) and list every gap with a proposed answer.
 Ask in one round, for example "Wrong password 5 times: lock for 15 minutes. Accept?" Each
 confirmed answer becomes a criterion. A guess never becomes a criterion unconfirmed.
+
+**Deferred answers** ("later", "file an issue"): file the follow-up with no `stage:` label,
+link it from this issue, and list it under Non-goals.
 
 Sort each gap before asking:
 
@@ -171,8 +173,7 @@ suggests one should be on:
 
 ### Step 4: Value/Effort Sizing
 
-Assess the feature on two dimensions using the labels available in the repo. Use
-AskUserQuestion to confirm sizing with the user.
+Size the feature with the repo's labels and confirm with AskUserQuestion.
 
 **Value** — business impact to users or the product:
 | Rating | Meaning |
@@ -195,6 +196,9 @@ Value tops out at L. There is no `value/XL`: a critical capability is still `val
 judges at the end throws away the most work when rejected. Go to [Split](#step-r3a-split)
 with this spec as the parent, size each child S to L, and run Steps 6 to 9 per child.
 
+**Past about 15 criteria**, propose a split at the gate with the seams you see; the user
+decides.
+
 Present the proposed sizing with a one-line rationale each:
 ```
 **Value: <proposed>** — <one-line rationale>
@@ -211,9 +215,9 @@ Does this sizing look right?
 
 #### Gate classification — who closes it
 
-Value and effort are the priority axis. The gate is a second axis: **who can close this
-issue, and can an unattended loop touch it.** Every issue gets exactly one `gate:` label, and
-`/ready` refuses to pass an issue whose gate is unset (Definition of Ready, R8).
+The gate is a second axis beside value and effort: **who can close this issue, and can an
+unattended loop touch it.** Every issue gets exactly one `gate:` label; `/ready` R8 refuses an
+unset gate.
 
 | Gate | Meaning |
 |--------|---------|
@@ -380,9 +384,8 @@ context:
 
 - R1 missing stories → `product-manager` skill
 
-**Verify before you amend.** A note that cites `RecipeSearch.swift:65` is only
-useful if that line still says what the issue claims. Correct stale citations: a confidently
-wrong file reference sends the implementer somewhere real and wrong.
+**Verify before you amend.** Correct stale `file:line` citations: a wrong one sends the
+implementer somewhere real and wrong.
 
 Amend the issue in place, quoting whatever you replaced.
 

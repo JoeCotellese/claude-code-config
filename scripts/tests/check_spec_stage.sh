@@ -197,5 +197,11 @@ check "AC23a ui-design saves screenshots under docs/design/<issue>/" "grep -q 'd
 check "AC23b critics save captures there too, never the repo root" "grep -qi 'never the repo root' '$UIDESIGN'"
 check "AC23c ui-design pushes the branch so the issue can link screenshots" "grep -q 'git push -u origin' '$UIDESIGN'"
 
+# AC24 — deferred answers become linked follow-ups; a long criteria list prompts a split.
+step4s="$(awk '/^### Step 4/{on=1;next} /^### Step 5/{on=0} on' "$SPEC")"
+check "AC24a gap rule handles deferred answers" "echo \"\$step2\" | grep -q 'Deferred answers'"
+check "AC24b deferred follow-up is listed under Non-goals" "echo \"\$step2\" | grep -A3 'Deferred answers' | grep -q 'Non-goals'"
+check "AC24c sizing proposes a split past about 15 criteria" "echo \"\$step4s\" | grep -q 'about 15 criteria'"
+
 if [ "$fail" -eq 0 ]; then printf '\nRESULT: PASS\n'; else printf '\nRESULT: FAIL\n'; fi
 exit "$fail"
