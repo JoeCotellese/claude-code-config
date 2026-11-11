@@ -176,5 +176,16 @@ check "AC19a step 8 reads each failure line" "echo \"\$step8\" | grep -qi 'failu
 check "AC19b step 8 runs UI tests against the design prototype" "echo \"\$step8\" | grep -qi 'prototype'"
 check "AC19c step 8 carries the stale-locator example" "echo \"\$step8\" | grep -q 'calsync #77'"
 
+# AC20 — the build hands the issue to the user when the PR opens.
+SUBMIT="$PLUGIN/skills/submit/SKILL.md"
+check "AC20a submit posts a SUBMIT VERDICT routing to stage:human" "grep -q 'SUBMIT VERDICT: #<issue> route=stage:human' '$SUBMIT'"
+check "AC20b submit swaps stage:build for stage:human" "grep -q 'stage:build. for .stage:human' '$SUBMIT'"
+check "AC20c /spec stops on stage:human after a SUBMIT VERDICT" "echo \"\$usage\" | grep '^  - .stage:human' | grep -q 'SUBMIT VERDICT'"
+check "AC20d WORKFLOW stage:human row names PR review" "echo \"\$sm\" | grep -A2 '^- \`stage:human\`' | grep -q 'SUBMIT VERDICT'"
+
+# AC21 — a /submit re-entry re-runs the sweep only when non-test code changed.
+step4="$(awk '/^### Step 4/{on=1;next} /^### /{on=0} on' "$SUBMIT")"
+check "AC21 sweep re-runs only after a non-test change" "echo \"\$step4\" | grep -qi 'since the last green sweep'"
+
 if [ "$fail" -eq 0 ]; then printf '\nRESULT: PASS\n'; else printf '\nRESULT: FAIL\n'; fi
 exit "$fail"

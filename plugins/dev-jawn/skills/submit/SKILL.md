@@ -64,8 +64,8 @@ git log --oneline --stat origin/main..HEAD
 
 Tests should appear in commits *alongside* their implementation code, not lumped together
 at the end. If all tests were written after all implementation, flag it to the user — TDD
-was not followed. This is a cheap deterministic read, so it runs on every issue regardless
-of the size gate. It is a flag, not a blocker.
+was not followed. It runs on every issue regardless of the size gate, as a flag, not a
+blocker.
 
 **Check for an existing PR.**
 
@@ -96,8 +96,8 @@ confirms fixes to its findings rather than re-reviewing the whole branch.
 Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
 and the results file it names.
 
-If there is none, run `/dod` before going further. Submitting work whose acceptance test was
-never run puts the whole judgment on the reviewers, which is what the loop exists to avoid.
+If there is none, run `/dod` before going further, or the whole judgment falls on the
+reviewers.
 
 ### Step 3: Run the Code Review Committee
 
@@ -128,8 +128,8 @@ Skill tool: skill="code-review", args="<low|medium|high> $BRANCH"
 
 **An empty diff is a blocking condition.** If `/code-review` reports no diff to review, or
 that the working tree matches upstream, do not record it as a clean sweep. A review that
-inspected nothing is not a review that found nothing, and the difference is invisible in the
-PR body once it has been written down as a pass. Fix the target and re-run.
+inspected nothing is not one that found nothing, and a PR body recording it as a pass hides
+the difference. Fix the target and re-run.
 
 It owns generic correctness bugs and reuse/simplification/efficiency cleanups. Do not
 hand-write a bug-hunting lens alongside it — that is the job it already does, better.
@@ -178,16 +178,13 @@ the gap and keep going. Print one line and move to the blocking triage:
 Lens B skipped: no dedicated reviewer for this domain. Platform safety is uncovered on this PR.
 ```
 
-Do not prompt the user to pick a reviewer, and do not substitute a hand-written one. A
-generic "platform safety" lens with no curated checklist behind it repeats what
-`/code-review` already did.
+Do not prompt the user to pick a reviewer or substitute a hand-written one: with no curated
+checklist behind it, it repeats `/code-review`.
 
 **`ambiguous` is a blocker**, because a monorepo that matches two domains has a real answer
 and the user knows it. STOP and ask which reviewer the diff wants.
 
-Adding a domain to `detect_project_domain.sh` is only worth doing when a reviewer for that
-language actually exists. Detecting `rust` with nothing to route it to just moves this
-decision one step later.
+Add a domain to `detect_project_domain.sh` only when a reviewer for that language exists.
 
 `effort/S` issues get no platform-safety pass. That is the deliberate cost of the S tier.
 
@@ -221,7 +218,8 @@ the tests covering the touched files. Run the full suite only when the fix chang
 behavior beyond an added case or field, or a reviewer asks.
 
 **Regression sweep.** Run the acceptance tests the issue lists under **Regression sweep**, each
-once. When the project's `AGENTS.md` or `CLAUDE.md` names a sweep command, use it; otherwise run
+once. When the PR already exists, re-run it only if non-test code changed
+since the last green sweep. When the project's `AGENTS.md` or `CLAUDE.md` names a sweep command, use it; otherwise run
 them one by one. A test already red on main is not this branch's failure: file it as its own
 issue (or record it where the project's policy says) and continue. Never patch around it inside
 this issue's acceptance test.
@@ -269,6 +267,11 @@ EOF
 ```bash
 glab mr create --title "<Type> #<issue>: <description>" --description "..."
 ```
+
+**Hand the issue to the user.** As the build's last action, comment
+`SUBMIT VERDICT: #<issue> route=stage:human blocking=none` on the issue with the PR link and
+one sentence on what waits (review, then merge), then swap `stage:build` for `stage:human`.
+Merging closes the issue, and closed means done.
 
 ### Step 7: Report PR and Enter Review Loop
 
@@ -373,4 +376,4 @@ depth up, which is why it is a dependency here and not an optimization.
 
 ## Phase Complete
 
-After merge, the feature loop is complete. User returns to main branch, ready for next `/spec` or `/implement`.
+After merge the loop is complete, back on main.

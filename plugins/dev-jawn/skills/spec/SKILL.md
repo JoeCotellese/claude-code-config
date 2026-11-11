@@ -33,7 +33,8 @@ Labels, verdict comments and the last-action rule follow State machine in `WORKF
 - `#N design` → only on an issue at stage:design: run `/ui-design #N`, then Step 8.
 - `#N` → read the issue's `stage:` label and the latest verdict comment. First match wins:
   - `stage:build` → stop: the build run owns it.
-  - `stage:human` → the latest verdict says what waits on the user. Ask it, then post their
+  - `stage:human` → after a `SUBMIT VERDICT`, stop: the PR awaits review. Otherwise the
+    latest verdict says what waits on the user. Ask it, then post their
     decision as `SPEC VERDICT` with the return state it names (`route=stage:spec`,
     `route=stage:design` or `route=stage:ready`), set that label, and go to Step 8.
   - `stage:design`, `stage:ready`, `stage:architecture` → Step 8.
@@ -421,5 +422,5 @@ Re-spec pass, which can split it again. Run Step 8 on each child in dependency o
 
 ## Next Phase
 
-All modes hand off to → `/ready`, which decides whether the requirements and design are
-enough to start building. Nothing skips it, including issues this skill just wrote.
+Step 8 chains the stages to `stage:build` or `stage:human`. Only chores and small bug fixes
+skip `/ready`.
