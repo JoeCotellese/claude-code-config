@@ -108,12 +108,13 @@ Each pass:
      `ToolSearch("select:browser_click,browser_type,browser_select_option,browser_fill_form")`.
    - **Param gotcha:** these take `element` (description) + **`target`** (the snapshot `ref`,
      e.g. `"e18"`), **not** `ref`. Passing `ref:` fails with `expected string, received undefined at target`.
-   - **Screenshots:** pass an **absolute scratchpad path** as `filename`. A bare name lands in
-     the repo root and shows up in `git status`.
+   - **Screenshots:** pass an absolute path under `docs/design/<issue>/` as `filename`. A bare
+     name lands in the repo root.
 
 2. **Adversarial critics, fresh contexts.** Spawn subagents (Agent tool) that did *not* build
    the prototype, one per lens, all four every pass. Give each the issue and the screenshots
-   (and the live URL if it can drive Playwright). Each one's job is to **break the design**,
+   (and the live URL if it can drive Playwright), and tell it to save any capture under
+   `docs/design/<issue>/`, never the repo root. Each one's job is to **break the design**,
    not to review it: find the input, state, or user it fails for. The builder does not grade
    its own homework.
 
@@ -152,7 +153,8 @@ open at the cap go to the user in Step 5.
 
 - **Post the design log** as an issue comment titled `Design log`: each pass, the critics'
   blocking findings, the changes, the open findings at exit.
-- Commit the view, with its fixtures or prototype route, on the feature branch.
+- Commit the view, with its fixtures or prototype route, and the final pass's screenshots on
+  the feature branch, then `git push -u origin <branch>` so the Design section can link them.
 
 ### Step 5: Hand On
 

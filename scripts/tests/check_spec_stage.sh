@@ -192,5 +192,10 @@ check "AC22a architecture invokes the architect with the Skill tool" "grep -q 'S
 check "AC22b architecture forbids hand-written notes" "grep -qi 'not a substitute' '$ARCH'"
 check "AC22c Technical Notes name the skill that filled them" "grep -q 'Filled by /architecture via' '$ARCH'"
 
+# AC23 — design screenshots live in the repo under docs/design/<issue>/, pushed with the branch.
+check "AC23a ui-design saves screenshots under docs/design/<issue>/" "grep -q 'docs/design/<issue>/' '$UIDESIGN'"
+check "AC23b critics save captures there too, never the repo root" "grep -qi 'never the repo root' '$UIDESIGN'"
+check "AC23c ui-design pushes the branch so the issue can link screenshots" "grep -q 'git push -u origin' '$UIDESIGN'"
+
 if [ "$fail" -eq 0 ]; then printf '\nRESULT: PASS\n'; else printf '\nRESULT: FAIL\n'; fi
 exit "$fail"
