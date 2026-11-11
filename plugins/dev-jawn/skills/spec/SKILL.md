@@ -194,7 +194,7 @@ Value tops out at L. There is no `value/XL`: a critical capability is still `val
 
 **XL always splits.** Never file an `effort/XL` issue: an unattended run that the user only
 judges at the end throws away the most work when rejected. Go to [Split](#step-r3a-split)
-with this spec as the parent, size each child S to L, and run Steps 6 to 9 per child.
+with this spec as the parent, size each child S to L, and run Steps 6 to 8 per child.
 
 **Past about 15 criteria**, propose a split at the gate with the seams you see; the user
 decides.
