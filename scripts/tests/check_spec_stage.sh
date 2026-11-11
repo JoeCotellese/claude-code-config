@@ -187,5 +187,10 @@ check "AC20d WORKFLOW stage:human row names PR review" "echo \"\$sm\" | grep -A2
 step4="$(awk '/^### Step 4/{on=1;next} /^### /{on=0} on' "$SUBMIT")"
 check "AC21 sweep re-runs only after a non-test change" "echo \"\$step4\" | grep -qi 'since the last green sweep'"
 
+# AC22 — /architecture runs the domain architect skill instead of writing the notes itself.
+check "AC22a architecture invokes the architect with the Skill tool" "grep -q 'Skill tool' '$ARCH'"
+check "AC22b architecture forbids hand-written notes" "grep -qi 'not a substitute' '$ARCH'"
+check "AC22c Technical Notes name the skill that filled them" "grep -q 'Filled by /architecture via' '$ARCH'"
+
 if [ "$fail" -eq 0 ]; then printf '\nRESULT: PASS\n'; else printf '\nRESULT: FAIL\n'; fi
 exit "$fail"

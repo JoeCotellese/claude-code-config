@@ -44,6 +44,10 @@ follows the stack the repo uses; it never assumes one.
 | cpp-qt | Invoke `cpp-qt-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
+Invoke the architect with the Skill tool. Writing the notes yourself is not a substitute, even
+when the code looks familiar: the skill carries the domain's patterns and checks. A domain
+whose architect is not installed counts as `unknown`.
+
 **Prompt the architect with:**
 ```
 Design architecture for issue #<N>: <title>
@@ -81,7 +85,8 @@ gh issue edit <N> --remove-label "stage:architecture" --add-label "stage:spec"
 
 ## Step 5: File it
 
-Replace the issue's `## Technical Notes` section with the architect's output, post
+Replace the issue's `## Technical Notes` section with the architect's output, opening with
+`Filled by /architecture via <architect skill> on <date>.`, post
 `ARCH VERDICT: #<N> route=stage:build blocking=none` as an issue comment, then:
 
 ```bash
