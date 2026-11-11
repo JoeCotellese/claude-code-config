@@ -7,20 +7,23 @@ description: "Definition of Ready gate. Invoke with `/ready #<issue>` or when th
 
 # Definition of Ready Gate
 
-Sits between `/spec` and the build phases. An issue that has not passed `/ready` does not get
-implemented.
+Sits between design and architecture. An issue that has not passed `/ready` does not get
+built.
 
 ```
-/spec  →  /ready  →  /ui-design  →  /implement  →  /submit
-            │ ▲          │
-            ▼ │          ▼
-          /spec      (missing design routes here)
+/spec  →  /ui-design  →  /ready  →  /architecture  →  build
+                           │
+                           ▼
+                stage:spec or stage:design
 ```
 
-This phase **repairs before it rejects**. Most issues fail the Definition of Ready on things
-that can be fixed by rewriting: vague acceptance criteria, unnamed accessibility identifiers,
-a missing acceptance test. Fix those in place and amend the issue. Route back only what needs
-a human decision: missing requirements, unbounded scope, absent design.
+Entry: `stage:ready`. Labels, verdict comments and the last-action rule follow State machine
+in `WORKFLOW.md`.
+
+This phase **repairs before it rejects**. Fix in place what rewriting can fix (vague
+acceptance criteria, unnamed accessibility identifiers, a missing acceptance test) and amend
+the issue. Route back only what needs a human decision: missing requirements, unbounded scope,
+absent design.
 
 ## Usage
 
@@ -33,7 +36,7 @@ yourself:
 
 ```
 /goal Issue #<N> has been audited by /ready and the transcript contains a line beginning
-"DOR VERDICT: #<N>" whose status is PASS, or whose route is /spec or /ui-design with the
+"DOR VERDICT: #<N>" whose status is PASS, or whose route is stage:spec or stage:design with the
 blocking criteria named. Report the route and stop. Stop after 6 turns.
 ```
 
@@ -44,9 +47,8 @@ the verdict.
 
 ### The observation test
 
-R2 and R7 both turn on one question: can the observation actually be **made**, and made
-**twice**? Observable in principle is not observable. The test is stated once here and cited
-from each criterion.
+R2 and R7 both ask: can the observation be **made**, and made **twice**? Observable in
+principle is not observable.
 
 - **reachable** — something can drive the system into the asserted state. Name the command or
   gesture; "the state exists" is not an answer.
@@ -86,9 +88,8 @@ element or an app state that a test can assert against.
   and does not create a duplicate."
 - FAIL: "Saving feels fast." "The flow is intuitive." "Errors are handled gracefully."
 
-**Every AC must also name the channel that observes it.** "Observable in principle" is not
-enough: an AC about internal behavior can be perfectly precise and still have nothing watching
-it. Each AC carries one of three tags:
+**Every AC must also name the channel that observes it.** A precise AC about internal
+behavior can still have nothing watching it. Each AC carries one of three tags:
 
 - **`[ui]`** — asserted by the AXe acceptance test through an accessibility identifier.
 - **`[test: <name>]`** — asserted by a named unit or integration test. Use it for behavior with
@@ -111,9 +112,9 @@ it. Each AC carries one of three tags:
 stays green" observe other issues' work. List those acceptance tests in the DoD section under
 **Regression sweep** instead; `/dod` runs the suite once and `/submit` runs the sweep once.
 
-An untagged AC fails R2 even when its wording is precise. This is the most common way an issue
-looks ready and is not: the criteria are crisp, nothing observes half of them, and the gap
-surfaces at the end when the DoD test is written and covers three of five criteria.
+An untagged AC fails R2 even when its wording is precise. It is the most common way an issue
+looks ready and is not: the gap surfaces at the end, when the DoD test covers three of five
+criteria.
 
 **A `[manual]` AC whose evidence is produced by automation still gets the observation test.**
 The tag says a human reads the result; it does not exempt the machinery generating it. Walk
@@ -126,9 +127,9 @@ and outlives a reinstall, and two sit behind an unidentified control. The only c
 at `/dod`, after the code was written and correct.
 
 Size the evidence against the change, too. A 44-shot four-device sweep is release-qualification
-work; demanding it for a 30-point margin change on two screens costs more than the change and
-puts the whole Definition of Done behind the least reliable thing in it. Cut disproportionate
-evidence to the states the change can break, and file the broad sweep as its own issue.
+work, not proof for a margin change on two screens, and it puts the Definition of Done behind
+its least reliable part. Cut evidence to the states the change can break, and file the broad
+sweep as its own issue.
 
 **A numeric threshold gets the repeatable leg**, and the AC must say how the spread was
 established.
@@ -139,11 +140,9 @@ calibrated on ONE run that came back 1.4% off. The term then measured 18.1, 25.1
 47.5% drift. An open issue (#219) already documented ~30% drift on that very instrument. One
 observation is not a calibration.
 
-Rewrite each failing AC into observable form. Preserve the intent: "feels fast" usually means
-a stated latency budget, "handled gracefully" usually means a named error state. When you
-cannot tell what the author meant, say so in the verdict and route to `/spec` rather than
-inventing a requirement. A latency budget is the right shape for "feels fast" and still fails
-**repeatable** until its threshold clears the spread.
+Rewrite each failing AC into observable form, preserving intent: "feels fast" usually means a
+latency budget (which still needs **repeatable**), "handled gracefully" a named error state.
+When you cannot tell what the author meant, say so in the verdict and route to `/spec`.
 
 **Repairable in most cases.**
 
@@ -173,26 +172,17 @@ User-facing work needs approved screens that meet Apple HIG and fit the app's ex
 aesthetic.
 
 - PASS: the issue links or embeds approved screens, or carries a `design::readyforeng` label.
-- FAIL for a UI feature: UX marked "provisional — pending design" by `/spec`, or absent.
+- FAIL for a UI feature: no design, or blocking findings still open that the user has not
+  accepted (a `SPEC VERDICT` after the design log records an acceptance).
 - N/A: backend, CLI, or infrastructure work with no user-visible surface.
 
-**Not repairable here.** Route to `/ui-design`. This is a forward route, not a rejection: the
-rest of the audit still runs and its repairs still land, so `/ui-design` starts from a clean
-issue.
+**Not repairable here.** Route to `stage:design`. The rest of the audit still runs and its
+repairs still land, so the design step starts from a clean issue.
 
 ### R5 — Technical approach
 
-An implementer can start without re-deriving the architecture. Look for the types and files to
-touch, the data flow, and decisions already made with their rationale.
-
-- PASS: names the concrete symbols and files, states the decisions and why.
-- FAIL: "use the existing service layer" with no indication which service or what changes.
-
-Verify the named symbols actually exist. A technical approach that references a type that was
-renamed six months ago is worse than none, because it sends the implementer down a dead end.
-
-**Partially repairable.** You can look up and correct stale symbol names. You cannot invent an
-architecture: route to `/spec` for the architect phase.
+**Not applicable here.** Architecture runs after `/ready`, in `/architecture`, which applies
+this check as its exit criterion. Mark R5 `n/a` and do not count it in `passed`.
 
 ### R6 — Bounded scope
 
@@ -208,17 +198,17 @@ become.
 
 An acceptance test in the project's own harness whose `success_criteria` map one-to-one onto
 the R2 acceptance criteria. On Apple platforms that is an AXe YAML under `scripts/uitests/`;
-on web it is a named Playwright flow. The procedure below is written for the AXe case, which
-is the one with the most moving parts; the rules hold for either harness.
+on web it is a named Playwright flow. The procedure below is written for AXe; the rules hold
+for either harness.
 
 **Scope.** R7 applies to shipping application code. Config repos, markdown and docs work, and
 one-off scripts are exempt under the testing standard in `CLAUDE.md`. When the exemption
-applies, mark R7 N/A and name which exemption you used. Check this before starting the
-procedure, not after: the exemption turns on the repo and the artifact, never on difficulty.
+applies, mark R7 N/A and name which exemption you used. Check it before the procedure,
+not after: the exemption turns on the repo and the artifact, never on difficulty.
 
 FAIL example, over-application: #25 specified a 192-line markdown skill in the config repo.
 R7 ran without checking the exemption and produced a headless `claude -p` harness to drive a
-documentation file. The repo class made R7 N/A before difficulty ever entered the question.
+documentation file.
 
 **Derive it here, before any code exists.** That ordering is the point: it forces the ACs to
 be testable and it gives `/implement` a target that was not written by the person trying to
@@ -243,8 +233,7 @@ Procedure:
    When a test bounds its coverage by asserting a path "only ever sees input Y" or "behaviour is
    unchanged for case Z", VERIFY that exclusion against the feature's own outputs before trusting
    it — a sibling feature may feed the path the excluded input directly, making the case reachable
-   and untested. An excluded case is only safe when the exclusion is checked against what the
-   feature can actually produce, never assumed.
+   and untested.
    FAIL example, #142 AC4: the nav-map-centre test asserted the hyper-jump arrival "only ever sees
    procedural centres — a catalogue star is only ever the initial spawn." But the local star map
    (#130) lists catalogue stars AS jump destinations, so jumping to one was a reachable state the
@@ -265,8 +254,9 @@ Procedure:
    that focus does not land on the chart at launch. It filed auto-hold focus as an implementation
    task and committed the no-tap trigger anyway; SwiftUI focus does not reach first responder
    without interaction in the simulator. Tap-to-focus should have been committed.
-8. **Check the test can fail, can read, and can pass** — a mutation check plus the **readable**
-   and **passable** legs. A test can satisfy step 7 and still fail all three.
+8. **Check the test can fail, can read, fails for the right reason, and can pass**: a mutation
+   check, the **readable** leg, a failure-line read, and the **passable** leg. A test can satisfy
+   step 7 and still fail all four.
 
    *Would every step still pass with the feature deleted?* Name the line you would remove, then
    walk the steps against its absence. If they all still pass, the test guards nothing.
@@ -280,6 +270,14 @@ Procedure:
    screens and never in the tree, because the library renders it at `opacity: 0.015` and iOS drops
    near-transparent views. No reading of the wording would have shown it; one `describe-ui` did.
 
+   *Does each test fail for the right reason?* Read every failure line. It must name the missing
+   feature (an absent element, a 404, no stored record), never a fault in the test itself that
+   the built feature cannot clear. When `/ui-design` left a prototype, run the UI tests against
+   it: every step the prototype renders must pass, and the first failure must be the stubbed part.
+   FAIL example, calsync #77 AC26: the test held a slot locator across the booking's redirect to
+   the confirmation page, then read it there. With the feature built, 15 of 16 passed and AC26
+   timed out on the stale locator. A run against the prototype would have shown it.
+
    *Can the test PASS at all?* A numeric proxy fails today by design, so watching it fail proves
    little. Run **passable** on a synthetic positive: a hand-made mask, a mock render, a doctored
    capture carrying the property the feature will add.
@@ -290,10 +288,9 @@ Procedure:
    construction; ten tuning runs found it. A connected-component filter (drop components under
    12 px, then measure) separated the cases the guard could not.
 
-   All three cost one run of the harness against the *current* build, the positive check on a
-   doctored artifact. That run is the point: the only thing separating a real failing test from a
-   decorative one is having watched it fail for the right reason, and knowing it can pass for the
-   right one.
+   Each costs one harness run: against the *current* build, the prototype, or a doctored
+   artifact. Those runs are the point: a real failing test differs from a decorative one only
+   in having been watched failing for the right reason, and shown able to pass.
 
 The test will not pass yet. Nothing is built. That is expected and correct: it is the failing
 test at the top of the TDD cycle, one level up.
@@ -311,8 +308,8 @@ so every `/implement` iteration paid for all of them.
 ### R8 — Gate is set
 
 Exactly one `gate:` label is present, naming who can close the issue and whether an unattended
-loop may touch it. This is the routing axis, orthogonal to `value/`×`effort/`, and it is what
-lets a downstream loop query for a next item it is actually allowed to finish.
+loop may touch it. It is the routing axis, orthogonal to `value/`×`effort/`, that lets a loop
+pull only items it may finish.
 
 - `gate:machine` — a loop can drive it to done with no person and no hardware in the close path.
 - `gate:human` — a person or physical hardware must close it.
@@ -367,14 +364,13 @@ For each criterion, capture one line of evidence: what you found, quoted or cite
 summary. The verdict has to be defensible when the user disagrees with it.
 
 **Stop repairing once an unrepairable criterion fails.** R7 depends on R2 and R3, and all of
-them depend on R6: if the scope is wrong, the acceptance criteria belong to issues that do not
-exist yet, and every repair you make is thrown away when the issue is split. So when R6 fails,
-or when R1 or R5 fail unrepairably, finish the *audit* on the remaining criteria and report
+them depend on R6: if the scope is wrong, every repair is thrown away when the issue is
+split. So when R6 fails,
+or when R1 fails unrepairably, finish the *audit* on the remaining criteria and report
 what they would need, but do not write the repairs and do not derive the acceptance test.
 Say so in the verdict.
 
-Audit all eight regardless. A verdict that stops at the first failure tells the user one thing
-to fix, then wastes another round discovering the next.
+Audit all eight regardless. Stopping at the first failure costs a round per blocker.
 
 ### Step 4 — Branch and commit the artifacts
 
@@ -421,7 +417,7 @@ silently overwrite something a human wrote: quote what you replaced.
 it can see:
 
 ```
-DOR VERDICT: #347  status=FAIL  passed=6/8  blocking=R4,R6  route=/spec
+DOR VERDICT: #347  status=FAIL  passed=5/7  blocking=R4,R6  route=stage:spec
 ```
 
 - `status` — PASS only when every applicable criterion passes. N/A counts as passing.
@@ -431,15 +427,15 @@ DOR VERDICT: #347  status=FAIL  passed=6/8  blocking=R4,R6  route=/spec
 
 Routing rules, first match wins:
 
-1. R6 fails, or R1/R5 fail unrepairably → `route=/spec`
-2. R4 fails (design missing) → `route=/ui-design`
-3. Everything applicable passes, feature has UI, design present → `route=/ui-design`
-4. Everything applicable passes, no UI → `route=/implement`
+1. R6 fails, or R1 fails unrepairably → `route=stage:spec`
+2. R4 fails → `route=stage:design`
+3. Everything applicable passes → `route=stage:architecture`
+
+Post the verdict as an issue comment, then swap `stage:ready` for the label it routes to.
 
 Precede the verdict with Layer 1 of Phase closeout in `WORKFLOW.md`: whether the issue is
 ready, and each blocker described as the missing behavior, never as R4 or AC2. The per-criterion
-list is Layer 3, printed on request. Then print the `/goal` command for the routed
-phase so the user can paste it.
+list is Layer 3, printed on request.
 
 ## Success Condition
 
@@ -469,8 +465,8 @@ and no issue amendment, the gate did not do its job.
 
 ## Next Phase
 
-Whatever `route=` says. `/spec` to fix the specification, `/ui-design` to design it,
-`/implement` to build it. `/implement` closes with `/dod`, which runs the test committed
+Whatever `route=` says: `stage:spec` to fix the specification, `stage:design` to design it,
+`stage:architecture` to plan the build. The build closes with `/dod`, which runs the test committed
 here and prints the `DOD VERDICT` line that answers this gate.
 
 When a criterion fails in a way that means an earlier phase should have caught it, that is a

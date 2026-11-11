@@ -15,13 +15,13 @@ cd "$REPO_ROOT"
 PLUGIN="plugins/dev-jawn"
 SKILLS="$PLUGIN/skills"
 HOOK="$PLUGIN/hooks/workflow-policy.sh"
-PHASE_SKILLS="spec ready ui-design implement dod submit retro create-goal"
+PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal"
 
 fail=0
 pass() { printf 'PASS  %s\n' "$1"; }
 bad()  { printf 'FAIL  %s\n' "$1"; fail=1; }
 
-# AC8 — plugin subtree exists with all eight skills, WORKFLOW.md, cpr, and the hook.
+# AC8 — plugin subtree exists with all nine skills, WORKFLOW.md, cpr, and the hook.
 for s in $PHASE_SKILLS; do
     if [ -f "$SKILLS/$s/SKILL.md" ]; then pass "AC8 skill present: $s"; else bad "AC8 skill missing: $s"; fi
 done
@@ -465,7 +465,7 @@ if grep -rlq --include=SKILL.md '✅' "$SKILLS" 2>/dev/null; then
 else
     pass "CLOSEOUT no emoji status headers in skills"
 fi
-for s in spec ready ui-design implement dod submit; do
+for s in spec ready ui-design architecture implement dod submit; do
     if grep -q 'Phase closeout' "$SKILLS/$s/SKILL.md"; then
         pass "CLOSEOUT $s points at the contract"
     else
@@ -559,7 +559,7 @@ echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
     echo "Remember the [manual] runtime checks: enable dev-jawn with zero ~/.claude/skills symlinks,"
-    echo "confirm the 8 phase commands resolve (AC1), the policy is in context (AC3), then disable and"
+    echo "confirm the 9 phase commands resolve (AC1), the policy is in context (AC3), then disable and"
     echo "confirm the policy AND commands are gone (AC4)."
 else
     echo "RESULT: FAIL — dev-jawn not yet shipped (expected before implementation)."

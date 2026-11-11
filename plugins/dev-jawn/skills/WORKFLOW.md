@@ -11,23 +11,26 @@ run unattended under `/goal` until a printed condition holds.
 flowchart TD
     spec["/spec<br/>gate"]
     ready["/ready<br/>goal"]
-    design["/ui-design<br/>gate"]
+    design["/ui-design<br/>unattended"]
+    arch["/architecture<br/>unattended"]
     impl["/implement<br/>goal"]
     dod["/dod"]
     submit["/submit<br/>gate"]
     merged(["merged"])
     retro["/retro<br/>gate"]
 
-    spec --> ready
-    ready -->|UI| design
-    ready -->|no UI| impl
-    design --> impl
+    spec -->|feature| design
+    spec -->|chore, bug| impl
+    design --> ready
+    ready --> arch
+    arch --> impl
     impl --> dod
     dod -->|PASS| submit
     submit --> merged
     dod -.->|"gate wrong"| retro
 
     ready -.->|L1| spec
+    arch -.->|L1| spec
     design -.->|L2| design
     impl -.->|L3| impl
     dod -.->|L4| impl
@@ -51,11 +54,12 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 
 ### Level 1 — inside a phase
 
-**L2 · Design iteration** — `/ui-design`
-- Trigger: a committee reviewer returns a blocking finding.
-- Exit: no blocking findings left **and** you approve the pass. Both, not either.
-- Cap: the `effort/` tier. S gets one pass, M two, L three. After the last pass, present the
-  best version and let the user approve, take over, or defer.
+**L2 · Design iteration** — `/ui-design`, run by `/spec`
+- Trigger: an adversarial critic returns a blocking finding.
+- Exit: no blocking findings left. No human approval per pass; the user judges the design at
+  the end, or at a `design-checkpoint` when the issue sets one.
+- Cap: the `effort/` tier. S and M get two passes, L four. At the cap, keep the version with
+  the fewest blocking findings and send the open ones to the user (`stage:human`).
 
 **L3 · TDD cycle** — `/implement`
 - Trigger: the next acceptance criterion in the approved plan.
@@ -73,10 +77,10 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 ### Level 2 — between phases
 
 **L1 · Spec repair** — `/ready` → `/spec` → `/ready`
-- Trigger: `DOR VERDICT` with `route=/spec`. Scope is XL, requirements are missing, or an AC
+- Trigger: a `DOR VERDICT` or `ARCH VERDICT` with `route=stage:spec`. Scope is XL, requirements are missing, or an AC
   cannot be made observable without inventing what the author meant.
 - Exit: a later `/ready` run prints `status=PASS`.
-- Cap: human. `/spec` is gated, so this loop cannot spin unattended.
+- Cap: one unattended repair per run; a second route back sets `stage:human`.
 
 **L4 · Definition of Done** — `/implement` → `/dod` → `/implement`
 - Trigger: `DOD VERDICT` with `route=/implement`.
@@ -151,8 +155,8 @@ pass/fail line per criterion.
   `accessibilityIdentifier`. Without this the DoD test cannot be written.
 - **R4 Design artifact** — user-facing work has approved screens meeting the platform's
   interface guidelines (Apple HIG on Apple platforms) and the app's existing aesthetic. Missing design routes to `/ui-design`, not to `/spec`.
-- **R5 Technical approach** — the types and files to touch, the data flow, and the decisions
-  already made. An implementer can start without re-deriving the architecture.
+- **R5 Technical approach** — checked by `/architecture` after `/ready`, not here: the types
+  and files to touch, the data flow, and the decisions already made.
 - **R6 Bounded scope** — an `effort/` label is present and is not XL. XL routes back to
   `/spec` to be split.
 - **R7 DoD test exists** — an acceptance test in the project's own harness whose
@@ -178,10 +182,41 @@ and can the loop touch it* — a second, orthogonal axis carried by a small set 
   by `/ready`.
 - **`unattended`** — safe for the loop to pull with no human and no hardware. Set by `/ready`.
 - **`blocked`** — a dependency must clear first. Set and cleared as dependencies move.
-- **`needs-design`** — must go through `/ui-design` before it can be built. Set when design is
-  missing; **cleared by `/ui-design` on its final approved pass**, so it never goes stale (single
-  owner). It mirrors what `/ready`'s R4 route computes fresh, so it is a convenience for querying,
-  not a second source of truth.
+
+## State machine
+
+One `stage:` label per open issue says **whose turn it is**, so any session can pick it up from
+GitHub alone. Closed means done.
+
+- `stage:spec`: owner `/spec`; next `stage:design` (feature), `stage:build` (chore or small bug
+  fix), `stage:human` (a question only the user can answer), `stage:spec` (split children),
+  `stage:ready` (a repaired issue).
+- `stage:design`: owner `/ui-design`; next `stage:ready` (designed, or no design needed),
+  `stage:human` (design-checkpoint set, or critics still block at the cap), `stage:spec` (a
+  criterion the design cannot meet).
+- `stage:human`: owner `/spec`, which records the user's decision; next the state the waiting
+  verdict names: `stage:spec`, `stage:design` or `stage:ready`. After a `SUBMIT VERDICT` the
+  user reviews the PR, and merging closes the issue.
+- `stage:ready`: owner `/ready`; next `stage:architecture` (pass), `stage:design` (design missing
+  or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
+- `stage:architecture`: owner `/architecture`; next `stage:build` (technical notes filed),
+  `stage:spec` (the code contradicts the spec).
+- `stage:build`: owner the build run (not built yet); next `stage:human` (PR open).
+- `stage:review`: reserved for stakeholder review after done (not built yet).
+
+An issue with no `stage:` label goes to `/spec`.
+
+Every owner follows the same rules:
+
+1. **Entry check.** Run only when the label is one you own. Otherwise stop and name the owner.
+2. **Verdict comment.** Every transition posts one issue comment: the verdict line
+   (`<STAGE> VERDICT: #N route=stage:<next> blocking=<what, or none>`), two or three plain
+   sentences on what the stage did or decided, and links to anything longer. A skipped stage
+   posts one too ("no design needed"). The skill that resumes from `stage:human` posts the
+   user's decision. The comments are the issue's audit trail; a label change with no verdict
+   after it marks a stage that died halfway.
+3. **Last action.** Set the next label after the verdict comment, removing your own. A crash
+   leaves your label on, so resuming re-runs your stage and never skips it.
 
 A loop that wants a next item it can actually finish queries the label side:
 
@@ -224,15 +259,16 @@ never said routes to `/retro`, because then the gate is wrong rather than the co
 
 ## The phases
 
-### `/spec <description>` — human gated
+### `/spec <description>` — human gated, then unattended
 
-Product-manager, then ux-designer, then a gate, then the architect, sizing, and issue
-creation. Two rules carry the Definition of Ready upstream:
+Requirements and design. With the user: user stories, scenarios, Given/When/Then acceptance
+criteria, guardrails (design constraints, non-goals, stop conditions, rules), the
+`design-checkpoint` and `merge` flags, sizing. One gate before filing. Then, unattended, it
+runs each next owner per State machine: `/ui-design`, `/ready`, `/architecture`. Chores and
+small bug fixes go straight to `stage:build`.
 
-- Acceptance criteria must be written in the observable form R2 requires.
-- The UX section names the `accessibilityIdentifier` for every element an AC references.
-
-Ends by printing the `/goal` command for `/ready`.
+- Every Then must be observable by a command or test (R2), and behavioral, not visual.
+- XL never gets filed; it splits into S to L children.
 
 ### `/ready #N` — unattended under `/goal`
 
@@ -243,22 +279,23 @@ acceptance test, creates the feature branch, and commits the test.
 Prints a fixed verdict line the goal evaluator reads:
 
 ```
-DOR VERDICT: #347  status=PASS  passed=8/8  blocking=none  route=/ui-design
+DOR VERDICT: #347  status=PASS  passed=7/7  blocking=none  route=/ui-design
 ```
 
 Routes: `/spec` when the problem is scope or missing requirements, `/ui-design` when only the
 design is missing, `/implement` when ready and no UI work is needed.
 
-### `/ui-design #N` — human gated
+### `/ui-design #N` — unattended, run by `/spec`
 
 Design passes, up to the count the size gate allows. Each pass builds the **real view**, not a
 throwaway mock, and drives it for the empty, typical, and stress states: Playwright against a
-live prototype URL on web, `mcp__xcode__RenderPreview` on Apple platforms. Then a committee of
-fresh-context agents reviews it on fixed non-overlapping lenses:
+live prototype URL on web, `mcp__xcode__RenderPreview` on Apple platforms. Then four
+fresh-context adversarial critics try to break it, one lens each:
 
-- Acceptance criteria coverage across all three states
-- Accessibility: keyboard path and focus order, contrast, tap target size; VoiceOver and
-  Dynamic Type on Apple platforms, WCAG on web
+- Spec fit: a Given/When/Then it cannot satisfy, or a screen the guardrails forbid
+- States: empty, error, loading, long text, largest Dynamic Type or zoom
+- Accessibility: keyboard path and focus order, contrast, tap target size; VoiceOver on Apple
+  platforms, WCAG on web
 - Platform conventions and fit with the app's existing aesthetic
 
 Each reviewer returns a **blocking finding count**. Only blocking findings force another
@@ -268,7 +305,16 @@ passes always runs three passes.
 On Apple platforms the final pass builds and drives the view in the simulator with AXe, so the
 design is confirmed interactively using the same harness that will run the DoD test.
 
-You approve each pass. Taste is not delegated.
+No pass waits for you. The design log (each pass, what critics blocked, what changed) and the
+screenshots go on the issue, and you judge the result at the end, or at the
+`design-checkpoint` when the issue sets one.
+
+### `/architecture #N` — unattended, after `/ready`
+
+The domain architect (swift, python, cpp-qt) designs how to build the issue from its stories,
+guardrails and design, following the repo's own stack. It fills the issue's Technical Notes and
+applies R5 as its exit check. When the code contradicts the spec, it routes back to `/spec`
+instead of designing around it.
 
 ### `/implement #N` — unattended under `/goal`
 
@@ -327,20 +373,21 @@ genuine one-off gets a `LEARNINGS.md` line and nothing more.
 Committee cost scales with the `effort/` label. `/ready` records the gate in the issue so
 later phases do not re-derive it.
 
-- **effort/S** — one design pass, one design reviewer. Code review: `/code-review low` + Lens A.
-- **effort/M** — up to two design passes, two design lenses. Code review: `/code-review medium`
-  + Lens A + Lens B.
-- **effort/L** — full three passes, three design lenses. Code review: `/code-review high` +
-  Lens A + Lens B + Lens C.
+Every design pass runs four adversarial critics: spec fit, states, accessibility, platform fit.
+
+- **effort/S** — up to two design passes. Code review: `/code-review low` + Lens A.
+- **effort/M** — up to two design passes. Code review: `/code-review medium` + Lens A + Lens B.
+- **effort/L** — up to four design passes. Code review: `/code-review high` + Lens A + Lens B
+  + Lens C.
 - **effort/XL** — does not pass DoR. Split it first.
 
 ## Gates
 
 Nothing crosses these without you.
 
-- `/spec` after UX: ready for architecture?
-- `/spec` after issue: ready for the next phase?
-- `/ui-design` each pass: approve, iterate, or stop?
+- `/spec` before filing: file this spec and start design?
+- `/ui-design` when the issue sets `design-checkpoint` or critics still block at the cap
+  (`stage:human`): approve, iterate, or change the spec?
 - `/implement` after plan: plan approved?
 - `/submit` after review: merge?
 
@@ -410,7 +457,8 @@ DOD VERDICT: #347  status=PASS-with-caveats  criteria=9/9  unit=green  acceptanc
 
 - Fresh idea: `/spec <description>`
 - Existing issue of unknown quality: `/ready #N`
-- Ready issue with a UI: `/ui-design #N`
+- Existing issue in an older format: `/spec #N` (re-spec)
+- Issue that still owes its design: `/spec #N design`
 - Ready issue, no UI: `/implement #N`
 - Code already written: `/submit`
 - Something got through that should not have: `/retro`
