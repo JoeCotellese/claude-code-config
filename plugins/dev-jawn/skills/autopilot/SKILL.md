@@ -49,9 +49,18 @@ Run `dev-jawn:implement` with these replacements:
   - Follow `/implement` Step 7 for this criterion only: failing test first, minimal code,
     touched tests green, one commit.
   - Never edit the acceptance test, weaken an assertion, or delete a test.
+  - An existing test outside the plan that your change makes false: do not edit it. Reply with
+    the test, the check it makes, and why the change makes it false.
+  - A file outside the plan's file list: touch it only if the criterion cannot pass without
+    it, and name it and the reason in your reply.
   - A question you would ask the user: apply the Autopilot rule in `WORKFLOW.md`, post the
     `DECISION:` comment, continue.
   - Reply with the test name, the commit SHA, and any `DECISION:` you posted, or the blocker.
+- **Subagent reports outside the plan.** A test the change makes false becomes a new
+  criterion: post `DECISION: #<N> gate=criterion-added chose=rewrite <test> why=<old check> is
+  false after <change>; new check <check>`, then dispatch a cycle for it. A file outside the
+  plan gets `DECISION: #<N> gate=scope chose=keep <file> why=<reason>`, or, if the criterion
+  did not need it, revert it and file a follow-up issue.
 - **Step 8 (DoD):** run `dev-jawn:dod` in this session, not in a subagent, so the
   `DOD VERDICT` line lands in this transcript. On `route=/implement`, dispatch one fix agent per
   failing criterion with the criterion list's reason, then run `/dod` again.
@@ -74,10 +83,13 @@ The one stop. Report per Phase closeout in `WORKFLOW.md`, Layer 1 first:
 2. The deferred `[manual]` criteria, each with its proxy result and the evidence to look at
    (capture paths, the command to run it).
 3. Every `DECISION:` the run took, one line each, from
-   `gh issue view <N> --comments`, so the user can overrule any of them.
+   `gh issue view <N> --comments`, so the user can overrule any of them. List
+   `gate=criterion-added` and `gate=scope` first: they changed an existing test or a file the
+   plan did not name.
 
-For a change with `[ui]` criteria, `open` the key captures (one per page the change touches,
-desktop width) before the stop line, so the user sees them while deciding.
+When any deferred criterion's evidence is captures (screenshots, renders, recordings), `open`
+the key ones (one per page or view the change touches) before the stop line, so the user sees
+them while deciding.
 
 End with a typed stop, not AskUserQuestion. List each deferred `[manual]` criterion as
 "AC<n>: reply pass or fail", then: "Reply `merge`, or tell me what to change." A form adds a

@@ -82,6 +82,14 @@ is a contradiction, not a build task. #942 found mid-build that its moonrise int
 never pass, because planets spin about one axis while orbits lie in a plane at the wrong angle
 to it.
 
+**Find the existing tests this change makes false.** Search the tests that exercise the code
+the notes touch (callers of the changed symbols, fixtures built on the changed values) and,
+where it is cheap, run them against a scratch version of the change. List each under
+`### Tests this change makes false` in the notes: the test, the check it makes now, and the
+check it should make after. `/implement` plans a cycle for each, so the rewrite is approved
+work, not a surprise mid-build. calsync #88 listed its #85 and #73 rewrites up front and built
+them as planned; periplus #944 found #117's ring test mid-build and had no rule for it.
+
 If the code contradicts the spec (a scenario that cannot happen, a criterion that cannot be met
 without changing scope), do not design around it. Post the contradiction as an issue comment
 ending in `ARCH VERDICT: #<N> route=stage:spec blocking=<what contradicts>`, then stop:

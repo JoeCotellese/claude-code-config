@@ -113,6 +113,7 @@ Use the **EnterPlanMode** tool, then:
 4. **Check for an inherited prototype.** If `/ui-design` ran, the feature branch already holds the approved target view rendered with a fake context, tagged `prototype:` (a `#Preview` fixture, or a throwaway route). Treat that view as the UI starting point — **do not rebuild it**; the plan wires it to real services and removes or repurposes whatever carried the fake data.
 5. Identify files to create/modify
 6. Map each acceptance criterion to its TDD cycle (failing test → minimal code → refactor), and name any lower-level test Step 7 allows
+   Each entry under Technical Notes' `Tests this change makes false` gets its own cycle too: rewrite the check to the corrected one the notes name, in the same commit as the change that falsifies it.
 7. Write a step-by-step implementation plan
 
 **Plan should include:**

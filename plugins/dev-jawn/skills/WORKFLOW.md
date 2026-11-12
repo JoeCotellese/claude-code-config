@@ -418,7 +418,10 @@ The rule every phase follows while the label is on:
   report asks for each one.
 - **Test changes the run may make without asking, each logged as a `DECISION:`:** test setup
   that changes no assertion, and a criterion added after the `DOR VERDICT` (at plan time or
-  mid-build), with the measurement that justifies the change in the comment. It still never
+  mid-build), with the measurement that justifies the change in the comment. An existing test
+  the change makes false, found mid-build, is such a criterion: the comment names the old
+  check and the new one. `/architecture` should have listed it; one it missed is a `/retro`
+  note. It still never
   weakens an assertion, deletes a test, or edits the acceptance test `/ready` committed; a
   criterion that test covers still stops the run.
 - **What still stops the run:** a route to `/retro`, the three-failure circuit breaker, a
