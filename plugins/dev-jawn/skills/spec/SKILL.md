@@ -79,7 +79,7 @@ DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.
 It prints `swift`, `python`, `cpp-qt`, `ambiguous:<a>,<b>`, or `unknown`. On `ambiguous`, ask which
 stack the feature targets. Record it under Sizing for `/architecture`.
 
-Then look for the same work already filed, open or closed:
+In Create mode, look for the same work already filed, open or closed:
 
 ```bash
 gh issue list --state all --limit 20 --search "<two or three key terms>"
