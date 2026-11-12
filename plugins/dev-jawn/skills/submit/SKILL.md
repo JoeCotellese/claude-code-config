@@ -331,6 +331,10 @@ git pull origin main
 git branch -d <branch-name>
 ```
 
+Stop any service this session started (for example `docker compose stop db`). Leave services
+that were already running when the session began. Stopping waits until after the merge so the
+user can still run the branch locally before deciding.
+
 ### Step 12: Report Success
 
 Briefly: what shipped to main, in user terms, and anything still open, such as

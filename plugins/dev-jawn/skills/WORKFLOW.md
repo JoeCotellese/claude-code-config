@@ -425,8 +425,8 @@ The rule every phase follows while the label is on:
   second route back to `/spec`, and anything that would destroy data or touch production. Set
   `stage:human`, post why, and report.
 - **The one planned stop is the merge.** `/submit` opens the PR, then the final report lists
-  the deferred `[manual]` criteria with their evidence, every `DECISION:` taken, and asks to
-  merge.
+  the deferred `[manual]` criteria with their evidence, every `DECISION:` taken, and ends
+  with a typed stop: the user replies `merge` (or feedback) as plain text, not through a form.
 
 ## Phase closeout
 

@@ -76,23 +76,21 @@ The one stop. Report per Phase closeout in `WORKFLOW.md`, Layer 1 first:
 3. Every `DECISION:` the run took, one line each, from
    `gh issue view <N> --comments`, so the user can overrule any of them.
 
-Then AskUserQuestion with each deferred `[manual]` criterion as a question (Pass, Fail, Tell me
-more), plus:
+For a change with `[ui]` criteria, `open` the key captures (one per page the change touches,
+desktop width) before the stop line, so the user sees them while deciding.
 
-```
-Merge #<N>?
-- Merge (Recommended) → /submit Step 10
-- Tell me more → Layer 2
-- Keep it open → leave the PR
-- Stop here → pick it up later
-```
+End with a typed stop, not AskUserQuestion. List each deferred `[manual]` criterion as
+"AC<n>: reply pass or fail", then: "Reply `merge`, or tell me what to change." A form adds a
+click and its "Stop here" branch ends the run, so merging later needs a second `/submit`.
 
-Merge only after every deferred `[manual]` criterion passes. A failed one does not merge. Post it as a `[manual]` failure on the issue, run
-the Step 3 loop on that criterion, and report again.
+When the user replies `merge`, run `/submit` Step 10 onward in this session. Merge only after
+every deferred `[manual]` criterion has a pass. A failed one does not merge. Post it as a
+`[manual]` failure on the issue, run the Step 3 loop on that criterion, and report again.
+Feedback instead of `merge` is a change request: fix it under the same rule and report again.
 
 ## Success Condition
 
 The transcript holds a `DOD VERDICT` with `status=PASS`, `PASS-with-caveats` or
 `PASS-pending-manual`, a PR
-URL, and exactly one AskUserQuestion: the final report's. Any earlier question means a gate
-skipped the Autopilot rule; note it for `/retro`.
+URL, a final report that ends with the typed stop, and no AskUserQuestion. Any question form
+means a gate skipped the Autopilot rule; note it for `/retro`.
