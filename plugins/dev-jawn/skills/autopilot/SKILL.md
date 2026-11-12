@@ -22,7 +22,10 @@ start?" is the stall this skill exists to remove.
 - `#N`: `gh issue edit <N> --add-label autopilot`. If the label does not exist, create it with
   the `autopilot` line from `${CLAUDE_PLUGIN_ROOT}/scripts/setup_labels.sh`, then retry.
 - `<description>`: invoke `dev-jawn:spec` with the description and the Autopilot rule in force.
-  Add the label to every issue it files, in the same step that sets `stage:`.
+  No issue exists yet, so hold each `DECISION:` and post it when the issue is filed. Add the
+  label to every issue it files, in the same step that sets `stage:`.
+- **Split children:** run Steps 2 to 4 for each child in the order `/spec` filed them, one at a
+  time, and give one final report covering all of them.
 
 ## Step 2: Plan and design phases
 

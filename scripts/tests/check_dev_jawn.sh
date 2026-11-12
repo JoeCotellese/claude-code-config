@@ -21,7 +21,7 @@ fail=0
 pass() { printf 'PASS  %s\n' "$1"; }
 bad()  { printf 'FAIL  %s\n' "$1"; fail=1; }
 
-# AC8 — plugin subtree exists with all nine skills, WORKFLOW.md, cpr, and the hook.
+# AC8 — plugin subtree exists with all ten skills, WORKFLOW.md, cpr, and the hook.
 for s in $PHASE_SKILLS; do
     if [ -f "$SKILLS/$s/SKILL.md" ]; then pass "AC8 skill present: $s"; else bad "AC8 skill missing: $s"; fi
 done
@@ -601,6 +601,14 @@ awk '/^# Testing/{on=1;next} /^#/{on=0} on' CLAUDE.md | grep -qi 'autopilot' \
     && pass "AUTO CLAUDE.md Testing carries the autopilot exception" \
     || bad "AUTO CLAUDE.md Testing has no autopilot exception"
 
+DOD="$SKILLS/dod/SKILL.md"
+grep -q 'PASS-pending-manual' "$DOD" && grep -q 'deferred` criteria remain under autopilot → `route=/submit`' "$DOD" \
+    && pass "AUTO /dod routes deferred manual criteria to /submit as PASS-pending-manual" \
+    || bad "AUTO /dod has no PASS-pending-manual route for deferred manual criteria"
+grep -q 'PASS-pending-manual' "$SUBMIT" \
+    && pass "AUTO /submit accepts PASS-pending-manual" \
+    || bad "AUTO /submit does not accept PASS-pending-manual"
+
 # --- A visual [manual] criterion's proxy measures the pixels, not the data behind them ---
 # #942: the Moon's size and orbit proxies passed while it rendered as a black 7 px dot.
 grep -q 'rendered pixels' "$READY" \
@@ -617,7 +625,7 @@ echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
     echo "Remember the [manual] runtime checks: enable dev-jawn with zero ~/.claude/skills symlinks,"
-    echo "confirm the 9 phase commands resolve (AC1), the policy is in context (AC3), then disable and"
+    echo "confirm the 10 skill commands resolve (AC1), the policy is in context (AC3), then disable and"
     echo "confirm the policy AND commands are gone (AC4)."
 else
     echo "RESULT: FAIL — dev-jawn not yet shipped (expected before implementation)."

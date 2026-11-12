@@ -111,7 +111,8 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 ### Where each loop is closed
 
 `/goal` closes L4 and the `/ready` interior. Human gates close L1, L2, L5, L6, and L7. Nothing
-closes L3 but the code.
+closes L3 but the code. Under the `autopilot` label, `/autopilot` takes the human gates per
+Autopilot below, except the merge.
 
 ## The primitives and what each is for
 
@@ -201,7 +202,7 @@ GitHub alone. Closed means done.
   or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
 - `stage:architecture`: owner `/architecture`; next `stage:build` (technical notes filed),
   `stage:spec` (the code contradicts the spec).
-- `stage:build`: owner the build run (not built yet); next `stage:human` (PR open).
+- `stage:build`: owner `/implement`, or `/autopilot` under the `autopilot` label; next `stage:human` (PR open).
 - `stage:review`: reserved for stakeholder review after done (not built yet).
 
 An issue with no `stage:` label goes to `/spec`.
@@ -383,7 +384,7 @@ Every design pass runs four adversarial critics: spec fit, states, accessibility
 
 ## Gates
 
-Nothing crosses these without you.
+Nothing crosses these without you, except under the `autopilot` label (see Autopilot).
 
 - `/spec` before filing: file this spec and start design?
 - `/ui-design` when the issue sets `design-checkpoint` or critics still block at the cap
@@ -416,9 +417,10 @@ The rule every phase follows while the label is on:
   `status=PASS-pending-manual`, which lets `/submit` open the PR but never merge. The final
   report asks for each one.
 - **Test changes the run may make without asking, each logged as a `DECISION:`:** test setup
-  that changes no assertion, and a criterion this same run wrote or rewrote. It still never
-  weakens an assertion, deletes a test, or edits the acceptance test `/ready` committed to make
-  it pass.
+  that changes no assertion, and a criterion added after the `DOR VERDICT` (at plan time or
+  mid-build), with the measurement that justifies the change in the comment. It still never
+  weakens an assertion, deletes a test, or edits the acceptance test `/ready` committed; a
+  criterion that test covers still stops the run.
 - **What still stops the run:** a route to `/retro`, the three-failure circuit breaker, a
   second route back to `/spec`, and anything that would destroy data or touch production. Set
   `stage:human`, post why, and report.

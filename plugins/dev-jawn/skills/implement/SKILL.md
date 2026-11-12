@@ -28,8 +28,6 @@ decides whether it did.
 **Also triggers on:**
 - "implement #123"
 - "work on issue #123"
-- "let's work on #123"
-- "start coding #123"
 
 ## Workflow Overview
 
@@ -49,7 +47,7 @@ Steps 7 and 8 run **unattended under a goal**. Plan approval and the submit gate
 human. The loop is closed by `/dod`'s printed `DOD VERDICT` line, not by your own judgment
 that the work looks finished.
 
-**Autopilot:** `/autopilot` replaces Steps 1, 5, 6 and 9.
+**Autopilot:** `/autopilot` replaces Steps 1, 5, 6 and 9 and plan mode, and runs Step 7 in subagents.
 
 ## Workflow Steps
 
