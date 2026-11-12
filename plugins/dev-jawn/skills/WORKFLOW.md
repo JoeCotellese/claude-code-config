@@ -202,7 +202,7 @@ GitHub alone. Closed means done.
   or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
 - `stage:architecture`: owner `/architecture`; next `stage:build` (technical notes filed),
   `stage:spec` (the code contradicts the spec).
-- `stage:build`: owner `/implement`, or `/autopilot` under the `autopilot` label; next `stage:human` (PR open).
+- `stage:build`: owner the build run: `/implement`, or `/autopilot` under the `autopilot` label; next `stage:human` (PR open).
 - `stage:review`: reserved for stakeholder review after done (not built yet).
 
 An issue with no `stage:` label goes to `/spec`.
