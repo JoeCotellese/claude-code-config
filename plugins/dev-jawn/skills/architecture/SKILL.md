@@ -75,6 +75,13 @@ Check every file:line and symbol it cites against the code before keeping it.
 An implementer can start without re-deriving the architecture: the types and files to touch,
 the data flow, and the decisions with their rationale are named, and every named symbol exists.
 
+**Prove every numeric criterion is reachable** in the code as it stands, before filing: work
+the number through the existing model (a quick calculation, a test run, a scratch probe) and
+check that units, frames and axes agree on the way. A criterion the current model cannot reach
+is a contradiction, not a build task. #942 found mid-build that its moonrise interval could
+never pass, because planets spin about one axis while orbits lie in a plane at the wrong angle
+to it.
+
 If the code contradicts the spec (a scenario that cannot happen, a criterion that cannot be met
 without changing scope), do not design around it. Post the contradiction as an issue comment
 ending in `ARCH VERDICT: #<N> route=stage:spec blocking=<what contradicts>`, then stop:

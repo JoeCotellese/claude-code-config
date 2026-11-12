@@ -131,6 +131,15 @@ work, not proof for a margin change on two screens, and it puts the Definition o
 its least reliable part. Cut evidence to the states the change can break, and file the broad
 sweep as its own issue.
 
+**A visual `[manual]` AC's proxy measures the rendered pixels**, not the data behind them: the
+thing is on screen, its contrast against what surrounds it, and its size in pixels. A proxy on
+the model (an orbit radius, an angular size, a color value in a struct) passes while the
+picture is wrong.
+
+FAIL example, #942: "the Moon reads right from the port" was proxied by its size and orbit,
+which passed while the Moon drew as a near-black 7 px dot that no one could see. A proxy on the
+disc's brightness over the sky would have failed in the loop instead of at the human's look.
+
 **A numeric threshold gets the repeatable leg**, and the AC must say how the spread was
 established.
 

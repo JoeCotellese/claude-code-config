@@ -397,6 +397,35 @@ printed.
 `/retro` proposes an amendment to a standard you rely on across every project. It never lands
 one on its own.
 
+## Autopilot
+
+An issue with the `autopilot` label runs hands-off from spec to an open PR, with one stop at the
+end. `/autopilot #N` (or `/autopilot <description>`) adds the label and drives the run; any
+session that picks the issue up from GitHub sees the label and keeps going the same way.
+
+The rule every phase follows while the label is on:
+
+- **Every gate takes its `(Recommended)` option** instead of asking: the `/spec` questions and
+  filing gate, the `/ui-design` checkpoint, plan approval, the TDD exception gate, and any
+  mid-run question (a contradiction found while building, a scope fork). Post it as an issue
+  comment, `DECISION: #<N> gate=<which> chose=<option> why=<one line>`, and continue. A
+  question with no recommended option picks the one that keeps the issue's scope, and files
+  the rest as a follow-up issue.
+- **`[manual]` criteria wait for the end.** `/dod` records each one's proxy result and marks
+  the criterion `deferred`. With everything else passing, the verdict is
+  `status=PASS-pending-manual`, which lets `/submit` open the PR but never merge. The final
+  report asks for each one.
+- **Test changes the run may make without asking, each logged as a `DECISION:`:** test setup
+  that changes no assertion, and a criterion this same run wrote or rewrote. It still never
+  weakens an assertion, deletes a test, or edits the acceptance test `/ready` committed to make
+  it pass.
+- **What still stops the run:** a route to `/retro`, the three-failure circuit breaker, a
+  second route back to `/spec`, and anything that would destroy data or touch production. Set
+  `stage:human`, post why, and report.
+- **The one planned stop is the merge.** `/submit` opens the PR, then the final report lists
+  the deferred `[manual]` criteria with their evidence, every `DECISION:` taken, and asks to
+  merge.
+
 ## Phase closeout
 
 Every phase ends with a report to the product owner, not to another developer. Joe reads it
@@ -456,6 +485,7 @@ DOD VERDICT: #347  status=PASS-with-caveats  criteria=9/9  unit=green  acceptanc
 ## Entry points
 
 - Fresh idea: `/spec <description>`
+- Hands-off, from idea or issue to an open PR: `/autopilot <description>` or `/autopilot #N`
 - Existing issue of unknown quality: `/ready #N`
 - Existing issue in an older format: `/spec #N` (re-spec)
 - Issue that still owes its design: `/spec #N design`

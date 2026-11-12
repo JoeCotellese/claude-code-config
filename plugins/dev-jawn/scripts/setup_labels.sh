@@ -32,6 +32,7 @@ LABELS=(
   "gate:mixed|5319e7|Both machine and human steps to close"
   "unattended|0e8a16|Safe for the loop to pull with no human/hardware"
   "blocked|b60205|Cannot proceed until a dependency clears"
+  "autopilot|0e8a16|Hands-off run: gates take the recommended option, one stop at the PR"
   "polish|fbca04|Work-type tag: cosmetic refinement (not a gate, not priority)"
   "chore|cfd3d7|Work-type tag: no behavior change; /spec files it straight to stage:build"
   "bug|d73a4a|Work-type tag: small fix restoring intended behavior; /spec files it to stage:build"

@@ -93,8 +93,8 @@ confirms fixes to its findings rather than re-reviewing the whole branch.
 
 ### Step 2: Confirm the Definition of Done Passed
 
-Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
-and the results file it names.
+Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`
+(or `PASS-pending-manual` under autopilot, which never merges), and the results file it names.
 
 If there is none, run `/dod` before going further, or the whole judgment falls on the
 reviewers.

@@ -49,6 +49,8 @@ Steps 7 and 8 run **unattended under a goal**. Plan approval and the submit gate
 human. The loop is closed by `/dod`'s printed `DOD VERDICT` line, not by your own judgment
 that the work looks finished.
 
+**Autopilot:** `/autopilot` replaces Steps 1, 5, 6 and 9.
+
 ## Workflow Steps
 
 ### Step 1: Clear Context

@@ -68,6 +68,8 @@ Step 8:    Hand off to /ready      (unattended)
 
 ## Workflow Steps
 
+**Autopilot:** under the `autopilot` label, every gate below follows Autopilot in `WORKFLOW.md`.
+
 ### Step 1: Detect Project Domain
 
 ```bash

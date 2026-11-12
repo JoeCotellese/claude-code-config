@@ -15,7 +15,7 @@ cd "$REPO_ROOT"
 PLUGIN="plugins/dev-jawn"
 SKILLS="$PLUGIN/skills"
 HOOK="$PLUGIN/hooks/workflow-policy.sh"
-PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal"
+PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal autopilot"
 
 fail=0
 pass() { printf 'PASS  %s\n' "$1"; }
@@ -554,6 +554,64 @@ if [ -n "$VERIFY_REFS" ]; then
 else
     pass "DOD no references to the verify skill in $PLUGIN or README.md"
 fi
+
+# --- Autopilot: one hands-off run, one stop at the end ---
+# The #942 session stalled ten times for questions whose recommended answer was taken every
+# time. The autopilot label plus the /autopilot driver take the recommended option at each gate,
+# log it, and stop once at the open PR. Reverting any piece flips its check to FAIL.
+
+AUTO="$SKILLS/autopilot/SKILL.md"
+AUTOSEC="$(awk '/^## Autopilot/{on=1;next} /^## /{on=0} on' "$SKILLS/WORKFLOW.md")"
+grep -q '^ *"autopilot|' "$PLUGIN/scripts/setup_labels.sh" \
+    && pass "AUTO setup_labels.sh defines the autopilot label" \
+    || bad "AUTO setup_labels.sh has no autopilot label"
+grep -q '^name: autopilot$' "$AUTO" 2>/dev/null \
+    && pass "AUTO autopilot skill frontmatter is name: autopilot" \
+    || bad "AUTO skills/autopilot/SKILL.md missing or misnamed"
+[ "$(grep -c 'ABOUTME:' "$AUTO" 2>/dev/null || echo 0)" -ge 2 ] \
+    && pass "AUTO autopilot skill carries the ABOUTME header" \
+    || bad "AUTO autopilot skill lacks the two-line ABOUTME header"
+[ -n "$AUTOSEC" ] \
+    && pass "AUTO WORKFLOW.md has an Autopilot section" \
+    || bad "AUTO WORKFLOW.md has no Autopilot section"
+echo "$AUTOSEC" | grep -q 'Recommended' && echo "$AUTOSEC" | grep -q 'DECISION:' \
+    && pass "AUTO gate rule takes the recommended option and logs a DECISION comment" \
+    || bad "AUTO gate rule does not take Recommended and log DECISION"
+echo "$AUTOSEC" | grep -qi 'merge' \
+    && pass "AUTO gate rule keeps the merge as the one human stop" \
+    || bad "AUTO gate rule does not keep merge human"
+echo "$AUTOSEC" | grep -qi 'weaken' && echo "$AUTOSEC" | grep -qi 'acceptance test' \
+    && pass "AUTO gate rule still forbids weakening assertions and editing the acceptance test" \
+    || bad "AUTO gate rule lost the test-integrity limits"
+echo "$AUTOSEC" | grep -qi 'manual' \
+    && pass "AUTO gate rule defers manual criteria to the final report" \
+    || bad "AUTO gate rule says nothing about manual criteria"
+grep -q 'subagent_type\|Agent' "$AUTO" 2>/dev/null && grep -q '12' "$AUTO" 2>/dev/null \
+    && pass "AUTO driver builds with a fresh Agent per criterion under a 12-round cap" \
+    || bad "AUTO driver has no per-criterion Agent build or no round cap"
+for s in spec ui-design implement dod; do
+    grep -q 'Autopilot' "$SKILLS/$s/SKILL.md" \
+        && pass "AUTO $s points at the Autopilot rule" \
+        || bad "AUTO $s has no pointer to the Autopilot rule"
+done
+grep -q '/autopilot' "$HOOK" \
+    && pass "AUTO workflow hook routes autopilot-labeled issues to /autopilot" \
+    || bad "AUTO workflow hook does not mention /autopilot"
+awk '/^# Testing/{on=1;next} /^#/{on=0} on' CLAUDE.md | grep -qi 'autopilot' \
+    && pass "AUTO CLAUDE.md Testing carries the autopilot exception" \
+    || bad "AUTO CLAUDE.md Testing has no autopilot exception"
+
+# --- A visual [manual] criterion's proxy measures the pixels, not the data behind them ---
+# #942: the Moon's size and orbit proxies passed while it rendered as a black 7 px dot.
+grep -q 'rendered pixels' "$READY" \
+    && pass "PROXY /ready requires a visual proxy to measure rendered pixels" \
+    || bad "PROXY /ready lets a visual criterion's proxy check only the model data"
+
+# --- /architecture proves every numeric criterion is reachable before filing ---
+# #942: a moonrise criterion could never pass in the existing spin/orbit frame, found mid-build.
+awk '/^## Step 4/{on=1} /^## Step 5/{on=0} on' "$SKILLS/architecture/SKILL.md" | grep -qi 'reachable' \
+    && pass "FEAS /architecture checks numeric criteria are reachable" \
+    || bad "FEAS /architecture has no reachability check"
 
 echo
 if [ "$fail" -eq 0 ]; then

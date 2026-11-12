@@ -127,6 +127,9 @@ These cannot be run. List them for the user with their proxies, and record the p
 criterion. Unanswered manual criteria make the status FAIL, because the verdict has to be
 defensible.
 
+**Autopilot:** under the `autopilot` label, do not ask. Mark each `[manual]` criterion `deferred`
+with its proxy result, per Autopilot in `WORKFLOW.md`.
+
 ### Step 7 — Reconcile
 
 Count. The issue's criteria total must equal the sum of criteria observed across the three
@@ -154,7 +157,8 @@ DOD VERDICT: #347  status=FAIL  criteria=7/9  unit=1-failing  acceptance=FAIL  r
 ```
 
 - `status` — PASS, FAIL, or `PASS-with-caveats`. PASS only when all three parts of the
-  Definition of Done hold.
+  Definition of Done hold. Under autopilot only, `PASS-pending-manual`: all else passes and
+  the `[manual]` criteria are `deferred`.
 - `criteria` — criteria observed and passing over criteria in the issue.
 - `unit` — `green` or `<n>-failing`.
 - `acceptance` — PASS, FAIL, or `n/a` for work with no `[ui]` criteria.
