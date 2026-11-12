@@ -56,7 +56,7 @@ When the argument is ambiguous, ask rather than guess: a duplicate issue is a me
 Create mode:
 
 ```
-Step 1:    Detect domain           (automatic)
+Step 1:    Domain + duplicates     (automatic)
 Step 2:    Requirements            (with the user)
 Step 3:    Guardrails + flags      (with the user)
 Step 4:    Sizing + gate           (with the user)
@@ -70,7 +70,7 @@ Step 8:    Hand off to /ready      (unattended)
 
 **Autopilot:** under the `autopilot` label, every gate below follows Autopilot in `WORKFLOW.md`.
 
-### Step 1: Detect Project Domain
+### Step 1: Detect Project Domain and Duplicates
 
 ```bash
 DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.sh)
@@ -78,6 +78,18 @@ DOMAIN=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/submit/scripts/detect_project_domain.
 
 It prints `swift`, `python`, `cpp-qt`, `ambiguous:<a>,<b>`, or `unknown`. On `ambiguous`, ask which
 stack the feature targets. Record it under Sizing for `/architecture`.
+
+Then look for the same work already filed, open or closed:
+
+```bash
+gh issue list --state all --limit 20 --search "<two or three key terms>"
+```
+
+- **Same work, open:** stop and continue on it as `/spec #N`.
+- **Same work, closed as done:** stop and report it; building it again is a surprise.
+- **Overlaps:** continue, and link it under the new issue's related issues.
+
+Ask the user which applies when it is unclear; under autopilot, take the first that fits.
 
 ### Step 2: Requirements
 
@@ -175,63 +187,30 @@ suggests one should be on:
 
 ### Step 4: Value/Effort Sizing
 
-Size the feature with the repo's labels and confirm with AskUserQuestion.
-
-**Value** — business impact to users or the product:
-| Rating | Meaning |
-|--------|---------|
-| S | Nice-to-have, minor polish |
-| M | Useful improvement, affects some users |
-| L | Important feature, clear user demand |
+Size the feature with the repo's labels. Their meanings are the descriptions in
+`${CLAUDE_PLUGIN_ROOT}/scripts/setup_labels.sh`, the taxonomy of record; effort also caps the
+design passes per Size gating in `WORKFLOW.md`.
 
 Value tops out at L. There is no `value/XL`: a critical capability is still `value/L`.
 
-**Effort** — implementation complexity. It also caps the design step's passes:
-| Rating | Meaning | Design passes |
-|--------|---------|---------------|
-| S | 1-2 files, clear scope, < 1 hour | 2 |
-| M | Multiple files, some investigation needed | 2 |
-| L | Cross-cutting, multi-service, needs design | 4 |
-| XL | Epic-level, should be broken into sub-issues | split |
-
-**XL always splits.** Never file an `effort/XL` issue: an unattended run that the user only
-judges at the end throws away the most work when rejected. Go to [Split](#step-r3a-split)
-with this spec as the parent, size each child S to L, and run Steps 6 to 8 per child.
+**XL always splits.** Never file an `effort/XL` (Epic-level) issue: an unattended run that the
+user only judges at the end throws away the most work when rejected. Go to
+[Split](#step-r3a-split) with this spec as the parent, size each child S to L, and run Steps 6
+to 8 per child.
 
 **Past about 15 criteria**, propose a split at the gate with the seams you see; the user
 decides.
 
-Present the proposed sizing with a one-line rationale each:
-```
-**Value: <proposed>** — <one-line rationale>
-**Effort: <proposed>** — <one-line rationale>
-
-Does this sizing look right?
-- Yes
-- Adjust value
-- Adjust effort
-- Adjust both
-```
-
-**Collect confirmed sizing as:** `VALUE_SIZE`, `EFFORT_SIZE`, `VALUE_RATIONALE`, `EFFORT_RATIONALE`
-
 #### Gate classification — who closes it
 
-The gate is a second axis beside value and effort: **who can close this issue, and can an
-unattended loop touch it.** Every issue gets exactly one `gate:` label; `/ready` R8 refuses an
-unset gate.
-
-| Gate | Meaning |
-|--------|---------|
-| `gate:machine` | An unattended loop can drive it to done — no person, no hardware, no external approval in the close path. |
-| `gate:human` | A person or physical hardware must close it: a device test, a taste call, a credential only a human holds. |
-| `gate:mixed` | Both — a machine does most of it, but at least one step needs a human. |
-
-Ask honestly: "could a loop finish this with no me and no device?" When in doubt it is
-`gate:mixed`: an over-eager `gate:machine` lets an autonomous puller grab something it cannot
-finish. Confirm with AskUserQuestion. **Collect as:** `GATE_CLASS`.
-
+Every issue gets exactly one `gate:` label; `/ready` R8 refuses an unset gate. Ask honestly:
+"could a loop finish this with no me and no device?" When in doubt it is `gate:mixed`: an
+over-eager `gate:machine` lets an autonomous puller grab something it cannot finish.
 `unattended` and `blocked` are set by `/ready`; `/spec` sets only `gate:` and `stage:`.
+
+Confirm value, effort and gate in one AskUserQuestion, a one-line rationale each.
+**Collect as:** `VALUE_SIZE`, `EFFORT_SIZE`, `VALUE_RATIONALE`, `EFFORT_RATIONALE`,
+`GATE_CLASS`.
 
 ### Step 5: GATE — File This Spec?
 

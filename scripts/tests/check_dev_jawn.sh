@@ -609,6 +609,27 @@ grep -q 'PASS-pending-manual' "$SUBMIT" \
     && pass "AUTO /submit accepts PASS-pending-manual" \
     || bad "AUTO /submit does not accept PASS-pending-manual"
 
+# --- /spec Step 4 points at the label taxonomy instead of copying it ---
+# The value/effort/gate meanings lived in three places (setup_labels.sh, README, /spec) and
+# drifted. Consolidating freed the word budget the duplicate search below needed.
+SPEC_STEP4="$(awk '/^### Step 4/{on=1} /^### Step 5/{on=0} on' "$SKILLS/spec/SKILL.md")"
+echo "$SPEC_STEP4" | grep -q '^|' \
+    && bad "CONSOLIDATE /spec Step 4 still copies the label tables" \
+    || pass "CONSOLIDATE /spec Step 4 carries no label tables"
+echo "$SPEC_STEP4" | grep -q 'setup_labels.sh' \
+    && pass "CONSOLIDATE /spec Step 4 points at setup_labels.sh for label meanings" \
+    || bad "CONSOLIDATE /spec Step 4 does not point at setup_labels.sh"
+
+# --- /spec searches existing issues before filing an idea ---
+# Under autopilot no human is there to say "there's already a ticket".
+SPEC_STEP1="$(awk '/^### Step 1/{on=1} /^### Step 2/{on=0} on' "$SKILLS/spec/SKILL.md")"
+echo "$SPEC_STEP1" | grep -q 'gh issue list' && echo "$SPEC_STEP1" | grep -q -- '--search' \
+    && pass "DUPES /spec Step 1 searches existing issues" \
+    || bad "DUPES /spec Step 1 does not search existing issues"
+echo "$SPEC_STEP1" | grep -q -- '--state all' \
+    && pass "DUPES /spec Step 1 searches closed issues too" \
+    || bad "DUPES /spec Step 1 skips closed issues"
+
 # --- A visual [manual] criterion's proxy measures the pixels, not the data behind them ---
 # #942: the Moon's size and orbit proxies passed while it rendered as a black 7 px dot.
 grep -q 'rendered pixels' "$READY" \
