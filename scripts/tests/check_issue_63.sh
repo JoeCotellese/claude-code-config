@@ -28,15 +28,15 @@ PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro creat
 cap_for() {
     case "$1" in
         create-goal) echo 1500 ;;
-        implement)   echo 1750 ;;
+        implement)   echo 1800 ;;
         ready)       echo 4200 ;;
         retro)       echo 1900 ;;
         spec)        echo 2950 ;;
-        submit)      echo 2150 ;;
+        submit)      echo 2175 ;;
         ui-design)   echo 1500 ;;
         architecture) echo 800 ;;
         dod)         echo 1700 ;;
-        autopilot)   echo 1000 ;;
+        autopilot)   echo 1050 ;;
         *)           echo 0 ;;
     esac
 }

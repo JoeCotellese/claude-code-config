@@ -1,6 +1,6 @@
 ---
 name: autopilot
-max_words: 1000
+max_words: 1050
 effort: high
 description: "Hands-off dev-jawn run from idea or issue to an open PR, with one stop at the end. Invoke with `/autopilot #<issue>` or `/autopilot <description>`, or when the user says 'autopilot #N', 'run this hands-off', 'build it and show me at the end'. Adds the autopilot label, drives every phase in one session, builds each acceptance criterion with a fresh subagent, and stops only to ask for the merge."
 ---
