@@ -1,8 +1,8 @@
 ---
 name: submit
-max_words: 2175
+max_words: 2350
 effort: low
-description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs /code-review plus a fresh-context lens committee sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
+description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, pushes, opens a draft PR/MR, runs /code-review (posting to the PR) plus a fresh-context lens committee sized by the effort label, marks the PR ready, handles review iteration, and gates to merge."
 ---
 
 # Feature Submission Phase
@@ -28,7 +28,7 @@ Submit completed work for review, iterate on feedback, and merge when approved.
 ┌─────────────────────────────────────────────────────────────────┐
 │  SUBMIT PHASE                                                   │
 │                                                                 │
-│   Committee → Push → Create PR → Review Loop → Gate → Merge     │
+│  Draft PR → Committee → Ready → Review Loop → Gate → Merge      │
 │                                      ↑    │                     │
 │                                      └────┘                     │
 │                                 (iterate on feedback)           │
@@ -86,10 +86,11 @@ fi
 EXISTING=$(glab mr list --source-branch $(git branch --show-current) 2>/dev/null | grep -v "^$")
 ```
 
-If a PR exists, skip Step 3 (committee) and Step 6 (create PR), then enter the review loop.
+If a PR exists and is no longer a draft, skip Step 3 (committee) and Step 6 (mark ready), then enter the review loop.
 Steps 2, 4, and 5 still run, so new commits pass the Definition of Done, the suite, and get pushed.
-The committee reviewed this branch when the PR was opened; like a human reviewer, the loop
-confirms fixes to its findings rather than re-reviewing the whole branch.
+The committee reviewed this branch before the PR was marked ready; like a human reviewer, the loop
+confirms fixes to its findings rather than re-reviewing the whole branch. A draft PR means the
+committee has not finished: run Step 3 against it, skipping only the draft creation.
 
 ### Step 2: Confirm the Definition of Done Passed
 
@@ -100,6 +101,17 @@ If there is none, run `/dod` before going further, or the whole judgment falls o
 reviewers.
 
 ### Step 3: Run the Code Review Committee
+
+**Push and open a draft PR first,** so `/code-review` can post its findings on the PR and the
+committee reviews what is on the remote:
+
+```bash
+git push -u origin $(git branch --show-current)
+gh pr create --draft --title "<Type> #<issue>: <description>" --body "Committee review in progress. Fixes #<issue>"
+```
+
+GitLab: `glab mr create --draft` with the same title. If the push is rejected, follow Step 5's
+rebase path first.
 
 **Size gating.** `/ready` recorded a committee tier in the issue from the `effort/` label.
 Read it rather than re-deriving it. The tier sets the `/code-review` level and which lenses
@@ -115,15 +127,15 @@ turn on:
 
 Invoke the built-in `code-review` skill against the branch diff at the level the tier names.
 **Name the branch explicitly.** With no target, `/code-review` resolves to the working tree
-and the upstream diff, and this committee runs before the Step 5 push, so on an unpushed
-branch that resolves to nothing and the sweep returns a silent pass on an empty input:
+and the upstream diff, and once the branch is pushed those match, so the sweep returns a
+silent pass on an empty input. `--comment` posts its findings as inline comments on the draft PR:
 
 ```bash
 BRANCH=$(git branch --show-current)
 ```
 
 ```
-Skill tool: skill="code-review", args="<low|medium|high> $BRANCH"
+Skill tool: skill="code-review", args="<low|medium|high> --comment $BRANCH"
 ```
 
 **An empty diff is a blocking condition.** If `/code-review` reports no diff to review, or
@@ -226,10 +238,12 @@ this issue's acceptance test.
 
 **If a test this branch broke fails, STOP.** Report failures and wait for fixes.
 
-### Step 5: Push to Remote
+### Step 5: Push Committee Fixes
+
+The branch tracks its remote since Step 3. Push the fixes so the PR shows them:
 
 ```bash
-git push -u origin $(git branch --show-current)
+git push
 ```
 
 If rejected due to upstream changes:
@@ -240,11 +254,14 @@ git rebase origin/main
 git push -u origin $(git branch --show-current)
 ```
 
-### Step 6: Create PR/MR
+### Step 6: Mark the PR/MR Ready
+
+Replace the draft body with the final one, then take the PR out of draft. Ready means the
+committee finished and nothing blocking is open.
 
 **GitHub:**
 ```bash
-gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
+gh pr edit --body "$(cat <<'EOF'
 ## Summary
 - Bullet point 1
 - Bullet point 2
@@ -261,11 +278,12 @@ gh pr create --title "<Type> #<issue>: <description>" --body "$(cat <<'EOF'
 Fixes #<issue>
 EOF
 )"
+gh pr ready
 ```
 
 **GitLab:**
 ```bash
-glab mr create --title "<Type> #<issue>: <description>" --description "..."
+glab mr update --description "..." --ready
 ```
 
 **Hand the issue to the user.** As the build's last action, comment
@@ -349,7 +367,8 @@ a follow-up issue or a deploy that has not happened. Merging is not deploying.
 | Linting fails | STOP - fix before submission |
 | Tests fail | STOP - fix before submission |
 | Push rejected | Attempt rebase; if conflicts, STOP |
-| PR already exists | Skip Steps 3 and 6, enter review loop |
+| PR exists, not a draft | Skip Steps 3 and 6, enter review loop |
+| Draft PR exists | Run Step 3 against it, skip only the draft creation |
 | Merge conflicts | STOP - ask user to resolve |
 | CI checks failing | STOP - wait for fixes |
 | No `DOD VERDICT` for the issue | Run `/dod` before submitting |
