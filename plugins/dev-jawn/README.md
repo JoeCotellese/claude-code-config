@@ -1,7 +1,8 @@
 # dev-jawn
 
 A phased development loop packaged as a Claude Code plugin: `/spec` → `/ready` → `/ui-design` →
-`/implement` → `/dod` → `/submit`, with `/retro` as the reverse edge. The loop itself is
+`/implement` → `/dod` → `/submit`, with `/retro` as the reverse edge. `/autopilot` drives the
+whole loop hands-off. The loop itself is
 documented in **[skills/WORKFLOW.md](skills/WORKFLOW.md)** — read that for the Definition of
 Ready, the Definition of Done, and the seven loops.
 
@@ -27,6 +28,8 @@ next item it can actually finish.
   required by the Definition of Ready (R8). Set at `/spec`.
 - `unattended` — safe for the loop to pull with no human and no hardware. Set by `/ready`.
 - `blocked` — a dependency must clear first. Set and cleared as dependencies move.
+- `autopilot` — run hands-off from spec to an open PR, stopping once to ask for the merge. Set
+  by `/autopilot`; see Autopilot in `skills/WORKFLOW.md`.
 
 **Not an axis:** `polish`, `chore` and `bug` are work-type tags, like `documentation`. `chore`
 and `bug` send an issue from `/spec` straight to `stage:build`. It is outside the Definition of Ready and outside the pull query.

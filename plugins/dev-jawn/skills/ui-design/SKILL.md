@@ -162,6 +162,7 @@ Post the verdict comment, then swap `stage:design` for the label it routes to:
 
 - **A criterion the design cannot meet** without changing the spec:
   `DESIGN VERDICT: #<N> route=stage:spec blocking=<criterion>`.
+- **Autopilot:** under the `autopilot` label the checkpoint follows Autopilot in `WORKFLOW.md`.
 - **`design-checkpoint` set, or blocking findings open at the cap:**
   `DESIGN VERDICT: #<N> route=stage:human blocking=<checkpoint, or the findings>`, naming
   `stage:ready` as the return state. Call `PushNotification`, report per Phase closeout

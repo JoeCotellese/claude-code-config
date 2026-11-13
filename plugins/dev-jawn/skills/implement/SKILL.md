@@ -1,6 +1,6 @@
 ---
 name: implement
-max_words: 1750
+max_words: 1800
 effort: xhigh
 description: "Feature implementation phase. Invoke with `/implement #<issue>` or when user says 'implement', 'work on issue #', 'start coding'. Clears context, fetches issue, enters plan mode, then implements with TDD under a goal whose exit condition is the Definition of Done. Runs /dod to close the loop and gates to /submit when it passes."
 ---
@@ -28,8 +28,6 @@ decides whether it did.
 **Also triggers on:**
 - "implement #123"
 - "work on issue #123"
-- "let's work on #123"
-- "start coding #123"
 
 ## Workflow Overview
 
@@ -48,6 +46,8 @@ Step 9: GATE              ← "Ready for review?"  (human)
 Steps 7 and 8 run **unattended under a goal**. Plan approval and the submit gate stay
 human. The loop is closed by `/dod`'s printed `DOD VERDICT` line, not by your own judgment
 that the work looks finished.
+
+**Autopilot:** `/autopilot` replaces Steps 1, 5, 6 and 9 and plan mode, and runs Step 7 in subagents.
 
 ## Workflow Steps
 
@@ -113,6 +113,7 @@ Use the **EnterPlanMode** tool, then:
 4. **Check for an inherited prototype.** If `/ui-design` ran, the feature branch already holds the approved target view rendered with a fake context, tagged `prototype:` (a `#Preview` fixture, or a throwaway route). Treat that view as the UI starting point — **do not rebuild it**; the plan wires it to real services and removes or repurposes whatever carried the fake data.
 5. Identify files to create/modify
 6. Map each acceptance criterion to its TDD cycle (failing test → minimal code → refactor), and name any lower-level test Step 7 allows
+   Each entry under Technical Notes' `Tests this change makes false` gets its own cycle too: rewrite the check to the corrected one the notes name, in the same commit as the change that falsifies it.
 7. Write a step-by-step implementation plan
 
 **Plan should include:**

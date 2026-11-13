@@ -1,6 +1,6 @@
 ---
 name: submit
-max_words: 2150
+max_words: 2175
 effort: low
 description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, runs /code-review plus a fresh-context lens committee sized by the effort label, pushes, creates the PR/MR, handles review iteration, and gates to merge."
 ---
@@ -93,8 +93,8 @@ confirms fixes to its findings rather than re-reviewing the whole branch.
 
 ### Step 2: Confirm the Definition of Done Passed
 
-Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`,
-and the results file it names.
+Look for a `DOD VERDICT` line for this issue with `status=PASS` or `status=PASS-with-caveats`
+(or `PASS-pending-manual` under autopilot, which never merges), and the results file it names.
 
 If there is none, run `/dod` before going further, or the whole judgment falls on the
 reviewers.
@@ -330,6 +330,10 @@ git pull origin main
 # Delete local branch (remote already deleted by merge)
 git branch -d <branch-name>
 ```
+
+Stop any service this session started (for example `docker compose stop db`). Leave services
+that were already running when the session began. Stopping waits until after the merge so the
+user can still run the branch locally before deciding.
 
 ### Step 12: Report Success
 

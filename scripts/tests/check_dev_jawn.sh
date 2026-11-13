@@ -15,13 +15,13 @@ cd "$REPO_ROOT"
 PLUGIN="plugins/dev-jawn"
 SKILLS="$PLUGIN/skills"
 HOOK="$PLUGIN/hooks/workflow-policy.sh"
-PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal"
+PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal autopilot"
 
 fail=0
 pass() { printf 'PASS  %s\n' "$1"; }
 bad()  { printf 'FAIL  %s\n' "$1"; fail=1; }
 
-# AC8 — plugin subtree exists with all nine skills, WORKFLOW.md, cpr, and the hook.
+# AC8 — plugin subtree exists with all ten skills, WORKFLOW.md, cpr, and the hook.
 for s in $PHASE_SKILLS; do
     if [ -f "$SKILLS/$s/SKILL.md" ]; then pass "AC8 skill present: $s"; else bad "AC8 skill missing: $s"; fi
 done
@@ -555,11 +555,98 @@ else
     pass "DOD no references to the verify skill in $PLUGIN or README.md"
 fi
 
+# --- Autopilot: one hands-off run, one stop at the end ---
+# The #942 session stalled ten times for questions whose recommended answer was taken every
+# time. The autopilot label plus the /autopilot driver take the recommended option at each gate,
+# log it, and stop once at the open PR. Reverting any piece flips its check to FAIL.
+
+AUTO="$SKILLS/autopilot/SKILL.md"
+AUTOSEC="$(awk '/^## Autopilot/{on=1;next} /^## /{on=0} on' "$SKILLS/WORKFLOW.md")"
+grep -q '^ *"autopilot|' "$PLUGIN/scripts/setup_labels.sh" \
+    && pass "AUTO setup_labels.sh defines the autopilot label" \
+    || bad "AUTO setup_labels.sh has no autopilot label"
+grep -q '^name: autopilot$' "$AUTO" 2>/dev/null \
+    && pass "AUTO autopilot skill frontmatter is name: autopilot" \
+    || bad "AUTO skills/autopilot/SKILL.md missing or misnamed"
+[ "$(grep -c 'ABOUTME:' "$AUTO" 2>/dev/null || echo 0)" -ge 2 ] \
+    && pass "AUTO autopilot skill carries the ABOUTME header" \
+    || bad "AUTO autopilot skill lacks the two-line ABOUTME header"
+[ -n "$AUTOSEC" ] \
+    && pass "AUTO WORKFLOW.md has an Autopilot section" \
+    || bad "AUTO WORKFLOW.md has no Autopilot section"
+echo "$AUTOSEC" | grep -q 'Recommended' && echo "$AUTOSEC" | grep -q 'DECISION:' \
+    && pass "AUTO gate rule takes the recommended option and logs a DECISION comment" \
+    || bad "AUTO gate rule does not take Recommended and log DECISION"
+echo "$AUTOSEC" | grep -qi 'merge' \
+    && pass "AUTO gate rule keeps the merge as the one human stop" \
+    || bad "AUTO gate rule does not keep merge human"
+echo "$AUTOSEC" | grep -qi 'weaken' && echo "$AUTOSEC" | grep -qi 'acceptance test' \
+    && pass "AUTO gate rule still forbids weakening assertions and editing the acceptance test" \
+    || bad "AUTO gate rule lost the test-integrity limits"
+echo "$AUTOSEC" | grep -qi 'manual' \
+    && pass "AUTO gate rule defers manual criteria to the final report" \
+    || bad "AUTO gate rule says nothing about manual criteria"
+grep -q 'subagent_type\|Agent' "$AUTO" 2>/dev/null && grep -q '12' "$AUTO" 2>/dev/null \
+    && pass "AUTO driver builds with a fresh Agent per criterion under a 12-round cap" \
+    || bad "AUTO driver has no per-criterion Agent build or no round cap"
+for s in spec ui-design implement dod; do
+    grep -q 'Autopilot' "$SKILLS/$s/SKILL.md" \
+        && pass "AUTO $s points at the Autopilot rule" \
+        || bad "AUTO $s has no pointer to the Autopilot rule"
+done
+grep -q '/autopilot' "$HOOK" \
+    && pass "AUTO workflow hook routes autopilot-labeled issues to /autopilot" \
+    || bad "AUTO workflow hook does not mention /autopilot"
+awk '/^# Testing/{on=1;next} /^#/{on=0} on' CLAUDE.md | grep -qi 'autopilot' \
+    && pass "AUTO CLAUDE.md Testing carries the autopilot exception" \
+    || bad "AUTO CLAUDE.md Testing has no autopilot exception"
+
+DOD="$SKILLS/dod/SKILL.md"
+grep -q 'PASS-pending-manual' "$DOD" && grep -q 'deferred` criteria remain under autopilot → `route=/submit`' "$DOD" \
+    && pass "AUTO /dod routes deferred manual criteria to /submit as PASS-pending-manual" \
+    || bad "AUTO /dod has no PASS-pending-manual route for deferred manual criteria"
+grep -q 'PASS-pending-manual' "$SUBMIT" \
+    && pass "AUTO /submit accepts PASS-pending-manual" \
+    || bad "AUTO /submit does not accept PASS-pending-manual"
+
+# --- /spec Step 4 points at the label taxonomy instead of copying it ---
+# The value/effort/gate meanings lived in three places (setup_labels.sh, README, /spec) and
+# drifted. Consolidating freed the word budget the duplicate search below needed.
+SPEC_STEP4="$(awk '/^### Step 4/{on=1} /^### Step 5/{on=0} on' "$SKILLS/spec/SKILL.md")"
+echo "$SPEC_STEP4" | grep -q '^|' \
+    && bad "CONSOLIDATE /spec Step 4 still copies the label tables" \
+    || pass "CONSOLIDATE /spec Step 4 carries no label tables"
+echo "$SPEC_STEP4" | grep -q 'setup_labels.sh' \
+    && pass "CONSOLIDATE /spec Step 4 points at setup_labels.sh for label meanings" \
+    || bad "CONSOLIDATE /spec Step 4 does not point at setup_labels.sh"
+
+# --- /spec searches existing issues before filing an idea ---
+# Under autopilot no human is there to say "there's already a ticket".
+SPEC_STEP1="$(awk '/^### Step 1/{on=1} /^### Step 2/{on=0} on' "$SKILLS/spec/SKILL.md")"
+echo "$SPEC_STEP1" | grep -q 'gh issue list' && echo "$SPEC_STEP1" | grep -q -- '--search' \
+    && pass "DUPES /spec Step 1 searches existing issues" \
+    || bad "DUPES /spec Step 1 does not search existing issues"
+echo "$SPEC_STEP1" | grep -q -- '--state all' \
+    && pass "DUPES /spec Step 1 searches closed issues too" \
+    || bad "DUPES /spec Step 1 skips closed issues"
+
+# --- A visual [manual] criterion's proxy measures the pixels, not the data behind them ---
+# #942: the Moon's size and orbit proxies passed while it rendered as a black 7 px dot.
+grep -q 'rendered pixels' "$READY" \
+    && pass "PROXY /ready requires a visual proxy to measure rendered pixels" \
+    || bad "PROXY /ready lets a visual criterion's proxy check only the model data"
+
+# --- /architecture proves every numeric criterion is reachable before filing ---
+# #942: a moonrise criterion could never pass in the existing spin/orbit frame, found mid-build.
+awk '/^## Step 4/{on=1} /^## Step 5/{on=0} on' "$SKILLS/architecture/SKILL.md" | grep -qi 'reachable' \
+    && pass "FEAS /architecture checks numeric criteria are reachable" \
+    || bad "FEAS /architecture has no reachability check"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
     echo "Remember the [manual] runtime checks: enable dev-jawn with zero ~/.claude/skills symlinks,"
-    echo "confirm the 9 phase commands resolve (AC1), the policy is in context (AC3), then disable and"
+    echo "confirm the 10 skill commands resolve (AC1), the policy is in context (AC3), then disable and"
     echo "confirm the policy AND commands are gone (AC4)."
 else
     echo "RESULT: FAIL — dev-jawn not yet shipped (expected before implementation)."

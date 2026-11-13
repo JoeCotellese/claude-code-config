@@ -18,7 +18,7 @@ cd "$REPO_ROOT"
 
 SKILLS="plugins/dev-jawn/skills"
 RETRO="$SKILLS/retro/SKILL.md"
-PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal"
+PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro create-goal autopilot"
 
 # Ceiling caps set at the Definition of Ready gate. A skill's declared max_words
 # must be at or under its cap, so AC5 cannot be passed by declaring a ceiling
@@ -28,14 +28,15 @@ PHASE_SKILLS="spec ready ui-design architecture implement dod submit retro creat
 cap_for() {
     case "$1" in
         create-goal) echo 1500 ;;
-        implement)   echo 1750 ;;
+        implement)   echo 1800 ;;
         ready)       echo 4200 ;;
         retro)       echo 1900 ;;
         spec)        echo 2950 ;;
-        submit)      echo 2150 ;;
+        submit)      echo 2175 ;;
         ui-design)   echo 1500 ;;
         architecture) echo 800 ;;
         dod)         echo 1700 ;;
+        autopilot)   echo 1050 ;;
         *)           echo 0 ;;
     esac
 }

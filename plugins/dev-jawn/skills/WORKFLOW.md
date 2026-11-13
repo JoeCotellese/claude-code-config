@@ -111,7 +111,8 @@ how a phase runs forever; a loop with no printed exit condition is how it stops 
 ### Where each loop is closed
 
 `/goal` closes L4 and the `/ready` interior. Human gates close L1, L2, L5, L6, and L7. Nothing
-closes L3 but the code.
+closes L3 but the code. Under the `autopilot` label, `/autopilot` takes the human gates per
+Autopilot below, except the merge.
 
 ## The primitives and what each is for
 
@@ -201,7 +202,7 @@ GitHub alone. Closed means done.
   or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
 - `stage:architecture`: owner `/architecture`; next `stage:build` (technical notes filed),
   `stage:spec` (the code contradicts the spec).
-- `stage:build`: owner the build run (not built yet); next `stage:human` (PR open).
+- `stage:build`: owner the build run: `/implement`, or `/autopilot` under the `autopilot` label; next `stage:human` (PR open).
 - `stage:review`: reserved for stakeholder review after done (not built yet).
 
 An issue with no `stage:` label goes to `/spec`.
@@ -383,7 +384,7 @@ Every design pass runs four adversarial critics: spec fit, states, accessibility
 
 ## Gates
 
-Nothing crosses these without you.
+Nothing crosses these without you, except under the `autopilot` label (see Autopilot).
 
 - `/spec` before filing: file this spec and start design?
 - `/ui-design` when the issue sets `design-checkpoint` or critics still block at the cap
@@ -396,6 +397,39 @@ printed.
 
 `/retro` proposes an amendment to a standard you rely on across every project. It never lands
 one on its own.
+
+## Autopilot
+
+An issue with the `autopilot` label runs hands-off from spec to an open PR, with one stop at the
+end. `/autopilot #N` (or `/autopilot <description>`) adds the label and drives the run; any
+session that picks the issue up from GitHub sees the label and keeps going the same way.
+
+The rule every phase follows while the label is on:
+
+- **Every gate takes its `(Recommended)` option** instead of asking: the `/spec` questions and
+  filing gate, the `/ui-design` checkpoint, plan approval, the TDD exception gate, and any
+  mid-run question (a contradiction found while building, a scope fork). Post it as an issue
+  comment, `DECISION: #<N> gate=<which> chose=<option> why=<one line>`, and continue. A
+  question with no recommended option picks the one that keeps the issue's scope, and files
+  the rest as a follow-up issue.
+- **`[manual]` criteria wait for the end.** `/dod` records each one's proxy result and marks
+  the criterion `deferred`. With everything else passing, the verdict is
+  `status=PASS-pending-manual`, which lets `/submit` open the PR but never merge. The final
+  report asks for each one.
+- **Test changes the run may make without asking, each logged as a `DECISION:`:** test setup
+  that changes no assertion, and a criterion added after the `DOR VERDICT` (at plan time or
+  mid-build), with the measurement that justifies the change in the comment. An existing test
+  the change makes false, found mid-build, is such a criterion: the comment names the old
+  check and the new one. `/architecture` should have listed it; one it missed is a `/retro`
+  note. It still never
+  weakens an assertion, deletes a test, or edits the acceptance test `/ready` committed; a
+  criterion that test covers still stops the run.
+- **What still stops the run:** a route to `/retro`, the three-failure circuit breaker, a
+  second route back to `/spec`, and anything that would destroy data or touch production. Set
+  `stage:human`, post why, and report.
+- **The one planned stop is the merge.** `/submit` opens the PR, then the final report lists
+  the deferred `[manual]` criteria with their evidence, every `DECISION:` taken, and ends
+  with a typed stop: the user replies `merge` (or feedback) as plain text, not through a form.
 
 ## Phase closeout
 
@@ -456,6 +490,7 @@ DOD VERDICT: #347  status=PASS-with-caveats  criteria=9/9  unit=green  acceptanc
 ## Entry points
 
 - Fresh idea: `/spec <description>`
+- Hands-off, from idea or issue to an open PR: `/autopilot <description>` or `/autopilot #N`
 - Existing issue of unknown quality: `/ready #N`
 - Existing issue in an older format: `/spec #N` (re-spec)
 - Issue that still owes its design: `/spec #N design`

@@ -41,7 +41,8 @@ All three hold:
    app and every `success_criteria` entry is met.
 3. **Every acceptance criterion is accounted for.** Each AC in the issue reconciles to the
    channel that observed it: `[ui]` to an acceptance-test criterion, `[test: <name>]` to a
-   named test that actually ran, `[manual]` to a human's recorded answer. An AC with nothing
+   named test that actually ran, `[manual]` to a human's recorded answer (under autopilot, its proxy result marked
+   `deferred`). An AC with nothing
    reporting on it is a FAIL, not a skip. This is the check that catches a green suite that
    simply never exercised half the feature.
 
@@ -127,10 +128,13 @@ These cannot be run. List them for the user with their proxies, and record the p
 criterion. Unanswered manual criteria make the status FAIL, because the verdict has to be
 defensible.
 
+**Autopilot:** under the `autopilot` label, do not ask. Mark each `[manual]` criterion `deferred`
+with its proxy result, per Autopilot in `WORKFLOW.md`.
+
 ### Step 7 — Reconcile
 
 Count. The issue's criteria total must equal the sum of criteria observed across the three
-channels. If nine ACs produced seven results, name the two that went unobserved and fail.
+channels; a `deferred` criterion counts as observed. If nine ACs produced seven results, name the two that went unobserved and fail.
 
 ### Step 8 — Write the results file
 
@@ -154,8 +158,10 @@ DOD VERDICT: #347  status=FAIL  criteria=7/9  unit=1-failing  acceptance=FAIL  r
 ```
 
 - `status` — PASS, FAIL, or `PASS-with-caveats`. PASS only when all three parts of the
-  Definition of Done hold.
-- `criteria` — criteria observed and passing over criteria in the issue.
+  Definition of Done hold. Under autopilot only, `PASS-pending-manual`: all else passes and
+  the `[manual]` criteria are `deferred`.
+- `criteria` — criteria observed and passing over criteria in the issue. Under autopilot add
+  `deferred=<n>`; deferred criteria are not counted as passing.
 - `unit` — `green` or `<n>-failing`.
 - `acceptance` — PASS, FAIL, or `n/a` for work with no `[ui]` criteria.
 - `results` — repo-relative path to the file from Step 8.
@@ -167,7 +173,7 @@ Routing rules, first match wins:
 2. The acceptance test had to be wrong to fail (it asserts something the ACs never said, or
    its trigger is unreachable) → `route=/retro`
 3. Any criterion failed → `route=/implement`
-4. Everything passed → `route=/submit`
+4. Everything passed, or only `deferred` criteria remain under autopilot → `route=/submit`
 
 Precede the verdict with Layer 1 of Phase closeout in `WORKFLOW.md`: each failure or caveat as
 a user would notice it, never by criterion ID. The per-criterion list stays in the results
@@ -198,7 +204,8 @@ with no results file did not verify anything.
   it and route to `/implement`.
 - **Do not edit the acceptance test to make it pass.** That is the one move that turns the
   whole loop into theatre.
-- **Do not report PASS on an unobserved criterion.** Unobserved is FAIL. "Probably fine" is
+- **Do not report PASS on an unobserved criterion.** Unobserved is FAIL; `deferred` is the
+  only exception, and it yields `PASS-pending-manual`, never PASS. "Probably fine" is
   not a channel.
 - **Do not re-derive acceptance criteria from the code.** They come from the issue. If the
   code does something the issue never asked for, that is a finding.
