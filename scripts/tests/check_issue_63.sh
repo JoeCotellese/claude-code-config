@@ -32,7 +32,7 @@ cap_for() {
         ready)       echo 4200 ;;
         retro)       echo 1900 ;;
         spec)        echo 2950 ;;
-        submit)      echo 2175 ;;
+        submit)      echo 2350 ;;
         ui-design)   echo 1500 ;;
         architecture) echo 800 ;;
         dod)         echo 1700 ;;

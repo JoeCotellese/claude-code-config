@@ -261,8 +261,8 @@ fi
 
 
 # --- Issue #55: the generic sweep must review a real diff ---
-# /submit runs the committee at Step 3, before the Step 5 push. With no target
-# /code-review resolves to the upstream diff, which on an unpushed branch is empty.
+# /submit runs the committee at Step 3. With no target /code-review resolves to the
+# upstream diff, which can be empty, so the sweep names its target.
 
 # AC1 — the invocation names an explicit target.
 if grep -Eq 'skill="code-review".*args=.*(BRANCH|branch)' "$SUBMIT"; then
@@ -271,11 +271,31 @@ else
     bad "CR submit passes no target to code-review (reviews an empty diff)"
 fi
 
-# AC3 — the ordering constraint is written down so a future edit cannot lose it.
-if grep -Eiq 'committee runs before the push|before the Step 5 push' "$SUBMIT"; then
-    pass "CR submit documents pre-push ordering"
+# AC3 — the sweep reviews a pushed branch through an open draft PR and posts its
+# findings there. Draft creation must come before the sweep, or --comment has no PR.
+draft_line=$(grep -n 'gh pr create --draft' "$SUBMIT" | head -1 | cut -d: -f1)
+cr_line=$(grep -n 'skill="code-review"' "$SUBMIT" | head -1 | cut -d: -f1)
+if [ -n "$draft_line" ] && [ -n "$cr_line" ] && [ "$draft_line" -lt "$cr_line" ]; then
+    pass "CR submit opens the draft PR before the code-review sweep"
 else
-    bad "CR submit does not document the pre-push ordering constraint"
+    bad "CR submit does not open a draft PR before the code-review sweep"
+fi
+if grep -Eq 'skill="code-review".*args=.*--comment' "$SUBMIT"; then
+    pass "CR submit posts code-review findings to the PR with --comment"
+else
+    bad "CR submit does not post code-review findings to the PR"
+fi
+if awk '/^### Step 6:/{on=1} /^### Step 7:/{on=0} on' "$SUBMIT" | grep -q 'gh pr ready'; then
+    pass "CR submit marks the draft ready after the committee"
+else
+    bad "CR submit never marks the draft PR ready"
+fi
+# The branch is on the remote since Step 3, so a rebase in Step 5 rewrites pushed
+# history: a plain push after it is always rejected.
+if awk '/^### Step 5:/{on=1} /^### Step 6:/{on=0} on' "$SUBMIT" | grep -q 'git push --force-with-lease'; then
+    pass "CR submit force-pushes with lease after the Step 5 rebase"
+else
+    bad "CR submit pushes a rebased, already-pushed branch without --force-with-lease"
 fi
 
 # AC4 — a sweep that reviewed nothing is blocking, not a pass.
@@ -311,7 +331,9 @@ else
 fi
 # The resubmit skip drops only the committee and PR creation. Skipping further
 # leaves local fixes unpushed and new commits past the Definition of Done.
-if grep -Eq 'skip Step 3.*and Step 6' "$SUBMIT" && grep -Eq 'Steps 2, 4, and 5 still run' "$SUBMIT"; then
+# The skip keys off draft state: a draft PR is one /submit opened and the committee
+# has not finished, so it still gets the committee.
+if grep -Eq 'no longer a draft.*skip Step 3.*and Step 6' "$SUBMIT" && grep -Eq 'Steps 2, 4, and 5 still run' "$SUBMIT"; then
     pass "RESUBMIT skips only the committee and PR creation"
 else
     bad "RESUBMIT skip also bypasses the DoD, tests, or push"
