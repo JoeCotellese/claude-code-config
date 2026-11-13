@@ -290,6 +290,13 @@ if awk '/^### Step 6:/{on=1} /^### Step 7:/{on=0} on' "$SUBMIT" | grep -q 'gh pr
 else
     bad "CR submit never marks the draft PR ready"
 fi
+# The branch is on the remote since Step 3, so a rebase in Step 5 rewrites pushed
+# history: a plain push after it is always rejected.
+if awk '/^### Step 5:/{on=1} /^### Step 6:/{on=0} on' "$SUBMIT" | grep -q 'git push --force-with-lease'; then
+    pass "CR submit force-pushes with lease after the Step 5 rebase"
+else
+    bad "CR submit pushes a rebased, already-pushed branch without --force-with-lease"
+fi
 
 # AC4 — a sweep that reviewed nothing is blocking, not a pass.
 if grep -Eiq '(empty diff|reviewed nothing|no diff to review).*blocking|blocking.*(empty diff|reviewed nothing|no diff to review)' "$SUBMIT"; then

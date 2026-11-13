@@ -251,7 +251,7 @@ If rejected due to upstream changes:
 git fetch origin
 git rebase origin/main
 # Resolve conflicts if needed
-git push -u origin $(git branch --show-current)
+git push --force-with-lease
 ```
 
 ### Step 6: Mark the PR/MR Ready
