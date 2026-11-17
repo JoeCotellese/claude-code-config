@@ -1,6 +1,6 @@
 ---
 name: architecture
-max_words: 800
+max_words: 900
 effort: high
 description: "Architecture stage: decides how to build an issue labeled stage:architecture, which /ready sets on a pass. Invoke with `/architecture #<issue>` or when the user says 'architect #N', 'technical design for #N'. Runs the domain architect against the stories, guardrails and design, fills the issue's Technical Notes, and routes back to /spec when the code contradicts the spec."
 ---
@@ -44,9 +44,18 @@ follows the stack the repo uses; it never assumes one.
 | cpp-qt | Invoke `cpp-qt-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
-Invoke the architect with the Skill tool. Writing the notes yourself is not a substitute, even
-when the code looks familiar: the skill carries the domain's patterns and checks. A domain
-whose architect is not installed counts as `unknown`.
+Dispatch the `dev-jawn:architect` agent with the Agent tool (`subagent_type:
+"dev-jawn:architect"`, never `fork`: a fork inherits the session model, and the agent pins
+`model: fable`). Its brief: the issue number, the domain, the architect skill from the table,
+the stack and protected files from Step 2, and the absolute path of this `SKILL.md`. It invokes
+the architect skill with the Skill tool, then runs Step 4's exit checks, and replies `ARCHITECT RESULT: notes` or
+`ARCHITECT RESULT: contradiction`. Writing the notes yourself is not a substitute, even when the
+code looks familiar: the skill carries the domain's patterns and checks. A domain whose
+architect is not installed counts as `unknown`; resolve it here before dispatching, since the
+agent cannot ask the user.
+
+On `contradiction`, take Step 4's route to `/spec` with its evidence. On `notes`, spot-check
+the cited file:line and symbols yourself, then go to Step 5.
 
 **Prompt the architect with:**
 ```
@@ -101,7 +110,7 @@ gh issue edit <N> --remove-label "stage:architecture" --add-label "stage:spec"
 ## Step 5: File it
 
 Replace the issue's `## Technical Notes` section with the architect's output, opening with
-`Filled by /architecture via <architect skill> on <date>.`, post
+`Filled by /architecture via dev-jawn:architect (<architect skill>) on <date>.`, post
 `ARCH VERDICT: #<N> route=stage:build blocking=none` as an issue comment, then:
 
 ```bash

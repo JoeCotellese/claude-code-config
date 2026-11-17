@@ -664,6 +664,25 @@ awk '/^## Step 4/{on=1} /^## Step 5/{on=0} on' "$SKILLS/architecture/SKILL.md" |
     && pass "FEAS /architecture checks numeric criteria are reachable" \
     || bad "FEAS /architecture has no reachability check"
 
+# --- /architecture runs its design in a fresh agent pinned to Fable ---
+# A fork inherits the session model, so only an agent definition can pin the architect's model.
+ARCH_AGENT="$PLUGIN/agents/architect.md"
+[ -f "$ARCH_AGENT" ] \
+    && pass "FABLE architect agent definition exists" \
+    || bad "FABLE no agents/architect.md"
+grep -qx 'model: fable' "$ARCH_AGENT" 2>/dev/null \
+    && pass "FABLE architect agent pins model: fable" \
+    || bad "FABLE architect agent does not pin model: fable"
+grep -q '^effort:' "$ARCH_AGENT" 2>/dev/null \
+    && bad "FABLE architect agent carries effort:, which stops it registering (#56)" \
+    || pass "FABLE architect agent has no effort: key"
+grep -q '^tools:' "$ARCH_AGENT" 2>/dev/null \
+    && bad "FABLE architect agent restricts tools, which can drop the Skill tool it needs" \
+    || pass "FABLE architect agent inherits tools, Skill included"
+awk '/^## Step 3/{on=1} /^## Step 4/{on=0} on' "$SKILLS/architecture/SKILL.md" | grep -q 'dev-jawn:architect' \
+    && pass "FABLE /architecture Step 3 dispatches dev-jawn:architect" \
+    || bad "FABLE /architecture Step 3 does not dispatch dev-jawn:architect"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
