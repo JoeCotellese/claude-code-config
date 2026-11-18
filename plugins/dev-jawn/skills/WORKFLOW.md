@@ -318,7 +318,7 @@ applies R5 as its exit check. When the code contradicts the spec, it routes back
 instead of designing around it.
 
 The design runs in the `dev-jawn:architect` agent under `plugins/dev-jawn/agents/`, which pins
-`model: fable`, so the technical approach does not follow the session's `/model`. It is an
+`model: opus`, so the technical approach does not follow the session's `/model`. It is an
 agent definition, not a fork, because a fork always inherits the session model.
 
 ### `/implement #N` — unattended under `/goal`

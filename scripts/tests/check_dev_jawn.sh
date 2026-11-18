@@ -664,24 +664,43 @@ awk '/^## Step 4/{on=1} /^## Step 5/{on=0} on' "$SKILLS/architecture/SKILL.md" |
     && pass "FEAS /architecture checks numeric criteria are reachable" \
     || bad "FEAS /architecture has no reachability check"
 
-# --- /architecture runs its design in a fresh agent pinned to Fable ---
+# --- /architecture runs its design in a fresh agent pinned to Opus ---
 # A fork inherits the session model, so only an agent definition can pin the architect's model.
 ARCH_AGENT="$PLUGIN/agents/architect.md"
 [ -f "$ARCH_AGENT" ] \
-    && pass "FABLE architect agent definition exists" \
-    || bad "FABLE no agents/architect.md"
-grep -qx 'model: fable' "$ARCH_AGENT" 2>/dev/null \
-    && pass "FABLE architect agent pins model: fable" \
-    || bad "FABLE architect agent does not pin model: fable"
+    && pass "ARCH architect agent definition exists" \
+    || bad "ARCH no agents/architect.md"
+grep -qx 'model: opus' "$ARCH_AGENT" 2>/dev/null \
+    && pass "ARCH architect agent pins model: opus" \
+    || bad "ARCH architect agent does not pin model: opus"
+grep -qi 'fable' "$ARCH_AGENT" "$SKILLS/architecture/SKILL.md" "$SKILLS/WORKFLOW.md" 2>/dev/null \
+    && bad "ARCH architect still references Fable" \
+    || pass "ARCH architect no longer references Fable"
+grep -qi 'advisor' "$ARCH_AGENT" 2>/dev/null \
+    && pass "ARCH architect agent says to use the advisor when needed" \
+    || bad "ARCH architect agent does not mention the advisor"
 grep -q '^effort:' "$ARCH_AGENT" 2>/dev/null \
-    && bad "FABLE architect agent carries effort:, which stops it registering (#56)" \
-    || pass "FABLE architect agent has no effort: key"
+    && bad "ARCH architect agent carries effort:, which stops it registering (#56)" \
+    || pass "ARCH architect agent has no effort: key"
 grep -q '^tools:' "$ARCH_AGENT" 2>/dev/null \
-    && bad "FABLE architect agent restricts tools, which can drop the Skill tool it needs" \
-    || pass "FABLE architect agent inherits tools, Skill included"
+    && bad "ARCH architect agent restricts tools, which can drop the Skill tool it needs" \
+    || pass "ARCH architect agent inherits tools, Skill included"
 awk '/^## Step 3/{on=1} /^## Step 4/{on=0} on' "$SKILLS/architecture/SKILL.md" | grep -q 'dev-jawn:architect' \
-    && pass "FABLE /architecture Step 3 dispatches dev-jawn:architect" \
-    || bad "FABLE /architecture Step 3 does not dispatch dev-jawn:architect"
+    && pass "ARCH /architecture Step 3 dispatches dev-jawn:architect" \
+    || bad "ARCH /architecture Step 3 does not dispatch dev-jawn:architect"
+
+# --- A domain architect skill is optional: a missing one runs the agent without it ---
+# The skills live outside the plugin, so a config dir without them must not stop /architecture.
+ARCH_STEP3=$(awk '/^## Step 3/{on=1} /^## Step 4/{on=0} on' "$SKILLS/architecture/SKILL.md")
+echo "$ARCH_STEP3" | grep -qi 'optional' \
+    && pass "OPTARCH /architecture Step 3 marks domain architect skills optional" \
+    || bad "OPTARCH /architecture Step 3 does not mark domain architect skills optional"
+echo "$ARCH_STEP3" | grep -Eqi 'not installed counts as `?unknown' \
+    && bad "OPTARCH a missing architect skill still counts as unknown and asks the user" \
+    || pass "OPTARCH a missing architect skill does not route to unknown"
+grep -q 'architect skill `none`' "$ARCH_AGENT" 2>/dev/null \
+    && pass "OPTARCH architect agent accepts architect skill none" \
+    || bad "OPTARCH architect agent has no path for architect skill none"
 
 echo
 if [ "$fail" -eq 0 ]; then
