@@ -150,7 +150,22 @@ for a in acceptance-criteria-reviewer test-adequacy-reviewer; do
     else
         bad "CR /submit does not call dev-jawn:$a"
     fi
+    # A review request reads as "produce findings" unless the prompt says an empty
+    # result is acceptable. Each speculative finding costs /submit a fix round.
+    if grep -q '^## When there is nothing to report' "$AGENTS/$a.md" 2>/dev/null \
+        && grep -q 'BLOCKING: 0` is a correct' "$AGENTS/$a.md"; then
+        pass "BAR $a says an empty result is correct"
+    else
+        bad "BAR $a never says an empty result is correct"
+    fi
 done
+
+# /submit briefs every lens that zero findings is a correct result.
+if grep -q 'Zero findings is a correct result' "$SUBMIT"; then
+    pass "BAR /submit lens brief permits an empty result"
+else
+    bad "BAR /submit lens brief never permits an empty result"
+fi
 
 # /submit orchestrates; depth lives in the reviewers.
 if grep -q '^effort: low' "$SUBMIT"; then

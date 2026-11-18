@@ -47,6 +47,13 @@ more tests would be nice. Do not propose tests for behavior the issue did not as
 
 Never propose deleting a test or weakening an assertion to resolve a finding.
 
+## When there is nothing to report
+
+`/submit` acts on every blocking finding you return, so a speculative one costs a fix round
+the same way a real one does. Report a test as guarding nothing only when you can name the
+production line whose revert it would survive. `BLOCKING: 0` is a correct and expected result
+for most branches. Do not promote a minor concern to blocking to make the report look thorough.
+
 ## What you return
 
 ```
