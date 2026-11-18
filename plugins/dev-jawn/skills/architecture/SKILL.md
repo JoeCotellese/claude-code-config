@@ -44,15 +44,18 @@ follows the stack the repo uses; it never assumes one.
 | cpp-qt | Invoke `cpp-qt-architect` skill |
 | unknown | Ask user to specify, or provide generic guidance |
 
+The domain architect skills are optional: they live outside the plugin, so a config dir may
+not have them. If the table's skill is not in your skill listing, pass architect skill `none`
+and dispatch anyway. Do not ask the user.
+
 Dispatch the `dev-jawn:architect` agent with the Agent tool (`subagent_type:
 "dev-jawn:architect"`, never `fork`: a fork inherits the session model, and the agent pins
-`model: fable`). Its brief: the issue number, the domain, the architect skill from the table,
+`model: opus`). Its brief: the issue number, the domain, the architect skill from the table,
 the stack and protected files from Step 2, and the absolute path of this `SKILL.md`. It invokes
 the architect skill with the Skill tool, then runs Step 4's exit checks, and replies `ARCHITECT RESULT: notes` or
 `ARCHITECT RESULT: contradiction`. Writing the notes yourself is not a substitute, even when the
-code looks familiar: the skill carries the domain's patterns and checks. A domain whose
-architect is not installed counts as `unknown`; resolve it here before dispatching, since the
-agent cannot ask the user.
+code looks familiar: the agent runs Step 4's checks in a fresh context. Only an `unknown`
+domain is resolved here before dispatching, since the agent cannot ask the user.
 
 On `contradiction`, take Step 4's route to `/spec` with its evidence. On `notes`, spot-check
 the cited file:line and symbols yourself, then go to Step 5.
