@@ -154,7 +154,8 @@ Findings come back through `ReportFindings`. **correctness** findings go through
 Lenses run in **fresh contexts** via the Agent tool. The builder does not grade its own
 work: an agent that watched the code get written has already accepted every assumption in
 it. Give each one the diff, the issue, and one lens only — overlapping lenses produce
-three copies of the same finding.
+three copies of the same finding. Zero findings is a correct result, and say so in each
+brief: every speculative finding costs a reproduction-test round in triage.
 
 **Lens A — acceptance-criteria conformance. Always.**
 
@@ -181,7 +182,8 @@ Use the script's answer rather than inferring the domain, because it reports `am
 - `python` → `python-code-reviewer` skill
 - `cpp-qt` → `cpp-qt-reviewer` skill
 - `unknown` → no dedicated reviewer exists. Say so in one line and continue the committee.
-- `ambiguous:<a>,<b>` → STOP, ask which reviewer the diff wants.
+- `ambiguous:<a>,<b>` → STOP, ask which reviewer the diff wants. A monorepo that matches
+  two domains has a real answer, and the user knows it.
 
 **`unknown` is not a blocker.** `/code-review`, Lens A, and Lens C still run, so name
 the gap and keep going. Print one line and move to the blocking triage:
@@ -192,9 +194,6 @@ Lens B skipped: no dedicated reviewer for this domain. Platform safety is uncove
 
 Do not prompt the user to pick a reviewer or substitute a hand-written one: with no curated
 checklist behind it, it repeats `/code-review`.
-
-**`ambiguous` is a blocker**, because a monorepo that matches two domains has a real answer
-and the user knows it. STOP and ask which reviewer the diff wants.
 
 Add a domain to `detect_project_domain.sh` only when a reviewer for that language exists.
 

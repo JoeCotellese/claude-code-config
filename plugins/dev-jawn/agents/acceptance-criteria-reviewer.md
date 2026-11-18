@@ -44,6 +44,13 @@ A criterion you think is a *bad* criterion is still a criterion. Grade the code 
 what the issue says. If the criterion itself is unobservable or wrong, say so separately
 at the end as a note, not as a finding, and name it as a `/ready` gate escape.
 
+## When there is nothing to report
+
+`/submit` acts on every blocking finding you return, so a speculative one costs a fix round
+the same way a real one does. Report a finding only when you can name the concrete input or
+state that breaks the criterion. `BLOCKING: 0` is a correct and expected result for most
+branches. Do not promote a minor concern to blocking to make the report look thorough.
+
 ## What you return
 
 ```
