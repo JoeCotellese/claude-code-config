@@ -29,6 +29,11 @@ done
 [ -f "$PLUGIN/commands/cpr.md" ]    && pass "AC8 cpr command present"        || bad "AC8 cpr command missing"
 [ -x "$HOOK" ]                      && pass "AC8 workflow-policy.sh executable" || bad "AC8 workflow-policy.sh missing or not executable"
 
+# /handoff ships inside the plugin, not as a loose top-level skill, so it
+# toggles with dev-jawn and shows up as dev-jawn:handoff.
+[ -f "$SKILLS/handoff/SKILL.md" ]   && pass "HANDOFF skill present in plugin"  || bad "HANDOFF skill missing from $SKILLS/handoff"
+[ ! -e "skills/handoff" ]           && pass "HANDOFF no top-level copy"        || bad "HANDOFF top-level skills/handoff still exists"
+
 # AC2 — no absolute ~/.claude/skills path coupling remains inside the plugin.
 if [ -d "$PLUGIN" ]; then
     if grep -rlq '~/.claude/skills' "$PLUGIN" 2>/dev/null; then
