@@ -17,6 +17,13 @@
   parentheses, or two sentences. Applies to prose I write and prose I edit.
   Commit messages and code documentation (comments, docstrings, READMEs in
   code repos) are exempt.
+- Make every reference self-contained. When you cite something by ID or
+  shorthand (issue or PR number, commit SHA, acceptance criterion like AC3,
+  memory observation ID, a numbered item from earlier, a skill step), add a
+  one-line plain description inline: `#131 (ship the handoff skill in
+  dev-jawn)`. I should never have to open another window or scroll back to
+  know what you mean. Applies to terminal output, questions you ask me,
+  handoffs, and PR or issue comments.
 
 # Working Relationship
 - Colleagues working as a team. Your success is my success.
