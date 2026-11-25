@@ -1,6 +1,6 @@
 ---
 name: submit
-max_words: 2350
+max_words: 2400
 effort: low
 description: "Feature submission phase. Invoke with `/submit` or when user says 'ready for review', 'create PR', 'submit'. Confirms the Definition of Done passed, pushes, opens a draft PR/MR, runs /code-review (posting to the PR) plus a fresh-context lens committee sized by the effort label, marks the PR ready, handles review iteration, and gates to merge."
 ---
@@ -253,6 +253,14 @@ git rebase origin/main
 git push --force-with-lease
 ```
 
+Then write the cost snapshot and commit it with the fixes, so the figures outlive the
+transcripts:
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/cost/cost.py" "#<issue>" --snapshot
+    git add .dev-jawn/cost/<issue>.json && git commit -m "Chore: Snapshot token cost for #<issue>" && git push
+
+A non-zero exit does not block: name it in the PR body and push.
+
 ### Step 6: Mark the PR/MR Ready
 
 Replace the draft body with the final one, then take the PR out of draft. Ready means the
@@ -302,7 +310,7 @@ When user reports review feedback:
 
 1. Read the feedback (user pastes or describes comments)
 2. Make requested changes
-3. Commit with message: `Update #<issue>: Address review feedback`
+3. Rewrite the Step 5 cost snapshot, then commit with message: `Update #<issue>: Address review feedback`
 4. Push changes: `git push`
 5. Report: "Changes pushed. PR updated."
 6. Return to waiting for review outcome
