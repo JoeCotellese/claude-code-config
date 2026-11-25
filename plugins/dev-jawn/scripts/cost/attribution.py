@@ -238,12 +238,14 @@ def _attribute_session(session: Session, result: Attribution, origin) -> None:
 
 def _agent_walker(agent, parent: Slot, result: Attribution, origin) -> Walker:
     named = description_issues(agent.description)
-    if parent.locked:
-        issues, locked = parent.issues, True
+    # One #N names this agent's issue even inside a shared pair ("Architect #1119" under "Spec
+    # pair #1118 + #1119"); two or more lock an even split; none inherits, lock included.
+    if len(named) == 1:
+        issues, locked = (named[0],), False
     elif len(named) >= 2:
         issues, locked = tuple(named), True
-    elif len(named) == 1:
-        issues, locked = (named[0],), False
+    elif parent.locked:
+        issues, locked = parent.issues, True
     else:
         issues, locked = parent.issues, False
     identity = phase_for_agent(agent.agent_type, agent.description)
