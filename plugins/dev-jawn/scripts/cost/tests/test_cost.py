@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import hashlib  # noqa: E402
 import json  # noqa: E402
+import os  # noqa: E402
 import shutil  # noqa: E402
 import subprocess  # noqa: E402
 import tempfile  # noqa: E402
@@ -30,6 +31,7 @@ SHAPES = Path(__file__).resolve().parent / "fixtures" / "record_shapes.jsonl"
 
 COST_PY = Path(__file__).resolve().parent.parent / "cost.py"
 PLUGIN_JSON = Path(__file__).resolve().parents[3] / ".claude-plugin" / "plugin.json"
+SKILL_MD = Path(__file__).resolve().parents[3] / "skills" / "cost" / "SKILL.md"
 FIXTURE_CWD = "/work/repo"
 OFFLINE_WARNING = "cost: offline; outcome unknown\n"
 
@@ -195,6 +197,34 @@ class CostTests(unittest.TestCase):
 
             self.assertEqual([r.phase for r in report.phases], ["ready"])
             self.assertEqual(report.totals.weighted, 600)
+
+    def test_filing_binds_only_during_spec(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:implement", "#7").turn("claude-opus-5-5", 100, 0, 0)
+        s.filing("https://github.com/o/r/issues/8")                  # a side issue filed mid-build
+        s.turn("claude-opus-5-5", 50, 0, 0)
+        loose = self.tree.session("s2")
+        loose.spawn("toolu_A", "Tidy up")
+        sub = loose.subagent("a1", "general-purpose", "Tidy up", "toolu_A")
+        sub.filing("https://github.com/o/r/issues/9")                # no /spec in that file
+        sub.turn("claude-opus-5-5", 30, 0, 0)
+
+        self.assertEqual(self.row(self.issue(7), "build").weighted, 150)
+        self.assertIsNone(self.issue(8))
+        self.assertIsNone(self.issue(9))
+
+    def test_autopilot_binds_its_issue_even_when_a_phase_is_set(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:implement", "#7").turn("claude-opus-5-5", 100, 0, 0)
+        s.skill("dev-jawn:autopilot", "#8").turn("claude-opus-5-5", 40, 0, 0)  # keeps build, binds #8
+        loose = self.tree.session("s2")
+        loose.spawn("toolu_A", "Carry on")
+        sub = loose.subagent("a1", "general-purpose", "Carry on", "toolu_A")
+        sub.skill("dev-jawn:autopilot", "#9").turn("claude-opus-5-5", 20, 0, 0)
+
+        self.assertEqual(self.row(self.issue(7), "build").weighted, 100)
+        self.assertEqual(self.row(self.issue(8), "build").weighted, 40)
+        self.assertEqual(self.row(self.issue(9), "other").weighted, 20)
 
     # --- AC3 -------------------------------------------------------------
     def test_ac03_nested_subagents_roll_up_to_spawning_phase(self):
@@ -423,6 +453,24 @@ class CostTests(unittest.TestCase):
         self.assertIn("12,345", done.stdout)
         self.assertEqual(summary.stdout.count("\n"), 1)
         self.assertTrue(summary.stdout.startswith("#7: 12,345 "))
+
+    def test_skill_command_line_passes_issue_arguments_through_bash(self):
+        # The skill's command is substituted textually and run by bash, where an unquoted #134
+        # would start a comment and silently fall back to the session view.
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 1000, 0, 0)
+        text = SKILL_MD.read_text()
+        line = next(ln for ln in text.splitlines() if ln.startswith("python3 ") and "cost.py" in ln)
+        plugin_root = str(COST_PY.parents[2])
+        for arguments, expect in (("", "session"), ("#7", "phase"), ("#7 --summary", "#7: 1,000 ")):
+            with self.subTest(arguments=arguments):
+                command = (line.replace("$ARGUMENTS", arguments).replace("${CLAUDE_SESSION_ID}", "s1")
+                           + f" --projects-dir {self.tree.root} --repo {self.tmp}"
+                           + f" --project '{FIXTURE_CWD}*' --offline")
+                done = subprocess.run(["bash", "-c", command], capture_output=True, text=True, timeout=60,
+                                      env={**os.environ, "CLAUDE_PLUGIN_ROOT": plugin_root})
+                self.assertEqual(done.returncode, 0, done.stderr)
+                self.assertIn(expect, done.stdout)
 
     # --- units: phase mapping, scope, read-only ---------------------------
     def test_description_and_agent_type_map_to_phases(self):

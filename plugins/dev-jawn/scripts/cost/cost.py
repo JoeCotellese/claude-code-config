@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shlex
 import subprocess
 import sys
 from fractions import Fraction
@@ -68,6 +69,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--projects-dir", default=str(DEFAULT_PROJECTS), help="Claude Code transcripts root")
     p.add_argument("--project", action="append", default=[], help="extra cwd glob to treat as this repo")
     p.add_argument("--offline", action="store_true", help="skip the gh outcome lookup")
+    p.add_argument("--args", default=None,
+                   help="the skill's arguments as one string, split here so a leading # survives the shell")
     return p
 
 
@@ -88,6 +91,11 @@ def origin_repo(repo) -> str | None:
 def main(argv=None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
+    if args.args:
+        try:
+            parser.parse_args(shlex.split(args.args), namespace=args)
+        except ValueError as error:
+            parser.error(f"--args: {error}")
     try:
         if args.issue:
             digits = args.issue.lstrip("#")

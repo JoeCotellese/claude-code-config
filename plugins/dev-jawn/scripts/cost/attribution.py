@@ -116,6 +116,7 @@ class Walker:
         self.skill_slots = []  # (skill, args, ts, slot)
         self.timeline = []  # (ts, slot)
         self.entry = {}  # issue -> phase already counted when this agent was spawned
+        self.skill_phase = None  # the phase a dev-jawn skill invoked in this file set
 
     def count(self, issues, phase) -> None:
         """Count a phase entry per issue, unless it is the entry the agent's spawn already counted."""
@@ -167,6 +168,7 @@ class Walker:
                 if not self.locked:
                     self.issues = ()
                 self.phase = None
+                self.skill_phase = None
         self.close_segment()
 
     def invoke(self, call: SkillCall) -> None:
@@ -178,8 +180,13 @@ class Walker:
         self.last_invocation = signature
         self.turn_since_invocation = False
         if call.skill == AUTOPILOT and self.phase is not None:
-            return  # autopilot never overwrites a phase already set
+            # Autopilot never overwrites a phase already set, but its #N still binds.
+            match = ISSUE_RE.search(call.args)
+            if match and not self.locked and (int(match.group(1)),) != self.issues:
+                self.bind((int(match.group(1)),), count_attempt=True)
+            return
         self.phase = SKILL_PHASE[call.skill]
+        self.skill_phase = self.phase
         self.entry = {n: p for n, p in self.entry.items() if p == self.phase}
         match = ISSUE_RE.search(call.args)
         n = int(match.group(1)) if match else None
@@ -193,7 +200,8 @@ class Walker:
             self.count((n,) if n in self.issues else self.issues, self.phase)
 
     def file(self, filing: Filing) -> None:
-        if self.phase is None or self.locked:
+        # Only /spec filing binds: side issues filed mid-build or mid-submit keep the session's issue.
+        if self.skill_phase != "spec" or self.locked:
             return
         for repo, n in filing.refs:
             if self.origin and repo and repo.lower() != self.origin:

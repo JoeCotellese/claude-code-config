@@ -257,7 +257,7 @@ Then write the cost snapshot and commit it with the fixes, so the figures outliv
 transcripts:
 
     python3 "${CLAUDE_PLUGIN_ROOT}/scripts/cost/cost.py" "#<issue>" --snapshot
-    git add .dev-jawn/cost/<issue>.json && git commit -m "Chore: Snapshot token cost for #<issue>"
+    git add .dev-jawn/cost/<issue>.json && git commit -m "Chore: Snapshot token cost for #<issue>" && git push
 
 A non-zero exit does not block: name it in the PR body and push.
 

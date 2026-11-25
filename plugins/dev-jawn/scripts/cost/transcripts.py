@@ -201,6 +201,10 @@ def mentions_issue(text: str, n: int) -> bool:
     return re.search(rf"(?<!\d){n}(?!\d)", text) is not None
 
 
+def _file_mentions(path, n: int) -> bool:
+    return mentions_issue(Path(path).read_text(encoding="utf-8", errors="replace"), n)
+
+
 def session_files(project_dir):
     """Yield (sid, main path, [(meta dict, agent path)]) for every main transcript in a project dir."""
     for main in sorted(Path(project_dir).glob("*.jsonl")):
@@ -240,9 +244,9 @@ def collect_sessions(project_dirs, issue: int | None = None):
     for project_dir in project_dirs:
         for sid, main, agents in session_files(project_dir):
             if issue is not None:
-                text = main.read_text(encoding="utf-8", errors="replace")
-                if not (mentions_issue(text, issue)
-                        or any(mentions_issue(str(meta.get("description", "")), issue) for meta, _ in agents)):
+                if not (_file_mentions(main, issue)
+                        or any(mentions_issue(str(meta.get("description", "")), issue) for meta, _ in agents)
+                        or any(_file_mentions(path, issue) for _, path in agents)):
                     continue
             sessions.append(load_session(project_dir, sid, main, agents))
     dedupe(sessions)

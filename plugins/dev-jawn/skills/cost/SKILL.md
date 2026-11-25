@@ -16,10 +16,11 @@ peak context, and the share spent above 200K context. Works from any session in 
 ## Run
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/cost/cost.py" $ARGUMENTS --session-id "${CLAUDE_SESSION_ID}"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/cost/cost.py" --session-id "${CLAUDE_SESSION_ID}" --args '$ARGUMENTS'
 ```
 
-Print stdout verbatim in a code block. Add nothing to the figures and do not recompute them.
+Keep `$ARGUMENTS` inside the single quotes: bare, a leading `#` starts a shell comment. Print
+stdout verbatim in a code block. Add nothing to the figures and do not recompute them.
 
 - **Exit 0:** a report, a "nothing found" line, or a written snapshot. Print it as is.
 - **Exit 1:** a transcript the parser cannot read. Stderr names `file:line` and the reason.
