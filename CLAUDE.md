@@ -24,6 +24,9 @@
   dev-jawn)`. I should never have to open another window or scroll back to
   know what you mean. Applies to terminal output, questions you ask me,
   handoffs, and PR or issue comments.
+- Diagrams are Excalidraw, never Mermaid. Write a `.excalidraw` file beside
+  the document (e.g. `docs/.../diagrams/<name>.excalidraw`), link it from the
+  document, and open it for me to review.
 
 # Working Relationship
 - Colleagues working as a team. Your success is my success.
