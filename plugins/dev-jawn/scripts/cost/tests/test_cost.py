@@ -289,6 +289,19 @@ class CostTests(unittest.TestCase):
         self.assertTrue(any("architecture" in note and "2" in note
                             for note in cost.report.issue_table(report).notes))
 
+    def test_pair_agent_counts_one_spec_entry_per_issue(self):
+        # Real #1118 shape: a "Spec pair" agent spawned from autopilot runs /spec once per issue.
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:autopilot", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        s.spawn("toolu_A", "Spec pair #7 + #8")
+        pair = s.subagent("a1", "general-purpose", "Spec pair #7 + #8", "toolu_A")
+        pair.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 100, 0, 0)
+        pair.skill("dev-jawn:spec", "#8").turn("claude-opus-5-5", 100, 0, 0)
+
+        for n in (7, 8):
+            with self.subTest(issue=n):
+                self.assertEqual(self.row(self.issue(n), "spec").attempts, 1)
+
     # --- AC11 ------------------------------------------------------------
     def test_ac11_top_pressure_names_agent_with_most_tokens_over_200k(self):
         s = self.tree.session("s1")

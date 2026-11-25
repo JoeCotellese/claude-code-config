@@ -115,6 +115,14 @@ class Walker:
         self.spawn_slots = {}
         self.skill_slots = []  # (skill, args, ts, slot)
         self.timeline = []  # (ts, slot)
+        self.entry = {}  # issue -> phase already counted when this agent was spawned
+
+    def count(self, issues, phase) -> None:
+        """Count a phase entry per issue, unless it is the entry the agent's spawn already counted."""
+        for n in issues:
+            if self.entry.pop(n, None) == phase:
+                continue
+            self.result.attempts[(n, phase)] += 1
 
     def slot(self) -> Slot:
         if self.issues:
@@ -131,8 +139,7 @@ class Walker:
             slot.phase = self.phase or "other"
         self.pending = []
         if count_attempt or first:
-            for n in issues:
-                self.result.attempts[(n, self.phase or "other")] += 1
+            self.count(issues, self.phase or "other")
 
     def close_segment(self) -> None:
         for slot in self.pending:
@@ -173,6 +180,7 @@ class Walker:
         if call.skill == AUTOPILOT and self.phase is not None:
             return  # autopilot never overwrites a phase already set
         self.phase = SKILL_PHASE[call.skill]
+        self.entry = {n: p for n, p in self.entry.items() if p == self.phase}
         match = ISSUE_RE.search(call.args)
         n = int(match.group(1)) if match else None
         if n is None and not self.issues:
@@ -181,8 +189,8 @@ class Walker:
         if n is not None and not self.locked:
             self.bind((n,), count_attempt=True)
         elif self.issues:
-            for issue in self.issues:
-                self.result.attempts[(issue, self.phase)] += 1
+            # A locked pair agent running /spec #A counts the entry for #A alone.
+            self.count((n,) if n in self.issues else self.issues, self.phase)
 
     def file(self, filing: Filing) -> None:
         if self.phase is None or self.locked:
@@ -249,10 +257,11 @@ def _agent_walker(agent, parent: Slot, result: Attribution, origin) -> Walker:
     else:
         issues, locked = parent.issues, False
     identity = phase_for_agent(agent.agent_type, agent.description)
+    walker = Walker(result, origin, issues=issues, phase=identity or parent.phase, locked=locked)
     if identity and identity != parent.phase:
-        for n in issues:
-            result.attempts[(n, identity)] += 1
-    return Walker(result, origin, issues=issues, phase=identity or parent.phase, locked=locked)
+        walker.count(issues, identity)
+        walker.entry = {n: identity for n in issues}
+    return walker
 
 
 def _skill_link(agent, skill_slots):
