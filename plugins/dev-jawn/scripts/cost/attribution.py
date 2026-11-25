@@ -40,6 +40,8 @@ DESCRIPTION_PHASE = [
     (re.compile(r"^(critic|design critic|prototype)", re.I), "ui-design"),
 ]
 ISSUE_RE = re.compile(r"#(\d+)")
+# In a subagent description, "PR #136" names a pull request, not an issue.
+DESCRIPTION_ISSUE_RE = re.compile(r"(?<![Pp][Rr] )(?<![Pp][Rr])#(\d+)")
 BRANCH_RE = re.compile(r"^[a-z]+/(\d+)-")
 
 
@@ -94,7 +96,7 @@ def phase_for_agent(agent_type: str, description: str):
 
 def description_issues(description: str) -> list:
     found = []
-    for n in ISSUE_RE.findall(description):
+    for n in DESCRIPTION_ISSUE_RE.findall(description):
         if int(n) not in found:
             found.append(int(n))
     return found

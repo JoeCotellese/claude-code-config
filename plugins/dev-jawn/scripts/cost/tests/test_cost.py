@@ -526,6 +526,83 @@ class CostTests(unittest.TestCase):
 
         self.assertEqual(tree_digest(self.tree.root), before)
 
+    # --- committee reproductions (PR #136) --------------------------------
+    def test_open_closing_pr_is_not_merged(self):
+        # gh lists an open PR whose body says "Fixes #N" in closedByPullRequestsReferences.
+        def runner(argv, **_kwargs):
+            if argv[1] == "issue":
+                body = {"state": "OPEN", "labels": [], "closedByPullRequestsReferences": [{"number": 136}]}
+            else:
+                body = []
+            return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(body), stderr="")
+
+        self.assertEqual(outcome.outcome(outcome.lookup(134, runner=runner)), "open")
+
+    def test_resumed_session_does_not_recount_attempts_or_verdicts(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        s.text("DOD VERDICT: #7 status=PASS")
+        copy = self.tree.root / s.path.parent.name / "s2.jsonl"
+        copy.write_text(s.path.read_text())                         # a resume carries the history
+
+        report = self.issue(7)
+
+        self.assertEqual(self.row(report, "spec").attempts, 1)
+        self.assertEqual(report.dod_rounds, 1)
+
+    def test_partial_multibyte_final_line_is_skipped(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:dod", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        with s.path.open("ab") as handle:
+            handle.write('{"type": "assistant", "text": "—'.encode()[:-1])  # cut inside the em-dash
+
+        self.assertEqual(self.issue(7).totals.weighted, 10)
+
+    def test_background_dedupes_and_survives_a_bad_observer_file(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        observer = self.tree.session("o1", slug="-Users-x-claude-mem-observer")
+        observer.turn("claude-opus-5-5", 100, 0, 0)                 # written twice, counts once
+        s.turn("claude-opus-5-5", 10, 0, 0)                          # keep the observer turn inside the window
+        broken = self.tree.session("o2", slug="-Users-x-claude-mem-observer-2")
+        broken.raw_line('{"type": "assistant", "message": {}}')
+
+        report = cost.session_report("s1", self.tree.root)
+
+        self.assertEqual(report.background, 100)
+
+    def test_unrelated_session_with_matching_digits_is_not_parsed(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        other = self.tree.session("s2")
+        other.turn("claude-opus-5-5", 1, 0, 0)
+        other.raw_line('{"type": "assistant", "uuid": "a7f", "message": {"id": "m"}}')  # "7" in a hex id
+
+        self.assertEqual(self.issue(7).totals.weighted, 10)
+
+    def test_pr_number_in_description_does_not_rebind(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:submit", "#7")
+        s.spawn("toolu_A", "Review PR #136")
+        s.subagent("a1", "general-purpose", "Review PR #136", "toolu_A").turn("claude-opus-5-5", 50, 0, 0)
+
+        self.assertEqual(self.row(self.issue(7), "submit").subagent, 50)
+        self.assertIsNone(self.issue(136))
+
+    def test_corrupt_snapshot_does_not_crash(self):
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        repo = self.tmp / "repo"
+        (repo / ".dev-jawn" / "cost").mkdir(parents=True)
+        (repo / ".dev-jawn" / "cost" / "7.json").write_text("<<<<<<< HEAD\n{")
+
+        written = run_cli(self.tree.root, repo, "#7", "--snapshot")
+        shown = run_cli(self.tree.root, repo, "#7")
+
+        self.assertEqual(written.returncode, 0, written.stderr)
+        self.assertEqual(json.loads((repo / ".dev-jawn" / "cost" / "7.json").read_text())["issue"], 7)
+        self.assertEqual(shown.returncode, 0, shown.stderr)
+
     # --- units: weights and real-format drift -----------------------------
     def test_model_normalization_strips_1m_marker_and_date_suffix(self):
         self.assertEqual(weights.normalize_model("claude-opus-5-5[1m]"), "claude-opus-5-5")

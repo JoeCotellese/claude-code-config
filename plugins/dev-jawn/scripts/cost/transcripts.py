@@ -54,12 +54,14 @@ class SkillCall:
     args: str
     branch: str
     source: str  # "tool" or "command"
+    key: tuple = ()
 
 
 @dataclass
 class Clear:
     line: int
     ts: str
+    key: tuple = ()
 
 
 @dataclass
@@ -67,6 +69,7 @@ class Filing:
     line: int
     ts: str
     refs: list  # [(owner/repo or None, issue number)]
+    key: tuple = ()
 
 
 @dataclass
@@ -75,6 +78,7 @@ class Spawn:
     ts: str
     tool_use_id: str
     description: str
+    key: tuple = ()
 
 
 @dataclass
@@ -82,6 +86,7 @@ class Verdict:
     line: int
     ts: str
     issue: int
+    key: tuple = ()
 
 
 @dataclass
@@ -198,7 +203,8 @@ def discover(projects_dir, scope: Scope):
 
 # --- sessions -------------------------------------------------------------
 def mentions_issue(text: str, n: int) -> bool:
-    return re.search(rf"(?<!\d){n}(?!\d)", text) is not None
+    """True when the text could bind n: #n, an issues/n URL, or an issue branch like feature/n-."""
+    return re.search(rf"(#{n}|/issues/{n}|/{n}-)(?!\d)", text) is not None
 
 
 def _file_mentions(path, n: int) -> bool:
@@ -274,10 +280,12 @@ def dedupe(sessions) -> None:
     for transcript in files:
         kept = []
         for event in transcript.events:
-            if isinstance(event, Turn):
-                if event.key in seen:
+            # A resumed or forked session carries the earlier history; every keyed event counts once.
+            key = (type(event).__name__,) + tuple(event.key) if event.key else None
+            if key is not None:
+                if key in seen:
                     continue
-                seen.add(event.key)
+                seen.add(key)
             kept.append(event)
         transcript.events = kept
 
@@ -285,7 +293,8 @@ def dedupe(sessions) -> None:
 # --- parsing --------------------------------------------------------------
 def parse(path) -> FileTranscript:
     path = Path(path)
-    content = path.read_text(encoding="utf-8")
+    # Replace undecodable bytes: a live write can stop inside a multibyte character.
+    content = path.read_text(encoding="utf-8", errors="replace")
     lines = content.split("\n")
     transcript = FileTranscript(path=str(path))
     pending_filings = {}
@@ -347,13 +356,13 @@ def _parse_assistant(path, number, ts, record, transcript, pending_filings, seen
             if tool_id in seen_tools:
                 continue
             seen_tools.add(tool_id)
-            _parse_tool_use(number, ts, branch, block, transcript, pending_filings)
+            _parse_tool_use(number, ts, branch, block, transcript, pending_filings, (tool_id,))
         elif block.get("type") == "text":
             for match in VERDICT_RE.finditer(block.get("text") or ""):
                 key = (message["id"], int(match.group(1)))
                 if key not in seen_verdicts:
                     seen_verdicts.add(key)
-                    transcript.events.append(Verdict(number, ts, int(match.group(1))))
+                    transcript.events.append(Verdict(number, ts, int(match.group(1)), key))
     key_base = (message["id"], record["requestId"])
     iterations = usage.get("iterations")
     if isinstance(iterations, list) and iterations:
@@ -389,14 +398,14 @@ def _tokens(usage) -> dict:
     }
 
 
-def _parse_tool_use(number, ts, branch, block, transcript, pending_filings):
+def _parse_tool_use(number, ts, branch, block, transcript, pending_filings, key):
     name = block.get("name")
     data = block.get("input") if isinstance(block.get("input"), dict) else {}
     if name == "Skill":
         transcript.events.append(SkillCall(number, ts, str(data.get("skill") or ""),
-                                           str(data.get("args") or ""), branch, "tool"))
+                                           str(data.get("args") or ""), branch, "tool", key))
     elif name in ("Agent", "Task"):
-        transcript.events.append(Spawn(number, ts, str(block.get("id")), str(data.get("description") or "")))
+        transcript.events.append(Spawn(number, ts, str(block.get("id")), str(data.get("description") or ""), key))
     elif name == "Bash" and "gh issue create" in str(data.get("command") or ""):
         pending_filings[block.get("id")] = True
 
@@ -407,24 +416,25 @@ def _parse_user(number, ts, record, transcript, pending_filings):
         return
     content = message.get("content")
     branch = record.get("gitBranch") or ""
+    key = (record["uuid"],) if isinstance(record.get("uuid"), str) else ()
     if isinstance(content, str):
-        _parse_command(number, ts, branch, content, transcript)
+        _parse_command(number, ts, branch, content, transcript, key)
         return
     for block in content if isinstance(content, list) else []:
         if not isinstance(block, dict):
             continue
         if block.get("type") == "text":
-            _parse_command(number, ts, branch, block.get("text") or "", transcript)
+            _parse_command(number, ts, branch, block.get("text") or "", transcript, key)
         elif block.get("type") == "tool_result" and pending_filings.pop(block.get("tool_use_id"), False):
             text = _result_text(block.get("content"))
             refs = [(repo, int(n)) for repo, n in ISSUE_URL_RE.findall(text)]
             if not refs:
                 refs = [(None, int(n)) for n in BARE_ISSUE_URL_RE.findall(text)]
             if refs:
-                transcript.events.append(Filing(number, ts, refs))
+                transcript.events.append(Filing(number, ts, refs, (block.get("tool_use_id"),)))
 
 
-def _parse_command(number, ts, branch, text, transcript):
+def _parse_command(number, ts, branch, text, transcript, key=()):
     match = COMMAND_NAME_RE.search(text)
     if not match:
         return
@@ -432,9 +442,9 @@ def _parse_command(number, ts, branch, text, transcript):
     args_match = COMMAND_ARGS_RE.search(text)
     args = args_match.group(1).strip() if args_match else ""
     if name == "clear":
-        transcript.events.append(Clear(number, ts))
+        transcript.events.append(Clear(number, ts, key))
     else:
-        transcript.events.append(SkillCall(number, ts, name, args, branch, "command"))
+        transcript.events.append(SkillCall(number, ts, name, args, branch, "command", key))
 
 
 def _result_text(content) -> str:

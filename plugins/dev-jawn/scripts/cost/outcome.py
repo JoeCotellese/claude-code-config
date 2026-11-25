@@ -28,7 +28,7 @@ def outcome(state: GitHubState | None) -> str:
 
 
 def lookup(n: int, runner=subprocess.run, cwd=None) -> GitHubState | None:
-    issue = _gh(runner, cwd, ["gh", "issue", "view", str(n), "--json", "labels,closedByPullRequestsReferences"])
+    issue = _gh(runner, cwd, ["gh", "issue", "view", str(n), "--json", "state,labels,closedByPullRequestsReferences"])
     if issue is None:
         return None
     prs = _gh(runner, cwd, ["gh", "pr", "list", "--state", "open", "--search", str(n),
@@ -43,7 +43,8 @@ def lookup(n: int, runner=subprocess.run, cwd=None) -> GitHubState | None:
         if (closes or branch.match(pr.get("headRefName") or "")) and not pr.get("isDraft"):
             open_ready = True
     return GitHubState(
-        merged=bool(issue.get("closedByPullRequestsReferences")),
+        # An open PR saying "Fixes #N" is listed before it merges; only a closed issue is merged.
+        merged=issue.get("state") == "CLOSED" and bool(issue.get("closedByPullRequestsReferences")),
         stage_human="stage:human" in labels,
         open_ready_pr=open_ready,
     )

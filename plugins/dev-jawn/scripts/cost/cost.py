@@ -39,23 +39,35 @@ def session_report(session_id: str, projects_dir, origin: str | None = None):
     if session is None:
         return None
     attributed = attribution.attribute([session], origin)
-    return report.build_session_report(session_id, attributed, _background(projects_dir, session))
+    background, skipped = _background(projects_dir, session)
+    result = report.build_session_report(session_id, attributed, background)
+    result.warnings.extend(f"background skipped unreadable observer transcript {path}" for path in skipped)
+    return result
 
 
-def _background(projects_dir, session) -> Fraction:
+def _background(projects_dir, session):
+    """Observer tokens inside the session's time window, outside every total; and unreadable files."""
     files = [session.main] + [a.transcript for a in session.agents]
     start = min((f.first_ts for f in files if f.first_ts), default="")
     end = max((f.last_ts for f in files if f.last_ts), default="")
     if not start:
-        return Fraction(0)
+        return Fraction(0), []
     _, observers = transcripts.discover(projects_dir, Scope.all_dirs())
-    total = Fraction(0)
+    sessions, skipped = [], []
     for project_dir in observers:
-        for path in Path(project_dir).rglob("*.jsonl"):
-            for turn in transcripts.parse(path).turns:
+        for sid, main, agents in transcripts.session_files(project_dir):
+            try:
+                sessions.append(transcripts.load_session(project_dir, sid, main, agents))
+            except transcripts.TranscriptFormatError as error:
+                skipped.append(error.path)
+    transcripts.dedupe(sessions)
+    total = Fraction(0)
+    for observed in sessions:
+        for transcript in [observed.main] + [a.transcript for a in observed.agents]:
+            for turn in transcript.turns:
                 if start <= turn.ts <= end:
                     total += weights.weigh(turn.model, turn.tokens)
-    return total
+    return total, skipped
 
 
 # --- CLI ------------------------------------------------------------------
@@ -126,8 +138,6 @@ def _issue_command(n: int, args) -> str:
     gh = None if args.offline else github
     scope = Scope.for_repo(repo, args.project)
     live = issue_report(n, args.projects_dir, scope, gh, origin)
-    snapshot = report.read_snapshot(toplevel, n)
-
     if args.snapshot:
         if live is None:
             return f"#{n}: nothing found (no sessions in scope); no snapshot written\n"
@@ -135,6 +145,7 @@ def _issue_command(n: int, args) -> str:
         _warn_outcome(args.offline, lookup_failed)
         return report.summary_line(live) + "\n"
 
+    snapshot = report.read_snapshot(toplevel, n)
     chosen = live
     if snapshot and (live is None or _snapshot_sessions_gone(args.projects_dir, snapshot)):
         state = None if args.offline else github(n)

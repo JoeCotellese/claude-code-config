@@ -325,9 +325,11 @@ def write_snapshot(report: IssueReport, repo_root) -> Path:
 
 def read_snapshot(repo_root, n: int) -> dict | None:
     path = snapshot_path(repo_root, n)
-    if not path.exists():
-        return None
-    return json.loads(path.read_text())
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None  # missing, truncated or conflicted: treat as no snapshot
+    return data if isinstance(data, dict) and "issue" in data else None
 
 
 def report_from_snapshot(data: dict, outcome_value: str | None = None) -> IssueReport:
