@@ -8,14 +8,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import hashlib  # noqa: E402
 import json  # noqa: E402
+import shutil  # noqa: E402
 import subprocess  # noqa: E402
 import tempfile  # noqa: E402
 import unittest  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
 
+import attribution  # noqa: E402
 import cost  # noqa: E402
+import outcome  # noqa: E402
 import transcripts  # noqa: E402
 import weights  # noqa: E402
+from outcome import GitHubState  # noqa: E402
 from transcript_builder import TranscriptTree  # noqa: E402
 
 ALL = cost.Scope.all_dirs()
@@ -23,7 +29,14 @@ SHAPES = Path(__file__).resolve().parent / "fixtures" / "record_shapes.jsonl"
 
 
 COST_PY = Path(__file__).resolve().parent.parent / "cost.py"
+PLUGIN_JSON = Path(__file__).resolve().parents[3] / ".claude-plugin" / "plugin.json"
 FIXTURE_CWD = "/work/repo"
+OFFLINE_WARNING = "cost: offline; outcome unknown\n"
+
+
+def tree_digest(root) -> dict:
+    return {str(p): (p.stat().st_mtime_ns, hashlib.sha256(p.read_bytes()).hexdigest())
+            for p in sorted(Path(root).rglob("*")) if p.is_file()}
 
 
 def offline(_n):
@@ -227,20 +240,230 @@ class CostTests(unittest.TestCase):
     # --- AC5 -------------------------------------------------------------
     def test_ac05_unbound_tokens_land_on_unattributed_and_lines_sum(self):
         s = self.tree.session("s1")
-        s.skill("dev-jawn:spec", "#7")
+        s.turn("claude-opus-5-5", 40, 0, 0)                          # a segment that never binds
+        s.clear()
+        s.skill("dev-jawn:spec", "#7")                               # binding backdates to this /clear only
         s.turn("claude-opus-5-5", 1000, 0, 0)
         s.clear()
         s.turn("claude-opus-5-5", 200, 0, 0)
         s.spawn("toolu_A", "Explore")
         s.subagent("a1", "general-purpose", "Explore", "toolu_A").turn("claude-sonnet-5-5", 300, 0, 0)  # 150
-        direct = 1000 + 200 + 150
+        direct = 40 + 1000 + 200 + 150
 
         report = cost.session_report("s1", self.tree.root)
 
         rows = dict(report.rows)
-        self.assertEqual(rows, {"#7": 1000, "unattributed": 350})
+        self.assertEqual(rows, {"#7": 1000, "unattributed": 40 + 350})
         self.assertEqual(sum(rows.values()), direct)
         self.assertEqual(report.total, direct)
+
+    # --- AC10 ------------------------------------------------------------
+    def test_ac10_session_view_lists_each_issue_and_unattributed(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 100, 0, 0)
+        s.skill("dev-jawn:ready", "#8").turn("claude-opus-5-5", 200, 0, 0)
+        other = self.tree.session("s2")
+        other.skill("dev-jawn:spec", "#9").turn("claude-opus-5-5", 400, 0, 0)
+
+        report = cost.session_report("s1", self.tree.root)
+
+        self.assertEqual(dict(report.rows), {"#7": 100, "#8": 200, "unattributed": 0})
+        self.assertEqual(report.total, 300)
+
+    # --- AC6 -------------------------------------------------------------
+    def test_ac06_repeated_phase_reports_attempts_and_rework(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        for run, tool_id in enumerate(("toolu_A", "toolu_B")):
+            s.skill("dev-jawn:architecture", "#7").turn("claude-opus-5-5", 5, 0, 0)
+            s.spawn(tool_id, "Architect #7", "dev-jawn:architect")
+            s.subagent(f"a{run}", "dev-jawn:architect", "Architect #7", tool_id).turn("claude-opus-5-5", 100, 0, 0)
+        s.command("dev-jawn:dod").turn("claude-opus-5-5", 5, 0, 0)  # no #N: enters dod for the bound #7
+
+        report = self.issue(7)
+
+        arch, spec = self.row(report, "architecture"), self.row(report, "spec")
+        self.assertEqual((arch.attempts, arch.rework), (2, True))
+        self.assertEqual((spec.attempts, spec.rework), (1, False))
+        self.assertEqual(self.row(report, "dod").attempts, 1)
+        self.assertTrue(any("architecture" in note and "2" in note
+                            for note in cost.report.issue_table(report).notes))
+
+    # --- AC11 ------------------------------------------------------------
+    def test_ac11_top_pressure_names_agent_with_most_tokens_over_200k(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:implement", "#7")
+        s.spawn("toolu_X", "Builder X")
+        x = s.subagent("ax", "general-purpose", "Builder X", "toolu_X")
+        x.turn("claude-opus-5-5", 0, 0, 450000)                     # peak 450K, 22,500 over 200K
+        s.spawn("toolu_Y", "Builder Y")
+        y = s.subagent("ay", "general-purpose", "Builder Y", "toolu_Y")
+        for _ in range(3):
+            y.turn("claude-opus-5-5", 0, 0, 250000)                 # peak 250K, 3 x 12,500 = 37,500 over
+
+        report = self.issue(7)
+
+        self.assertIn("Builder Y", report.top_pressure.agent)
+        self.assertEqual(report.top_pressure.over_200k, 37500)
+        self.assertEqual(report.top_pressure.peak_context, 250000)
+
+    # --- AC12 ------------------------------------------------------------
+    def test_ac12_outcome_and_dod_round_count(self):
+        s = self.tree.session("s1")
+        s.skill("dev-jawn:dod", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        s.text("DOD VERDICT: #7 status=FAIL route=/implement")
+        s.text("**DOD VERDICT: #7 status=PASS route=/submit")
+        s.user_text("DOD VERDICT: #7 status=PASS (quoted in a skill body, not a round)")
+        states = {
+            "merged": GitHubState(merged=True, stage_human=True),
+            "open": GitHubState(),
+            "stopped": GitHubState(stage_human=True),
+        }
+        for expected, state in states.items():
+            with self.subTest(expected):
+                report = self.issue(7, github=lambda n, state=state: state)
+                self.assertEqual(report.outcome, expected)
+                self.assertEqual(report.dod_rounds, 2)
+        ready_pr = GitHubState(stage_human=True, open_ready_pr=True)  # /submit sets stage:human on ready PRs
+        self.assertEqual(self.issue(7, github=lambda n: ready_pr).outcome, "open")
+
+    def test_outcome_lookup_reads_gh_json(self):
+        replies = {
+            "issue": {"labels": [{"name": "stage:human"}], "closedByPullRequestsReferences": []},
+            "pr": [{"number": 3, "isDraft": False, "headRefName": "feature/7-thing", "closingIssuesReferences": []}],
+        }
+
+        def runner(argv, **_kwargs):
+            body = replies["issue"] if argv[1] == "issue" else replies["pr"]
+            return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(body), stderr="")
+
+        state = outcome.lookup(7, runner=runner)
+        self.assertEqual(state, GitHubState(merged=False, stage_human=True, open_ready_pr=True))
+
+        def failing(argv, **_kwargs):
+            return subprocess.CompletedProcess(argv, 1, stdout="", stderr="gh: not logged in")
+
+        self.assertIsNone(outcome.lookup(7, runner=failing))
+        self.assertEqual(outcome.outcome(None), "unknown")
+
+    # --- AC16 ------------------------------------------------------------
+    def test_ac16_nothing_found_reports_and_exits_zero(self):
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)  # in scope, a different issue
+
+        done = run_cli(self.tree.root, self.tmp, "#999")
+        found = run_cli(self.tree.root, self.tmp, "#7")
+
+        self.assertEqual(done.returncode, 0)
+        self.assertIn("#999", done.stdout)
+        self.assertNotIn("weighted", done.stdout)
+        self.assertEqual(done.stderr, OFFLINE_WARNING)
+        self.assertIn("weighted", found.stdout)  # the same scope does find #7
+
+    # --- AC13 ------------------------------------------------------------
+    def test_ac13_snapshot_written_with_phases_models_version_and_time(self):
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 1000, 10, 0)  # 1,050
+        s.skill("dev-jawn:implement", "#7").turn("claude-sonnet-5-5", 400, 0, 0)  # 200
+        repo = self.tmp / "repo"
+        repo.mkdir()
+
+        done = run_cli(self.tree.root, repo, "#7", "--snapshot")
+
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(done.stderr, OFFLINE_WARNING)
+        self.assertTrue(done.stdout.startswith("#7:"))
+        data = json.loads((repo / ".dev-jawn" / "cost" / "7.json").read_text())
+        expected_keys = {"schema", "issue", "repo", "snapshot_time", "plugin_version", "weight_table", "outcome",
+                         "dod_rounds", "sessions", "totals", "phases", "models", "top_pressure", "warnings",
+                         "first_activity", "last_activity"}
+        self.assertLessEqual(expected_keys, set(data))
+        self.assertEqual(data["issue"], 7)
+        self.assertEqual([p["phase"] for p in data["phases"]], ["spec", "build"])
+        self.assertEqual([p["weighted"] for p in data["phases"]], [1050, 200])
+        self.assertEqual(data["totals"]["weighted"], 1250)
+        self.assertEqual(data["models"]["claude-opus-5-5"]["input"], 1000)
+        self.assertEqual(data["models"]["claude-sonnet-5-5"]["weighted"], 200)
+        self.assertEqual(data["plugin_version"], json.loads(PLUGIN_JSON.read_text())["version"])
+        self.assertEqual(data["sessions"], ["s1"])
+        stamp = datetime.strptime(data["snapshot_time"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        self.assertLess(abs((datetime.now(timezone.utc) - stamp).total_seconds()), 120)
+        self.assertLessEqual(data["first_activity"], data["last_activity"])
+
+    # --- AC14 ------------------------------------------------------------
+    def test_ac14_snapshot_used_when_transcripts_absent(self):
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 12345, 0, 0)
+        repo = self.tmp / "repo"
+        repo.mkdir()
+        run_cli(self.tree.root, repo, "#7", "--snapshot")
+        taken = json.loads((repo / ".dev-jawn" / "cost" / "7.json").read_text())["snapshot_time"]
+        shutil.rmtree(self.tree.root)
+        self.tree.root.mkdir()
+
+        done = run_cli(self.tree.root, repo, "#7")
+        summary = run_cli(self.tree.root, repo, "#7", "--summary")
+
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(taken, done.stdout)
+        self.assertIn("snapshot", done.stdout)
+        self.assertIn("12,345", done.stdout)
+        self.assertEqual(summary.stdout.count("\n"), 1)
+        self.assertTrue(summary.stdout.startswith("#7: 12,345 "))
+
+    # --- units: phase mapping, scope, read-only ---------------------------
+    def test_description_and_agent_type_map_to_phases(self):
+        cases = {
+            ("general-purpose", "Build #1118 breakers to ready PR"): "build",
+            ("general-purpose", "Implement AC3"): "build",
+            ("general-purpose", "Architect #1119 crest foam"): "architecture",
+            ("general-purpose", "Spec pair #1118 + #1119"): "spec",
+            ("general-purpose", "Special handling"): None,
+            ("general-purpose", "Review lens: tests"): "submit",
+            ("general-purpose", "/code-review high"): "submit",
+            ("general-purpose", "DoD run"): "dod",
+            ("general-purpose", "Ready gate #7"): "ready",
+            ("general-purpose", "Design critic pass 2"): "ui-design",
+            ("general-purpose", "Rewrite #1118 acceptance tests"): None,
+            ("dev-jawn:architect", "anything"): "architecture",
+            ("dev-jawn:test-adequacy-reviewer", "anything"): "submit",
+        }
+        for (agent_type, description), phase in cases.items():
+            with self.subTest(description):
+                self.assertEqual(attribution.phase_for_agent(agent_type, description), phase)
+
+    def test_scope_keeps_worktrees_and_deleted_worktrees_of_this_repo_only(self):
+        main_repo = self.tmp / "proj"
+        git = ["git", "-c", "core.hooksPath=/dev/null", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+        subprocess.run(git + ["init", "-q", str(main_repo)], check=True, capture_output=True)
+        subprocess.run(git + ["-C", str(main_repo), "commit", "-q", "--allow-empty", "-m", "init"],
+                       check=True, capture_output=True)
+        subprocess.run(git + ["-C", str(main_repo), "worktree", "add", "-q", str(self.tmp / "proj-wt")],
+                       check=True, capture_output=True)
+        root = str(main_repo.resolve())
+        scope = cost.Scope.for_repo(main_repo)
+
+        self.assertTrue(scope.includes(root))
+        self.assertTrue(scope.includes(root + "/sub/dir"))
+        self.assertTrue(scope.includes(str((self.tmp / "proj-wt").resolve())))   # (a) live worktree
+        self.assertTrue(scope.includes(root + "-1148"))                           # (b) deleted worktree
+        (self.tmp / "proj-other").mkdir()                                         # exists, not a worktree
+        self.assertFalse(scope.includes(str((self.tmp / "proj-other").resolve())))
+        self.assertFalse(scope.includes("/somewhere/else"))
+        self.assertTrue(cost.Scope.for_repo(main_repo, ["/somewhere/*"]).includes("/somewhere/else"))  # (c)
+
+    def test_run_never_writes_to_the_transcript_tree(self):
+        s = self.tree.session("s1", cwd=FIXTURE_CWD)
+        s.skill("dev-jawn:spec", "#7").turn("claude-opus-5-5", 10, 0, 0)
+        s.spawn("toolu_A", "Explore")
+        s.subagent("a1", "general-purpose", "Explore", "toolu_A").turn("claude-opus-5-5", 10, 0, 0)
+        before = tree_digest(self.tree.root)
+
+        self.issue(7)
+        cost.session_report("s1", self.tree.root)
+        run_cli(self.tree.root, self.tmp, "#7")
+
+        self.assertEqual(tree_digest(self.tree.root), before)
 
     # --- units: weights and real-format drift -----------------------------
     def test_model_normalization_strips_1m_marker_and_date_suffix(self):
