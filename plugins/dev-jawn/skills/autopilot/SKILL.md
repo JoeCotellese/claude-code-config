@@ -1,6 +1,6 @@
 ---
 name: autopilot
-max_words: 1075
+max_words: 1050
 effort: high
 description: "Hands-off dev-jawn run from idea or issue to an open PR, with one stop at the end. Invoke with `/autopilot #<issue>` or `/autopilot <description>`, or when the user says 'autopilot #N', 'run this hands-off', 'build it and show me at the end'. Adds the autopilot label, drives every phase in one session, builds each acceptance criterion with a fresh subagent, and stops only to ask for the merge."
 ---
@@ -86,7 +86,6 @@ The one stop. Report per Phase closeout in `WORKFLOW.md`, Layer 1 first:
    `gh issue view <N> --comments`, so the user can overrule any of them. List
    `gate=criterion-added` and `gate=scope` first: they changed an existing test or a file the
    plan did not name.
-4. Cost: the one line `/cost #<N> --summary` prints (total weighted tokens, top-pressure agent).
 
 When any deferred criterion's evidence is captures (screenshots, renders, recordings), `open`
 the key ones (one per page or view the change touches) before the stop line, so the user sees
