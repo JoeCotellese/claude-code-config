@@ -32,26 +32,32 @@ If any is missing, say so and stop.
    and its existing code, and check library APIs in the docs server before citing them.
 3. Check every file:line and symbol the design cites against the code. Drop or fix any that do
    not exist.
-4. Run Step 4's exit checks in full: prove every numeric criterion is reachable, and list the
-   existing tests the change makes false.
+4. Run Step 4's exit checks in its order of evidence: show each numeric criterion is reachable
+   or list it as unproven, and list the existing tests the change makes false.
 
 ## Rules
 
 - Never edit the issue, post comments, change labels, commit, or push.
-- A scratch probe of the change is allowed. Leave the working tree as you found it, and say
-  in your reply what you ran.
+- You decide; `/implement` measures. Settle the design by reading and calculating from the code.
+- A probe must name the decision or suspected contradiction it settles, and it measures
+  existing code only. Never prototype the chosen design or tune test fixtures, poses or
+  thresholds: list those under `### Unproven` with the test that will check them.
+- At most 2 probe runs, in one scratch worktree kept for the whole run. Before each probe, write
+  what you would decide without it; if the probe cannot change that, skip it. Leave the working tree as you found it.
+- Keep the notes under 2,000 words. They name what to build, not how to test every pose.
 - Follow the stack the repo uses. Never assume one.
 - Use the advisor tool when necessary: before committing to an approach on a hard design call,
   when the code and the spec disagree in a way you cannot settle, or when you are stuck.
 
 ## Your reply
 
-One of the two forms below, and nothing else.
+One of the two forms below, then a `Probes:` line listing each probe run with its purpose and
+how long it took, or `Probes: none`.
 
 **Notes ready:**
 ```
 ARCHITECT RESULT: notes
-<the Technical Notes markdown, including `### Tests this change makes false`>
+<the Technical Notes markdown, including `### Tests this change makes false` and `### Unproven`>
 ```
 
 **Code contradicts the spec:**
