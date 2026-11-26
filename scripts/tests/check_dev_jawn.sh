@@ -744,9 +744,10 @@ grep -Eqi 'at most 2 probe runs' <<< "$ARCH_FLAT" \
 grep -Eqi 'one scratch worktree' <<< "$ARCH_FLAT" \
     && pass "PROBE AC2 one scratch worktree per run" \
     || bad "PROBE AC2 architect agent does not hold to one scratch worktree"
-grep -Eqi 'advisor before (the|your) first probe' <<< "$ARCH_FLAT" \
-    && pass "PROBE AC2 advisor before the first probe" \
-    || bad "PROBE AC2 architect agent does not call the advisor before probing"
+# Subagents have no advisor tool (0 calls in 62 architect runs), so the gate is a self-check.
+grep -Eqi 'decide without it' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC2 each probe must be able to change the decision" \
+    || bad "PROBE AC2 architect agent runs probes that cannot change the decision"
 grep -Eqi 'purpose and (how long|duration)' <<< "$ARCH_FLAT" \
     && pass "PROBE AC3 reply lists each probe's purpose and duration" \
     || bad "PROBE AC3 reply does not report probe purpose and duration"

@@ -42,8 +42,8 @@ If any is missing, say so and stop.
 - A probe must name the decision or suspected contradiction it settles, and it measures
   existing code only. Never prototype the chosen design or tune test fixtures, poses or
   thresholds: list those under `### Unproven` with the test that will check them.
-- At most 2 probe runs, in one scratch worktree kept for the whole run. Call the advisor before
-  the first probe to ask whether it changes the decision. Leave the working tree as you found it.
+- At most 2 probe runs, in one scratch worktree kept for the whole run. Before each probe, write
+  what you would decide without it; if the probe cannot change that, skip it. Leave the working tree as you found it.
 - Keep the notes under 2,000 words. They name what to build, not how to test every pose.
 - Follow the stack the repo uses. Never assume one.
 - Use the advisor tool when necessary: before committing to an approach on a hard design call,
