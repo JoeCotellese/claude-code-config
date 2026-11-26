@@ -60,7 +60,7 @@ domain is resolved here before dispatching, since the agent cannot ask the user.
 On `contradiction`, take Step 4's route to `/spec` with its evidence. On `notes`, spot-check
 the cited file:line and symbols yourself, then go to Step 5.
 
-**Prompt the architect with** (the brief is this template, without fixture design):
+**Prompt the architect with** (the brief is this template, no fixture design):
 ```
 Design architecture for issue #<N>: <title>
 
@@ -89,9 +89,8 @@ the data flow, and the decisions with their rationale are named, and every named
 
 **Prove every numeric criterion is reachable** in the code as it stands, before filing.
 Calculate it through the existing model first, then probe existing code only if the number
-depends on runtime behaviour, checking that units, frames and axes agree. If neither settles
-it, list it under `### Unproven` with the test that will check it; `/implement` builds that
-test first. A criterion the current model cannot reach is a contradiction, not a build task. #942 found mid-build that its moonrise interval could
+depends on runtime behaviour, checking that units, frames and axes agree. Otherwise list it
+under `### Unproven` with the test that will check it; `/implement` builds that test first. A criterion the current model cannot reach is a contradiction, not a build task. #942 found mid-build that its moonrise interval could
 never pass, because planets spin about one axis while orbits lie in a plane at the wrong angle
 to it.
 
@@ -112,9 +111,11 @@ gh issue edit <N> --remove-label "stage:architecture" --add-label "stage:spec"
 
 ## Step 5: File it
 
-Replace the issue's `## Technical Notes` section with the architect's output, opening with
-`Filled by /architecture via dev-jawn:architect (<architect skill>) on <date>.`, post
-`ARCH VERDICT: #<N> route=stage:build blocking=none` as an issue comment, then:
+Replace the issue's `## Technical Notes` section with the lines between the first and last line
+of the reply, opening with `Filled by /architecture via dev-jawn:architect (<architect skill>) on <date>.`
+Re-read the issue: if that line is missing, stop with the label unchanged and report
+it. Otherwise post `ARCH VERDICT: #<N> route=stage:build
+blocking=none` as an issue comment under the reply's `Probes:` line, then:
 
 ```bash
 gh issue edit <N> --remove-label "stage:architecture" --add-label "stage:build"

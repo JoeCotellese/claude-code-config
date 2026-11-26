@@ -773,6 +773,31 @@ echo "$ARCH_STEP3" | grep -Eqi 'brief is (this|the) template' \
     && pass "PROBE AC6 Step 3 holds the brief to its template" \
     || bad "PROBE AC6 Step 3 lets the brief grow past its template"
 
+# --- Issue #142: the architect's hand-off has a fixed layout and Step 5 verifies the filing ---
+# #137's filing extracted only a header line and still routed to stage:build.
+ARCH_STEP5=$(awk '/^## Step 5/{on=1} /^## Step 6/{on=0} on' "$SKILLS/architecture/SKILL.md" | tr '\n' ' ' | tr -s ' ')
+grep -Eqi 'first line.{0,40}ARCHITECT RESULT|ARCHITECT RESULT.{0,40}first line' <<< "$ARCH_FLAT" \
+    && pass "HANDOFF AC1 ARCHITECT RESULT is the first line" \
+    || bad "HANDOFF AC1 reply does not fix ARCHITECT RESULT to the first line"
+grep -Eqi 'Probes:.{0,40}last line|last line.{0,40}Probes:' <<< "$ARCH_FLAT" \
+    && pass "HANDOFF AC1 Probes: is the last line" \
+    || bad "HANDOFF AC1 reply does not fix Probes: to the last line"
+grep -Eqi 'no `## Technical Notes` heading' <<< "$ARCH_FLAT" \
+    && pass "HANDOFF AC1 notes carry no Technical Notes heading of their own" \
+    || bad "HANDOFF AC1 notes may carry their own Technical Notes heading"
+grep -Eqi 'between the first and last line' <<< "$ARCH_STEP5" \
+    && pass "HANDOFF AC2 Step 5 files only the lines between first and last" \
+    || bad "HANDOFF AC2 Step 5 files the whole reply"
+grep -Eqi 'Probes:.{0,80}ARCH VERDICT|ARCH VERDICT.{0,80}Probes:' <<< "$ARCH_STEP5" \
+    && pass "HANDOFF AC2 Probes: line goes in the verdict comment" \
+    || bad "HANDOFF AC2 Probes: line has no home in Step 5"
+grep -Eqi 're-read the issue' <<< "$ARCH_STEP5" \
+    && pass "HANDOFF AC3 Step 5 re-reads the issue after filing" \
+    || bad "HANDOFF AC3 Step 5 does not verify the filing"
+grep -Eqi 'label unchanged' <<< "$ARCH_STEP5" \
+    && pass "HANDOFF AC3 a missing filing stops with the label unchanged" \
+    || bad "HANDOFF AC3 a missing filing can still route to stage:build"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."

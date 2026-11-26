@@ -51,17 +51,20 @@ If any is missing, say so and stop.
 
 ## Your reply
 
-One of the two forms below, then a `Probes:` line listing each probe run with its purpose and
-how long it took, or `Probes: none`.
+One of the two forms below, and nothing else. The caller parses it by position: the first line
+is `ARCHITECT RESULT:`, the last line is `Probes:` (each probe run with its purpose and how long
+it took, or `none`), and everything between is filed as written.
 
-**Notes ready:**
+**Notes ready:** the notes start at `###`, with no `## Technical Notes` heading.
 ```
 ARCHITECT RESULT: notes
-<the Technical Notes markdown, including `### Tests this change makes false` and `### Unproven`>
+<the notes, including `### Tests this change makes false` and `### Unproven`>
+Probes: <runs, or none>
 ```
 
 **Code contradicts the spec:**
 ```
 ARCHITECT RESULT: contradiction
 <the scenario or criterion, what in the code contradicts it, with file:line, and the evidence>
+Probes: <runs, or none>
 ```
