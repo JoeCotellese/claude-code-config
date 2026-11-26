@@ -60,7 +60,7 @@ domain is resolved here before dispatching, since the agent cannot ask the user.
 On `contradiction`, take Step 4's route to `/spec` with its evidence. On `notes`, spot-check
 the cited file:line and symbols yourself, then go to Step 5.
 
-**Prompt the architect with:**
+**Prompt the architect with** (the brief is this template, without fixture design):
 ```
 Design architecture for issue #<N>: <title>
 
@@ -87,16 +87,16 @@ Check every file:line and symbol it cites against the code before keeping it.
 An implementer can start without re-deriving the architecture: the types and files to touch,
 the data flow, and the decisions with their rationale are named, and every named symbol exists.
 
-**Prove every numeric criterion is reachable** in the code as it stands, before filing: work
-the number through the existing model (a quick calculation, a test run, a scratch probe) and
-check that units, frames and axes agree on the way. A criterion the current model cannot reach
-is a contradiction, not a build task. #942 found mid-build that its moonrise interval could
+**Prove every numeric criterion is reachable** in the code as it stands, before filing.
+Calculate it through the existing model first, then probe existing code only if the number
+depends on runtime behaviour, checking that units, frames and axes agree. If neither settles
+it, list it under `### Unproven` with the test that will check it; `/implement` builds that
+test first. A criterion the current model cannot reach is a contradiction, not a build task. #942 found mid-build that its moonrise interval could
 never pass, because planets spin about one axis while orbits lie in a plane at the wrong angle
 to it.
 
 **Find the existing tests this change makes false.** Search the tests that exercise the code
-the notes touch (callers of the changed symbols, fixtures built on the changed values) and,
-where it is cheap, run them against a scratch version of the change. List each under
+the notes touch (callers of the changed symbols, fixtures built on the changed values). List each under
 `### Tests this change makes false` in the notes: the test, the check it makes now, and the
 check it should make after. `/implement` plans a cycle for each, so the rewrite is approved
 work, not a surprise mid-build. calsync #88 listed its #85 and #73 rewrites up front and built

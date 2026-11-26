@@ -114,6 +114,7 @@ Use the **EnterPlanMode** tool, then:
 5. Identify files to create/modify
 6. Map each acceptance criterion to its TDD cycle (failing test → minimal code → refactor), and name any lower-level test Step 7 allows
    Each entry under Technical Notes' `Tests this change makes false` gets its own cycle too: rewrite the check to the corrected one the notes name, in the same commit as the change that falsifies it.
+   Each `Unproven` entry gets the first cycle: write its test; a failure is a contradiction, so route to `/spec`.
 7. Write a step-by-step implementation plan
 
 **Plan should include:**

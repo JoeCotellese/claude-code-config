@@ -722,6 +722,56 @@ grep -q 'architect skill `none`' "$ARCH_AGENT" 2>/dev/null \
     && pass "OPTARCH architect agent accepts architect skill none" \
     || bad "OPTARCH architect agent has no path for architect skill none"
 
+# --- Issue #140: the architect decides, /implement measures ---
+# periplus #1273's architect spent 42 of 53 minutes on 10 probes; one settled the decision.
+ARCH_FLAT=$(tr '\n' ' ' < "$ARCH_AGENT" | tr -s ' ')
+ARCH_STEP4=$(awk '/^## Step 4/{on=1} /^## Step 5/{on=0} on' "$SKILLS/architecture/SKILL.md")
+grep -Eqi 'probe must name the decision' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC1 a probe names the decision it settles" \
+    || bad "PROBE AC1 architect agent does not require a probe to name its decision"
+grep -Eqi 'existing code only' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC1 probes measure existing code only" \
+    || bad "PROBE AC1 architect agent lets probes run beyond existing code"
+grep -Eqi 'never prototype' <<< "$ARCH_FLAT" && grep -Eqi 'fixture' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC1 never prototype the design or tune fixtures" \
+    || bad "PROBE AC1 architect agent does not forbid prototyping and fixture tuning"
+grep -Eqi 'scratch probe of the change is allowed' <<< "$ARCH_FLAT" \
+    && bad "PROBE AC1 open-ended probe permission is still there" \
+    || pass "PROBE AC1 open-ended probe permission removed"
+grep -Eqi 'at most 2 probe runs' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC2 probe runs capped at 2" \
+    || bad "PROBE AC2 architect agent has no probe cap"
+grep -Eqi 'one scratch worktree' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC2 one scratch worktree per run" \
+    || bad "PROBE AC2 architect agent does not hold to one scratch worktree"
+grep -Eqi 'advisor before (the|your) first probe' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC2 advisor before the first probe" \
+    || bad "PROBE AC2 architect agent does not call the advisor before probing"
+grep -Eqi 'purpose and (how long|duration)' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC3 reply lists each probe's purpose and duration" \
+    || bad "PROBE AC3 reply does not report probe purpose and duration"
+grep -Eqi '2,000 words' <<< "$ARCH_FLAT" \
+    && pass "PROBE AC3 notes capped at 2,000 words" \
+    || bad "PROBE AC3 architect agent has no notes word cap"
+echo "$ARCH_STEP4" | grep -q '### Unproven' \
+    && pass "PROBE AC4 Step 4 has the Unproven outlet" \
+    || bad "PROBE AC4 Step 4 has no ### Unproven outlet"
+echo "$ARCH_STEP4" | grep -Eqi 'calculat.*then.*probe' \
+    && pass "PROBE AC4 Step 4 orders calculation before probe" \
+    || bad "PROBE AC4 Step 4 does not order evidence by cost"
+echo "$ARCH_STEP4" | grep -Eqi 'scratch version of the change' \
+    && bad "PROBE AC4 Step 4 still invites a scratch version of the change" \
+    || pass "PROBE AC4 Step 4 no longer invites a prototype"
+grep -Eqi 'Unproven.*first cycle|first cycle.*Unproven' "$SKILLS/implement/SKILL.md" \
+    && pass "PROBE AC5 /implement builds Unproven checks first" \
+    || bad "PROBE AC5 /implement does not schedule Unproven entries"
+grep -Eqi 'Unproven.*(/spec|contradiction)' "$SKILLS/implement/SKILL.md" \
+    && pass "PROBE AC5 a failing Unproven check routes to /spec" \
+    || bad "PROBE AC5 /implement does not route a failing Unproven check"
+echo "$ARCH_STEP3" | grep -Eqi 'brief is (this|the) template' \
+    && pass "PROBE AC6 Step 3 holds the brief to its template" \
+    || bad "PROBE AC6 Step 3 lets the brief grow past its template"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."
