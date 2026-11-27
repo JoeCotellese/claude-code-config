@@ -35,11 +35,11 @@ Read the issue: User Stories, Scenarios, Acceptance Criteria, Guardrails, the de
 Read the repo's `CLAUDE.md` or `AGENTS.md` for its stack and protected files. The architect
 follows the stack the repo uses; it never assumes one.
 
-Then find the repo's architecture rules: ADRs (`docs/adr/`, `adr/`, `docs/decisions/`),
-`ARCHITECTURE.md`, `STANDARDS.md`, `docs/architecture*`, `CONTRIBUTING.md`, and the pattern or
-convention sections of `CLAUDE.md` or `AGENTS.md`. Read each that exists. List its path with a
-one-line summary of each rule it sets, or `none found`. These repo rules outrank the domain
-architect skill's defaults.
+Then read the repo's rules from `dev-jawn-rules.md` at the repo root, and nowhere else. Read
+each doc it lists, scoped to any `§` sections given, and record its level: MUST, SHOULD,
+DECISIONS (rationale to cite) or HISTORY (context, never a rule). No file means `none found`;
+the closeout then suggests copying `references/dev-jawn-rules.template.md` to the repo root.
+These repo rules outrank the domain architect skill's defaults.
 
 ## Step 3: Run the architect
 
@@ -80,7 +80,7 @@ Design (if any):
 <screens and accessibility IDs>
 
 Repo rules (these outrank your defaults):
-<path: one-line rule, or none found>
+<level, path: one-line rule, or none found>
 
 Provide:
 - Component diagram (ASCII)
@@ -112,8 +112,9 @@ work, not a surprise mid-build. calsync #88 listed its #85 and #73 rewrites up f
 them as planned; periplus #944 found #117's ring test mid-build and had no rule for it.
 
 **Check the design against the repo rules.** The notes list each rule doc applied under
-`### Repo rules followed`, or `none found`. A design that must break a rule names the rule, its
-doc path and the reason under `### Repo rule exceptions`; never break one silently.
+`### Repo rules followed`, or `none found`. A design that must break a MUST rule names the
+rule, its doc path and the reason under `### Repo rule exceptions`. A SHOULD break goes under
+`### Repo rule deviations` with its reason and still routes to build. Never break one silently.
 
 If the code contradicts the spec (a scenario that cannot happen, a criterion that cannot be met
 without changing scope), do not design around it. Post the contradiction as an issue comment
