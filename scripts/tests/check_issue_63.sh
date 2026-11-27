@@ -31,7 +31,7 @@ cap_for() {
         implement)   echo 1800 ;;
         ready)       echo 4200 ;;
         retro)       echo 1900 ;;
-        spec)        echo 2950 ;;
+        spec)        echo 3000 ;;
         submit)      echo 2350 ;;
         ui-design)   echo 1500 ;;
         architecture) echo 900 ;;

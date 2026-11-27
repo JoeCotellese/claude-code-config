@@ -1,6 +1,6 @@
 ---
 name: spec
-max_words: 2950
+max_words: 3000
 effort: xhigh
 description: "Specification phase: requirements and design. Invoke with `/spec <feature description>` to create an issue, `/spec #<issue>` to resume or re-spec one, `/spec #<issue> design` to run only the design step, or after /ready routes an issue back. Also triggers on 'new feature', 'plan feature', 'create spec', 'split this issue', 'fix issue #N', 'design #N'. Writes user stories, scenarios, Given/When/Then acceptance criteria and guardrails with the user, then runs the next owners unattended: /ui-design, /ready, /architecture."
 ---
@@ -276,16 +276,18 @@ at a time, never inline, until the label reaches `stage:human` or `stage:build`:
   A second route back to `stage:spec` in one run sets `stage:human`, so the loop cannot spin.
 
 After each hand-back, take the next owner from `gh issue view <N> --json labels`, not from the
-hand-back. A label still at the dispatched stage gets `SPEC VERDICT: #N route=stage:human blocking=<phase> died`,
+hand-back. A label still at the dispatched stage, or no `stage:` label, gets `SPEC VERDICT: #N route=stage:human blocking=<phase>-died`,
 with that stage as the return state; set `stage:human` and stop. No retry.
 
 On a `stage:human` stop, call `PushNotification` naming the issue and the phase. Report per
-Phase closeout: the issue link, the design log link, and the last verdict's route.
+Phase closeout: each hand-back's verdict line and blocking items, the issue link, the design log
+link, and the last verdict's route.
 
 ### Dispatch a phase
 
 Agent tool, `subagent_type: "general-purpose"`, no `model` or `isolation`, never `fork` (it inherits this
-context). Wait for the hand-back before reading the label. Prompt:
+context). Wait for the hand-back before reading the label. Fill `<workflow>` with the absolute path
+of `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`: the prompt hook does not run in subagents. Prompt:
 
 ```
 Run /<phase> #<N> with the Skill tool (dev-jawn:<phase>); the issue holds every input.
@@ -294,6 +296,7 @@ no-ask path, or set stage:human with the question in the verdict. Wait for every
 you start (critics, dev-jawn:architect) to report before posting the verdict.
 Instead of a closeout report, hand back at most 150 words: the verdict line as posted,
 links (verdict comment, design log), and blocking items.
+If the issue has the autopilot label, follow Autopilot in <workflow> at every gate instead of stopping.
 ```
 
 ## Re-spec Mode

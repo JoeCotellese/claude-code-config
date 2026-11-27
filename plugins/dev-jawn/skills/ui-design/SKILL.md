@@ -102,7 +102,6 @@ Each pass:
    - **Web** — Playwright against the prototype URL; desktop **and** mobile widths.
    - **Apple platforms** — `mcp__xcode__RenderPreview` for each state. On the final pass, build
      and drive it in the simulator with AXe, the same harness the Definition of Done uses.
-   - **Playwright or the preview tool unavailable:** Step 5's `stage:human` stop, `blocking=<tool> unavailable`, return state `stage:design`.
 
    For Playwright:
    - **Load the interaction schemas up front** (they are deferred):
@@ -163,6 +162,7 @@ Post the verdict comment, then swap `stage:design` for the label it routes to:
 
 - **A criterion the design cannot meet** without changing the spec:
   `DESIGN VERDICT: #<N> route=stage:spec blocking=<criterion>`.
+- **Playwright or the preview tool unavailable:** `DESIGN VERDICT: #<N> route=stage:human blocking=<tool> unavailable`, return state `stage:design`, no approve option. Call `PushNotification` and stop.
 - **Autopilot:** under the `autopilot` label the checkpoint follows Autopilot in `WORKFLOW.md`.
 - **`design-checkpoint` set, or blocking findings open at the cap:**
   `DESIGN VERDICT: #<N> route=stage:human blocking=<checkpoint, or the findings>`, naming

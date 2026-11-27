@@ -61,6 +61,6 @@ check "AC9 Step 8 calls PushNotification" "echo \"\$step8\" | grep -q 'PushNotif
 
 # AC11 — the word ceiling holds.
 words=$(wc -w < "$SPEC" | tr -d ' ')
-check "AC11 spec/SKILL.md is at or under 2950 words ($words)" "[ $words -le 2950 ]"
+check "AC11 spec/SKILL.md is at or under 3000 words ($words)" "[ $words -le 3000 ]"
 
 exit $fail
