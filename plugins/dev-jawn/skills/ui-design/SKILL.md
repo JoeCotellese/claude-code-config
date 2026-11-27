@@ -11,7 +11,7 @@ Turn a spec's requirements into a **clickable prototype before any backend work*
 human in the loop. The prototype is the **real target view rendered with a fake context**, not a
 throwaway mock: the build inherits it and swaps the fake context for real service calls.
 
-Design is part of the spec. It runs after the requirements, in the same session or a later one:
+Design is part of the spec. It runs after the requirements:
 
 ```
 /spec (requirements → /ui-design) → /ready → /architecture → build
@@ -162,6 +162,7 @@ Post the verdict comment, then swap `stage:design` for the label it routes to:
 
 - **A criterion the design cannot meet** without changing the spec:
   `DESIGN VERDICT: #<N> route=stage:spec blocking=<criterion>`.
+- **Playwright or the preview tool unavailable:** `DESIGN VERDICT: #<N> route=stage:human blocking=<tool> unavailable`, return state `stage:design`, no approve option. Call `PushNotification` and stop.
 - **Autopilot:** under the `autopilot` label the checkpoint follows Autopilot in `WORKFLOW.md`.
 - **`design-checkpoint` set, or blocking findings open at the cap:**
   `DESIGN VERDICT: #<N> route=stage:human blocking=<checkpoint, or the findings>`, naming

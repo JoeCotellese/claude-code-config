@@ -1,6 +1,6 @@
 ---
 name: spec
-max_words: 2950
+max_words: 3000
 effort: xhigh
 description: "Specification phase: requirements and design. Invoke with `/spec <feature description>` to create an issue, `/spec #<issue>` to resume or re-spec one, `/spec #<issue> design` to run only the design step, or after /ready routes an issue back. Also triggers on 'new feature', 'plan feature', 'create spec', 'split this issue', 'fix issue #N', 'design #N'. Writes user stories, scenarios, Given/When/Then acceptance criteria and guardrails with the user, then runs the next owners unattended: /ui-design, /ready, /architecture."
 ---
@@ -30,13 +30,13 @@ Labels, verdict comments and the last-action rule follow State machine in `WORKF
 **Mode detection:**
 
 - Plain text → **Create**.
-- `#N design` → only on an issue at stage:design: run `/ui-design #N`, then Step 8.
+- `#N design` → only on an issue at stage:design: Step 8.
 - `#N` → read the issue's `stage:` label and the latest verdict comment. First match wins:
   - `stage:build` → stop: the build run owns it.
   - `stage:human` → after a `SUBMIT VERDICT`, stop: the PR awaits review. Otherwise the
     latest verdict says what waits on the user. Ask it, then post their
     decision as `SPEC VERDICT` with the return state it names (`route=stage:spec`,
-    `route=stage:design` or `route=stage:ready`), set that label, and go to Step 8.
+    `route=stage:design`, `route=stage:ready` or `route=stage:architecture`), set that label, and go to Step 8.
   - `stage:design`, `stage:ready`, `stage:architecture` → Step 8.
   - The latest verdict says `split from #<P>` → **Re-spec**: the child's own pass.
   - The latest verdict has `route=stage:spec` and names what blocks → **Repair**.
@@ -260,26 +260,44 @@ Post `SPEC VERDICT: #N route=stage:design blocking=none` with what was filed, th
 `stage:spec` for `stage:design`. A chore posts `SPEC VERDICT: #N route=stage:build kind=chore`
 (a bug fix `kind=bug`), sets `stage:build`, and stops: the build run is not built yet.
 
-Run `/ui-design #<N>` (skill `ui-design`) for every feature. It decides whether there is UI to
-design and records "no design needed" when there is none; otherwise it runs the critic loop
-and posts the design log. **Do not stop between passes or after them.** The user judges the
-design at the end, through the log and the screenshots.
-
-The one exception is the `design-checkpoint` flag. When set, `/ui-design` sets `stage:human`
-and stops for the user's look.
+Then Step 8 dispatches `/ui-design #<N>` to a subagent for every feature. It records "no design
+needed" or runs the critic loop without stopping; the user judges the design at the end. The
+one exception is the `design-checkpoint` flag: `/ui-design` sets `stage:human` for a look.
 
 ### Step 8: Hand off to /ready
 
-Do not ask. In this session, keep running the owner of the issue's label until it reaches
-`stage:human` or `stage:build`:
+Do not ask. Dispatch the owner of the issue's label to a fresh subagent (Dispatch below), one
+at a time, never inline, until the label reaches `stage:human` or `stage:build`:
 
 - `stage:design` → `/ui-design #<N>`
-- `stage:ready` → run `/ready #<N>` (skill `ready`): are requirements and design sufficient?
-- `stage:architecture` → `/architecture #<N>` (skill `architecture`)
-- `stage:spec` → Mode detection again (usually Repair). A second route back to `stage:spec`
-  in one run sets `stage:human` instead, so the loop cannot spin.
+- `stage:ready` → run `/ready #<N>`
+- `stage:architecture` → `/architecture #<N>`
+- `stage:spec` → Mode detection again, in this session: Repair needs the user.
+  A second route back to `stage:spec` in one run sets `stage:human`, so the loop cannot spin.
 
-Report per Phase closeout: the issue link, the design log link, and the last verdict's route.
+After each hand-back, take the next owner from `gh issue view <N> --json labels`, not from the
+hand-back. A label still at the dispatched stage, or no `stage:` label, gets `SPEC VERDICT: #N route=stage:human blocking=<phase>-died`,
+with that stage as the return state; set `stage:human` and stop. No retry.
+
+On a `stage:human` stop, call `PushNotification` naming the issue and the phase. Report per
+Phase closeout: each hand-back's verdict line and blocking items, the issue link, the design log
+link, and the last verdict's route.
+
+### Dispatch a phase
+
+Agent tool, `subagent_type: "general-purpose"`, no `model` or `isolation`, never `fork` (it inherits this
+context). Wait for the hand-back before reading the label. Fill `<workflow>` with the absolute path
+of `${CLAUDE_PLUGIN_ROOT}/skills/WORKFLOW.md`: the prompt hook does not run in subagents. Prompt:
+
+```
+Run /<phase> #<N> with the Skill tool (dev-jawn:<phase>); the issue holds every input.
+Finish with its verdict comment and next stage label. No user can answer: take the skill's
+no-ask path, or set stage:human with the question in the verdict. Wait for every subagent
+you start (critics, dev-jawn:architect) to report before posting the verdict.
+Instead of a closeout report, hand back at most 150 words: the verdict line as posted,
+links (verdict comment, design log), and blocking items.
+If the issue has the autopilot label, follow Autopilot in <workflow> at every gate instead of stopping.
+```
 
 ## Re-spec Mode
 
