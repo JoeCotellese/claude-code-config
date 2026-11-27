@@ -36,7 +36,7 @@ Labels, verdict comments and the last-action rule follow State machine in `WORKF
   - `stage:human` → after a `SUBMIT VERDICT`, stop: the PR awaits review. Otherwise the
     latest verdict says what waits on the user. Ask it, then post their
     decision as `SPEC VERDICT` with the return state it names (`route=stage:spec`,
-    `route=stage:design`, `route=stage:ready` or `route=stage:architecture`), set that label, and go to Step 8.
+    `route=stage:design`, `route=stage:ready`, `route=stage:architecture` or `route=stage:build`), set that label, and go to Step 8.
   - `stage:design`, `stage:ready`, `stage:architecture` → Step 8.
   - The latest verdict says `split from #<P>` → **Re-spec**: the child's own pass.
   - The latest verdict has `route=stage:spec` and names what blocks → **Repair**.

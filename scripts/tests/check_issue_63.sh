@@ -34,7 +34,7 @@ cap_for() {
         spec)        echo 3000 ;;
         submit)      echo 2350 ;;
         ui-design)   echo 1500 ;;
-        architecture) echo 900 ;;
+        architecture) echo 1100 ;;
         dod)         echo 1700 ;;
         autopilot)   echo 1050 ;;
         *)           echo 0 ;;
