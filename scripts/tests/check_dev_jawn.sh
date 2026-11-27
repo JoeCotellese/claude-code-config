@@ -805,11 +805,39 @@ ARCH_RULES=$(awk '/^## Rules/{on=1} /^## Your reply/{on=0} on' "$ARCH_AGENT" | t
 ARCH_INPUTS=$(awk '/^## Your inputs/{on=1} /^## What you do/{on=0} on' "$ARCH_AGENT" | tr '\n' ' ' | tr -s ' ')
 ARCH_REPLY=$(awk '/^## Your reply/{on=1} on' "$ARCH_AGENT")
 ARCH_STEP4_FLAT=$(echo "$ARCH_STEP4" | tr '\n' ' ' | tr -s ' ')
-for doc in 'docs/adr' 'ARCHITECTURE.md' 'STANDARDS.md' 'docs/architecture' 'CONTRIBUTING.md' 'none found'; do
+# #149 replaced #147's path search: rules come only from dev-jawn-rules.md.
+grep -qF 'dev-jawn-rules.md' <<< "$ARCH_STEP2" \
+    && pass "RULES AC1 Step 2 reads dev-jawn-rules.md" \
+    || bad "RULES AC1 Step 2 does not read dev-jawn-rules.md"
+for doc in 'docs/adr' 'ARCHITECTURE.md' 'STANDARDS.md' 'CONTRIBUTING.md'; do
     grep -qF "$doc" <<< "$ARCH_STEP2" \
-        && pass "RULES AC1 Step 2 looks for $doc" \
-        || bad "RULES AC1 Step 2 does not look for $doc"
+        && bad "RULES AC1 Step 2 still searches for $doc" \
+        || pass "RULES AC1 Step 2 no longer guesses $doc"
 done
+grep -qF 'none found' <<< "$ARCH_STEP2" \
+    && pass "RULES AC2 Step 2 records none found without the file" \
+    || bad "RULES AC2 Step 2 has no none-found path"
+RULES_TEMPLATE="$SKILLS/architecture/references/dev-jawn-rules.template.md"
+grep -qF 'dev-jawn-rules.template.md' "$SKILLS/architecture/SKILL.md" \
+    && pass "RULES AC2 /architecture points at the template" \
+    || bad "RULES AC2 /architecture never suggests the template"
+for sec in MUST SHOULD DECISIONS HISTORY; do
+    grep -q "^## $sec\$" "$RULES_TEMPLATE" 2>/dev/null \
+        && pass "RULES AC3 template has ## $sec" \
+        || bad "RULES AC3 template lacks ## $sec"
+done
+grep -qF '### Repo rule deviations' <<< "$ARCH_STEP4_FLAT" && grep -qF '### Repo rule deviations' "$ARCH_AGENT" \
+    && pass "RULES AC4 SHOULD breaks go under Repo rule deviations" \
+    || bad "RULES AC4 no Repo rule deviations section"
+grep -Eq 'MUST.{0,120}Repo rule exceptions|Repo rule exceptions.{0,120}MUST' <<< "$ARCH_STEP4_FLAT" \
+    && pass "RULES AC4 only MUST breaks are exceptions" \
+    || bad "RULES AC4 exceptions not limited to MUST"
+grep -Eq 'HISTORY.{0,80}never' <<< "$ARCH_STEP2 $ARCH_RULES" \
+    && pass "RULES AC4 HISTORY is never a rule" \
+    || bad "RULES AC4 HISTORY may be read as rules"
+grep -Eq 'MUST.{0,40}SHOULD' <<< "$ARCH_INPUTS" \
+    && pass "RULES AC5 architect inputs carry rule levels" \
+    || bad "RULES AC5 architect inputs carry no rule levels"
 echo "$ARCH_STEP3" | grep -q '^Repo rules' \
     && pass "RULES AC2 Step 3 template carries the repo rules" \
     || bad "RULES AC2 Step 3 template has no repo rules slot"
@@ -846,8 +874,8 @@ grep -q 'stage:build' <<< "$WF_HUMAN" \
     && pass "RULES AC5 WORKFLOW lets stage:human return to stage:build" \
     || bad "RULES AC5 WORKFLOW has no stage:human to stage:build transition"
 DJ_VERSION=$(jq -r .version "$PLUGIN/.claude-plugin/plugin.json")
-[ "$(printf '%s\n%s\n' 1.16.0 "$DJ_VERSION" | sort -V | tail -1)" != "1.16.0" ] \
-    && pass "RULES AC6 dev-jawn version bumped past 1.16.0 ($DJ_VERSION)" \
+[ "$(printf '%s\n%s\n' 1.17.0 "$DJ_VERSION" | sort -V | tail -1)" != "1.17.0" ] \
+    && pass "RULES AC6 dev-jawn version bumped past 1.17.0 ($DJ_VERSION)" \
     || bad "RULES AC6 dev-jawn version not bumped ($DJ_VERSION)"
 
 echo
