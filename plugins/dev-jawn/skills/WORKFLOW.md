@@ -196,7 +196,7 @@ GitHub alone. Closed means done.
   `stage:human` (design-checkpoint set, or critics still block at the cap), `stage:spec` (a
   criterion the design cannot meet).
 - `stage:human`: owner `/spec`, which records the user's decision; next the state the waiting
-  verdict names: `stage:spec`, `stage:design` or `stage:ready`. After a `SUBMIT VERDICT` the
+  verdict names: `stage:spec`, `stage:design`, `stage:ready` or `stage:architecture`. After a `SUBMIT VERDICT` the
   user reviews the PR, and merging closes the issue.
 - `stage:ready`: owner `/ready`; next `stage:architecture` (pass), `stage:design` (design missing
   or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
@@ -206,6 +206,11 @@ GitHub alone. Closed means done.
 - `stage:review`: reserved for stakeholder review after done (not built yet).
 
 An issue with no `stage:` label goes to `/spec`.
+
+`/spec` Step 8 drives `stage:design`, `stage:ready` and `stage:architecture`, each in a fresh
+subagent. When a phase hands back with its label unchanged, the phase died: `/spec` posts a
+`SPEC VERDICT` with `route=stage:human` naming that stage as the return state, sets
+`stage:human`, and stops.
 
 Every owner follows the same rules:
 
@@ -265,7 +270,7 @@ never said routes to `/retro`, because then the gate is wrong rather than the co
 Requirements and design. With the user: user stories, scenarios, Given/When/Then acceptance
 criteria, guardrails (design constraints, non-goals, stop conditions, rules), the
 `design-checkpoint` and `merge` flags, sizing. One gate before filing. Then, unattended, it
-runs each next owner per State machine: `/ui-design`, `/ready`, `/architecture`. Chores and
+runs each next owner per State machine, each in a fresh subagent: `/ui-design`, `/ready`, `/architecture`. Chores and
 small bug fixes go straight to `stage:build`.
 
 - Every Then must be observable by a command or test (R2), and behavioral, not visual.

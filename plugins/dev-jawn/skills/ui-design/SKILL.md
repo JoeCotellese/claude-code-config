@@ -11,7 +11,7 @@ Turn a spec's requirements into a **clickable prototype before any backend work*
 human in the loop. The prototype is the **real target view rendered with a fake context**, not a
 throwaway mock: the build inherits it and swaps the fake context for real service calls.
 
-Design is part of the spec. It runs after the requirements, in the same session or a later one:
+Design is part of the spec. It runs after the requirements:
 
 ```
 /spec (requirements → /ui-design) → /ready → /architecture → build
@@ -102,6 +102,7 @@ Each pass:
    - **Web** — Playwright against the prototype URL; desktop **and** mobile widths.
    - **Apple platforms** — `mcp__xcode__RenderPreview` for each state. On the final pass, build
      and drive it in the simulator with AXe, the same harness the Definition of Done uses.
+   - **Playwright or the preview tool unavailable:** Step 5's `stage:human` stop, `blocking=<tool> unavailable`, return state `stage:design`.
 
    For Playwright:
    - **Load the interaction schemas up front** (they are deferred):
