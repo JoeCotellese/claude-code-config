@@ -196,12 +196,13 @@ GitHub alone. Closed means done.
   `stage:human` (design-checkpoint set, or critics still block at the cap), `stage:spec` (a
   criterion the design cannot meet).
 - `stage:human`: owner `/spec`, which records the user's decision; next the state the waiting
-  verdict names: `stage:spec`, `stage:design`, `stage:ready` or `stage:architecture`. After a `SUBMIT VERDICT` the
+  verdict names: `stage:spec`, `stage:design`, `stage:ready`, `stage:architecture` or `stage:build`. After a `SUBMIT VERDICT` the
   user reviews the PR, and merging closes the issue.
 - `stage:ready`: owner `/ready`; next `stage:architecture` (pass), `stage:design` (design missing
   or a blocking finding open), `stage:spec` (scope, stories or criteria fail).
 - `stage:architecture`: owner `/architecture`; next `stage:build` (technical notes filed),
-  `stage:spec` (the code contradicts the spec).
+  `stage:human` (the design breaks a repo rule and needs sign-off), `stage:spec` (the code
+  contradicts the spec).
 - `stage:build`: owner the build run: `/implement`, or `/autopilot` under the `autopilot` label; next `stage:human` (PR open).
 - `stage:review`: reserved for stakeholder review after done (not built yet).
 

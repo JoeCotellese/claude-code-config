@@ -798,6 +798,58 @@ grep -Eqi 'label unchanged' <<< "$ARCH_STEP5" \
     && pass "HANDOFF AC3 a missing filing stops with the label unchanged" \
     || bad "HANDOFF AC3 a missing filing can still route to stage:build"
 
+# --- Issue #147: the architect reads the repo's own architecture rules ---
+# Step 2 read CLAUDE.md only for stack and protected files; ADRs and STANDARDS.md never reached the architect.
+ARCH_STEP2=$(awk '/^## Step 2/{on=1} /^## Step 3/{on=0} on' "$SKILLS/architecture/SKILL.md" | tr '\n' ' ' | tr -s ' ')
+ARCH_RULES=$(awk '/^## Rules/{on=1} /^## Your reply/{on=0} on' "$ARCH_AGENT" | tr '\n' ' ' | tr -s ' ')
+ARCH_INPUTS=$(awk '/^## Your inputs/{on=1} /^## What you do/{on=0} on' "$ARCH_AGENT" | tr '\n' ' ' | tr -s ' ')
+ARCH_REPLY=$(awk '/^## Your reply/{on=1} on' "$ARCH_AGENT")
+ARCH_STEP4_FLAT=$(echo "$ARCH_STEP4" | tr '\n' ' ' | tr -s ' ')
+for doc in 'docs/adr' 'ARCHITECTURE.md' 'STANDARDS.md' 'docs/architecture' 'CONTRIBUTING.md' 'none found'; do
+    grep -qF "$doc" <<< "$ARCH_STEP2" \
+        && pass "RULES AC1 Step 2 looks for $doc" \
+        || bad "RULES AC1 Step 2 does not look for $doc"
+done
+echo "$ARCH_STEP3" | grep -q '^Repo rules' \
+    && pass "RULES AC2 Step 3 template carries the repo rules" \
+    || bad "RULES AC2 Step 3 template has no repo rules slot"
+grep -Eqi 'architecture rules' <<< "$ARCH_INPUTS" \
+    && pass "RULES AC2 architect inputs include the repo's architecture rules" \
+    || bad "RULES AC2 architect inputs omit the repo's architecture rules"
+grep -Eqi 'repo rules outrank' <<< "$ARCH_RULES" \
+    && pass "RULES AC3 repo rules outrank every architect skill's defaults" \
+    || bad "RULES AC3 architect Rules do not rank repo rules over the skill"
+grep -qF '### Repo rules followed' <<< "$ARCH_REPLY" \
+    && pass "RULES AC4 architect reply includes Repo rules followed" \
+    || bad "RULES AC4 architect reply omits Repo rules followed"
+grep -qF '### Repo rules followed' <<< "$ARCH_STEP4_FLAT" && grep -qF 'none found' <<< "$ARCH_STEP4_FLAT" \
+    && pass "RULES AC4 Step 4 requires Repo rules followed or none found" \
+    || bad "RULES AC4 Step 4 does not require Repo rules followed"
+grep -qF '### Repo rule exceptions' <<< "$ARCH_STEP4_FLAT" && grep -Eqi 'never break one silently' <<< "$ARCH_STEP4_FLAT" \
+    && pass "RULES AC5 Step 4 records rule breaks under Repo rule exceptions" \
+    || bad "RULES AC5 Step 4 lets a rule break pass silently"
+grep -Eq 'Repo rule exceptions.{0,200}route=stage:human' <<< "$ARCH_STEP5" \
+    && pass "RULES AC5 Step 5 routes a rule exception to stage:human" \
+    || bad "RULES AC5 Step 5 does not route a rule exception to stage:human"
+grep -Eq 'route=stage:human.{0,200}`stage:build` as the return state' <<< "$ARCH_STEP5" \
+    && pass "RULES AC5 the rule exception returns to stage:build on sign-off" \
+    || bad "RULES AC5 the rule exception names no return state"
+grep -A4 '^  - `stage:human` →' "$SKILLS/spec/SKILL.md" | grep -q 'route=stage:build' \
+    && pass "RULES AC5 /spec resumes stage:human into stage:build" \
+    || bad "RULES AC5 /spec cannot resume stage:human into stage:build"
+WF_ARCH=$(grep -A1 '^- `stage:architecture`: owner' "$SKILLS/WORKFLOW.md" | tr '\n' ' ')
+WF_HUMAN=$(grep -A2 '^- `stage:human`: owner' "$SKILLS/WORKFLOW.md" | tr '\n' ' ')
+grep -q 'stage:human' <<< "$WF_ARCH" \
+    && pass "RULES AC5 WORKFLOW lets stage:architecture go to stage:human" \
+    || bad "RULES AC5 WORKFLOW has no stage:architecture to stage:human transition"
+grep -q 'stage:build' <<< "$WF_HUMAN" \
+    && pass "RULES AC5 WORKFLOW lets stage:human return to stage:build" \
+    || bad "RULES AC5 WORKFLOW has no stage:human to stage:build transition"
+DJ_VERSION=$(jq -r .version "$PLUGIN/.claude-plugin/plugin.json")
+[ "$(printf '%s\n%s\n' 1.16.0 "$DJ_VERSION" | sort -V | tail -1)" != "1.16.0" ] \
+    && pass "RULES AC6 dev-jawn version bumped past 1.16.0 ($DJ_VERSION)" \
+    || bad "RULES AC6 dev-jawn version not bumped ($DJ_VERSION)"
+
 echo
 if [ "$fail" -eq 0 ]; then
     echo "RESULT: PASS — dev-jawn shell invariants hold."

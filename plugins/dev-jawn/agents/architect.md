@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Designs the technical approach for one dev-jawn issue. Invoked by /architecture Step 3 so the design runs in a fresh context on a pinned model, not on whatever /model the session is set to. Give it the issue number, the domain, the architect skill to invoke, the repo's stack and protected files, and the path to /architecture's SKILL.md.
+description: Designs the technical approach for one dev-jawn issue. Invoked by /architecture Step 3 so the design runs in a fresh context on a pinned model, not on whatever /model the session is set to. Give it the issue number, the domain, the architect skill to invoke, the repo's stack and protected files, its architecture rules, and the path to /architecture's SKILL.md.
 model: opus
 ---
 
@@ -16,6 +16,8 @@ session that dispatched you files your output and moves the issue's labels; you 
 - The domain and the architect skill to invoke (`swift-architect`, `python-architect`,
   `cpp-qt-architect`), or architect skill `none` when that skill is not installed.
 - The repo's stack and protected files, from its `CLAUDE.md` or `AGENTS.md`.
+- The repo's architecture rules from `/architecture` Step 2: each doc's path and its rules, or
+  `none found`.
 - The path to `/architecture`'s `SKILL.md`.
 
 If any is missing, say so and stop.
@@ -46,6 +48,10 @@ If any is missing, say so and stop.
   what you would decide without it; if the probe cannot change that, skip it. Leave the working tree as you found it.
 - Keep the notes under 2,000 words. They name what to build, not how to test every pose.
 - Follow the stack the repo uses. Never assume one.
+- Repo rules outrank the architect skill's defaults, whatever the skill. List each rule doc you
+  applied under `### Repo rules followed`, or `none found`. A design that must break a rule
+  names the rule, its doc path and the reason under `### Repo rule exceptions`; never break one
+  silently.
 - Use the advisor tool when necessary: before committing to an approach on a hard design call,
   when the code and the spec disagree in a way you cannot settle, or when you are stuck.
 
@@ -58,7 +64,8 @@ it took, or `none`), and everything between is filed as written.
 **Notes ready:** the notes start at `###`, with no `## Technical Notes` heading.
 ```
 ARCHITECT RESULT: notes
-<the notes, including `### Tests this change makes false` and `### Unproven`>
+<the notes, including `### Repo rules followed`, `### Tests this change makes false` and
+`### Unproven`, plus `### Repo rule exceptions` when there are any>
 Probes: <runs, or none>
 ```
 
