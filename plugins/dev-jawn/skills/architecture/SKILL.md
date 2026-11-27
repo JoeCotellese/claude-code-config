@@ -132,7 +132,8 @@ it. Otherwise post the `ARCH VERDICT` as an issue comment under the reply's `Pro
 
 - Notes with `### Repo rule exceptions`: the user signs off first. Post `ARCH VERDICT: #<N>
   route=stage:human blocking=repo-rule-exception` naming `stage:build` as the return state,
-  then swap `stage:architecture` for `stage:human`.
+  then:
+  `gh issue edit <N> --remove-label "stage:architecture" --add-label "stage:human"`
 - Otherwise: post `ARCH VERDICT: #<N> route=stage:build blocking=none`, then:
 
 ```bash
